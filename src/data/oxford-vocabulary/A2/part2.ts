@@ -1,0 +1,3748 @@
+import { Word } from '../types';
+
+export const a2VocabularyPart2: Word[] = [
+  {
+    id: 'a2-249',
+    word: 'disappear',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ˌdɪsəˈpɪr/', uk: '/ˌdɪsəˈpɪə(r)/' },
+    examples: [
+      'With that, Matt promptly disappeared.',
+      'The mirror made the ceiling seem to disappear.',
+      '+ adv./prep. The plane disappeared behind a cloud.',
+      'Lisa watched until the train disappeared from view.',
+      'Lucy watched his tall figure disappear into the cafe.',
+    ]
+  },
+  {
+    id: 'a2-250',
+    word: 'disaster',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dɪˈzæstər/', uk: '/dɪˈzɑːstə(r)/' },
+    examples: [
+      'the world\'s worst humanitarian disaster',
+      'an environmental/ecological disaster',
+      'a rail/mining/tsunami disaster',
+      'in a disaster Thousands died in the disaster.',
+      'They provided more than $2.3 billion in disaster relief.',
+      'a disaster area/zone',
+      'It was taking years for disaster victims to settle and rebuild.',
+      'Given the threat of earthquake, we recognized the need for disaster recovery centres.',
+    ]
+  },
+  {
+    id: 'a2-251',
+    word: 'discover',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/dɪˈskʌvər/', uk: '/dɪˈskʌvə(r)/' },
+    examples: [
+      'Cook is credited with discovering Hawaii.',
+      'Scientists around the world are working to discover a cure for AIDS.',
+      'a newly discovered snake species',
+      'They first discovered this protein about five years ago.',
+      'She recently discovered two fungi that were new to science.',
+    ]
+  },
+  {
+    id: 'a2-252',
+    word: 'discovery',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dɪˈskʌvəri/', uk: '/dɪˈskʌvəri/' },
+    examples: [
+      'Researchers in this field have made some important new discoveries.',
+      'New scientific discoveries are being made all the time.',
+      'discovery of something the discovery of antibiotics in the twentieth century',
+      'The discovery of a child\'s body in the river has shocked the community.',
+      'the discovery of new talent in the art world',
+      'He saw life as a voyage of discovery.',
+      'The film takes us on a journey of discovery to different parts of the globe.',
+      'discovery that… She was shocked by the discovery that he had been unfaithful.',
+      'In 1974 Hawking made the discovery (= he discovered) that black holes give off radiation.',
+    ]
+  },
+  {
+    id: 'a2-253',
+    word: 'discussion',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dɪˈskʌʃn/', uk: '/dɪˈskʌʃn/' },
+    examples: [
+      'I discovered something interesting during a family discussion.',
+      'We\'ll continue this discussion some other time.',
+      'discussion with somebody (about somebody/something) We had a discussion with them about the differences between Britain and the US.',
+      'discussion about somebody/something A lively discussion followed about whether he should be allowed to join the club.',
+      'discussion on something The pair held informal discussions on a number of topics.',
+      'discussion around something The exhibition offers opportunities for frank discussions around sensitive issues.',
+      'discussion of something We want to encourage public discussion of mental health issues.',
+      'discussion among/between A and B (about somebody/something) There was some discussion among reviewers about this film.',
+      'under discussion The plans have been under discussion (= being talked about) for a year now.',
+      'for discussion a list of topics for discussion',
+      'to stimulate/provoke discussion',
+      'to initiate/start/spark a discussion',
+      'a panel/group/round-table discussion',
+    ]
+  },
+  {
+    id: 'a2-254',
+    word: 'disease',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dɪˈziːz/', uk: '/dɪˈziːz/' },
+    examples: [
+      'heart/lung/liver disease',
+      'In 19th century England, infectious diseases were the principal cause of death.',
+      'chronic diseases such as obesity and diabetes',
+      'health measures to prevent the spread of disease',
+      'Smoking increases the risk of heart disease.',
+      'It is not known what causes the disease.',
+      'He suffers from a rare blood disease.',
+      'Sailors who ate no fresh food contracted the disease.',
+      'It\'s better to prevent disease by ensuring a clean water supply.',
+      'to treat/cure a disease',
+      'to spread/transmit a disease',
+      'Cattle had to be slaughtered after an outbreak of the disease.',
+      'patients with coronary heart disease',
+      'cardiovascular/pulmonary/respiratory disease',
+    ]
+  },
+  {
+    id: 'a2-255',
+    word: 'distance',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdɪstəns/', uk: '/ˈdɪstəns/' },
+    examples: [
+      'a short/long distance',
+      'Paul has to drive very long distances as part of his job.',
+      'a distance of something to travel/cover a distance of 200 kilometres',
+      'distance to something She walked the short distance to her apartment.',
+      'distance from something Once she was a safe distance from the shop, Gina stopped.',
+      'distance of A from B the distance of the earth from the sun',
+      'distance from A to B What’s the distance from New York City to Boston?',
+      'distance between A and B What’s the distance between New York City and Boston?',
+      'over a distance (of something) The wind carries pollen over considerable distances.',
+      'within… distance (of something) The beach is within walking distance of my house (= you can walk there easily).',
+      'The house is within easy commuting distance of town.',
+      'In the US, distance is measured in miles.',
+      'distance away Our parents live some distance away (= quite far away).',
+      'a distance (= long-distance) runner/swimmer',
+    ]
+  },
+  {
+    id: 'a2-256',
+    word: 'divorced',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/dɪˈvɔːrst/', uk: '/dɪˈvɔːst/' },
+    examples: [
+      'My parents are divorced.',
+      'Many divorced men remarry and have second families.',
+      'a divorced father/mother/couple',
+    ]
+  },
+  {
+    id: 'a2-257',
+    word: 'document',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdɑːkjumənt/', uk: '/ˈdɒkjumənt/' },
+    examples: [
+      'Please read and sign the attached document.',
+      'Please e-sign the document and email it back.',
+      'This is an important legal document.',
+      'The child is identified only by the initial ‘M’ in court documents.',
+      'Keep your passport and other travel documents in a secure place.',
+      'According to documents released yesterday, he was paid over £1 million last year.',
+      'to publish/produce a document',
+      'Copies of the relevant documents must be filed at court.',
+      'to table/submit a document',
+      'a leaked/forged document',
+      'a classified/confidential/secret document',
+      'a consultation/policy document',
+    ]
+  },
+  {
+    id: 'a2-258',
+    word: 'double',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈdʌbl/', uk: '/ˈdʌbl/' },
+    examples: [
+      'a double helping',
+      'a double espresso',
+      'two double whiskies',
+      'a double lesson of English',
+    ]
+  },
+  {
+    id: 'a2-259',
+    word: 'double',
+    type: 'determiner',
+    level: 'A2',
+    phonetics: { us: '/ˈdʌbl/', uk: '/ˈdʌbl/' },
+    examples: [
+      'His income is double hers.',
+      'He earns double what she does.',
+      'We need double the amount we already have.',
+    ]
+  },
+  {
+    id: 'a2-260',
+    word: 'double',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/ˈdʌbl/', uk: '/ˈdʌbl/' },
+    examples: [
+      'He gets paid double for doing the same job I do.',
+      'The airline announced it would start charging double for people who couldn\'t fit in a single seat',
+    ]
+  },
+  {
+    id: 'a2-261',
+    word: 'double',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ˈdʌbl/', uk: '/ˈdʌbl/' },
+    examples: [
+      'Membership almost doubled in two years.',
+      'double in something The town has approximately doubled in size since 1960.',
+      'The material I was buying suddenly doubled in price.',
+      'double something The firm has promised to double the number of women promoted to partner by 2025.',
+      'Double all the quantities in the recipe to make enough for eight people.',
+    ]
+  },
+  {
+    id: 'a2-262',
+    word: 'download',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdaʊnləʊd/', uk: '/ˈdaʊnləʊd/' },
+    examples: [
+      'A staggering 99.8 % of digital music downloads are to mobile handsets.',
+      'This book is available as a free download.',
+    ]
+  },
+  {
+    id: 'a2-263',
+    word: 'download',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ˌdaʊnˈləʊd/', uk: '/ˌdaʊnˈləʊd/' },
+    examples: [
+      'download something to download files/music/software',
+      'You can download the app for free.',
+      'You don\'t need to download the movie—you can stream it.',
+      'The series is now available to download.',
+      'About 100   000 users illegally downloaded episodes of the show.',
+      'download something to something a small program you can download to your desktop',
+      'download something onto something The data was downloaded onto a computer for further analysis.',
+      'download something from something If you download pictures from the internet, check the terms of use.',
+    ]
+  },
+  {
+    id: 'a2-264',
+    word: 'downstairs',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˌdaʊnˈsterz/', uk: '/ˌdaʊnˈsteəz/' },
+    examples: [
+      'a downstairs bathroom',
+      'I knocked on the door of my downstairs neighbour.',
+    ]
+  },
+  {
+    id: 'a2-265',
+    word: 'drama',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdrɑːmə/', uk: '/ˈdrɑːmə/' },
+    examples: [
+      'a costume/period/courtroom/crime drama',
+      'a powerful television drama about city life',
+      'a drama series set in an American dance academy',
+    ]
+  },
+  {
+    id: 'a2-266',
+    word: 'drawing',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdrɔːɪŋ/', uk: '/ˈdrɔːɪŋ/' },
+    examples: [
+      'a pencil/pen-and-ink/charcoal drawing',
+      'drawing of somebody/something a drawing of a yacht',
+      'detailed drawings of local plants and animals',
+      'The original architectural drawings of the building had been lost.',
+      'He did a drawing of the old farmhouse.',
+      'The children were asked to make a drawing of a dinosaur.',
+      'drawing by somebody a drawing by Paul Klee',
+    ]
+  },
+  {
+    id: 'a2-267',
+    word: 'dream',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/driːm/', uk: '/driːm/' },
+    examples: [
+      'I had a really weird dream last night.',
+      'I thought someone came into the bedroom, but it was just a dream.',
+      '‘Goodnight. Sweet dreams.’',
+      'Don\'t think about it. You\'ll only give yourself bad dreams.',
+      'dream about somebody/something a vivid dream about my old school.',
+      'dream about doing something a recurrent dream about being late for an exam',
+      'dream that… I had a dream that we were getting married at the airport.',
+      'in a/somebody\'s dream His dead mother appeared to him in a dream.',
+    ]
+  },
+  {
+    id: 'a2-268',
+    word: 'dream',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/driːm/', uk: '/driːm/' },
+    examples: [
+      'Did I talk in my sleep? I must have been dreaming.',
+      'dream about somebody/something I dreamed about you last night.',
+      'dream of somebody/something I keep dreaming of my old school.',
+      'dream something Did it really happen or did I just dream it?',
+      'dream (that)… I dreamt (that) I got the job.',
+    ]
+  },
+  {
+    id: 'a2-269',
+    word: 'drive',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/draɪv/', uk: '/draɪv/' },
+    examples: [
+      'Let\'s go for a drive.',
+      'a drive through the mountains',
+      'It\'s a three-hour drive to London.',
+    ]
+  },
+  {
+    id: 'a2-270',
+    word: 'driving',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdraɪvɪŋ/', uk: '/ˈdraɪvɪŋ/' },
+    examples: [
+      'She was convicted of dangerous driving.',
+      'careless/reckless driving',
+      'a driving lesson/instructor',
+    ]
+  },
+  {
+    id: 'a2-271',
+    word: 'drop',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/drɑːp/', uk: '/drɒp/' },
+    examples: [
+      'drop something Be careful not to drop that plate.',
+      'drop something + adv./prep. I accidentally dropped my glasses into the water.',
+      'drop to something The climber slipped and dropped to his death.',
+      'His arms dropped limply to his sides.',
+      'drop + adj. Her mouth dropped open in disbelief.',
+    ]
+  },
+  {
+    id: 'a2-272',
+    word: 'drug',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/drʌɡ/', uk: '/drʌɡ/' },
+    examples: [
+      'He does not smoke or take drugs.',
+      'to use/abuse drugs',
+      '(informal) I don\'t do drugs (= use them).',
+      'to smuggle/supply/sell drugs',
+      'He was charged with possessing drugs.',
+      'illegal/illicit drugs',
+      'on drugs She looked like she was on drugs (= had taken drugs).',
+      'I found out he was on drugs (= took them regularly).',
+      'a drug dealer/trafficker/smuggler',
+      'drug use/abuse',
+      'She was a drug addict.',
+      'The actor struggled with drug addiction.',
+    ]
+  },
+  {
+    id: 'a2-273',
+    word: 'dry',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/draɪ/', uk: '/draɪ/' },
+    examples: [
+      'Is my shirt dry yet?',
+      'Store onions in a cool dry place.',
+      'I\'m afraid this cake has turned out very dry.',
+      'Some plants grow better in dry soil.',
+      'When the paint is completely dry, apply another coat.',
+      'We managed to stay dry by huddling in a doorway.',
+      'Her mouth felt as dry as a bone (= completely dry).',
+      'It was high summer and the rivers were dry (= had no water in them).',
+    ]
+  },
+  {
+    id: 'a2-274',
+    word: 'dry',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/draɪ/', uk: '/draɪ/' },
+    examples: [
+      'He did the laundry and hung it out to dry.',
+      'Be careful. The paint hasn\'t dried yet.',
+      'You wash the dishes and I\'ll dry.',
+      'dry something Use this towel to dry your hands.',
+      'to dry your hair',
+      'First, wash and dry the vegetables.',
+      'to dry your eyes/tears (= stop crying)',
+    ]
+  },
+  {
+    id: 'a2-275',
+    word: 'earn',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɜːrn/', uk: '/ɜːn/' },
+    examples: [
+      'earn (something) He earns about $40 000 a year.',
+      'to earn an income/a wage/a salary',
+      'She earned a living as a part-time secretary.',
+      'She must earn a fortune (= earn a lot of money).',
+      'All the children are earning now.',
+      'earn somebody something His victory in the tournament earned him $50 000.',
+      'earn something from something He earned enough from his work for food.',
+    ]
+  },
+  {
+    id: 'a2-276',
+    word: 'earth',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɜːrθ/', uk: '/ɜːθ/' },
+    examples: [
+      'the planet Earth',
+      'The earth revolves around the sun.',
+      'a satellite orbiting the earth',
+      'the earth\'s surface/crust',
+      'on earth the history of life on earth',
+      'I must be the happiest person on earth!',
+    ]
+  },
+  {
+    id: 'a2-277',
+    word: 'easily',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈiːzəli/', uk: '/ˈiːzəli/' },
+    examples: [
+      'The museum is easily accessible by car.',
+      'The software is easily available.',
+      'easily identifiable/recognizable/visible',
+      'I can easily finish it tonight.',
+      'The major problems of the city can be easily identified.',
+      'Learning languages doesn\'t come easily to him.',
+      'We won easily by six goals to two.',
+    ]
+  },
+  {
+    id: 'a2-278',
+    word: 'education',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌedʒuˈkeɪʃn/', uk: '/ˌedʒuˈkeɪʃn/' },
+    examples: [
+      'primary/elementary education',
+      'post-secondary education',
+      'a college/university education',
+      'She completed her formal education in 2019.',
+      'Students from lower income families are less likely to continue their education.',
+      'to further/pursue your education',
+      'to get/receive an education',
+      'The school provides an excellent all-round education.',
+      'music/arts education',
+      'in education students in full-time education',
+      'a man of little education',
+      'the British education system',
+      'a bilingual education program',
+      'The press made education reform a topic of heated debate.',
+    ]
+  },
+  {
+    id: 'a2-279',
+    word: 'effect',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪˈfekt/', uk: '/ɪˈfekt/' },
+    examples: [
+      'the beneficial effects of exercise',
+      'What are the long-term effects of this treatment?',
+      'The results show a statistically significant effect.',
+      'effect on somebody/something Her tears had no effect on him.',
+      'the effect of heat on metal',
+      'Modern farming methods can have an adverse effect on the environment.',
+      'Farms can have both positive and negative effects on the community.',
+      'Despite her ordeal, she seems to have suffered no ill effects.',
+      'effect upon somebody/something The study examines architecture and its effect upon people\'s lives.',
+      'to examine/study/investigate the effect of something',
+      'to evaluate/assess the effect of something',
+      'to cause harmful health effects',
+      'I can certainly feel the effects of too many late nights.',
+      'effect of doing something Her criticisms had the effect of discouraging him completely.',
+      'to learn to distinguish between cause and effect',
+      'I tried to persuade him, but with little or no effect.',
+      '‘I\'m feeling really depressed.’ ‘The winter here has that effect sometimes.’',
+    ]
+  },
+  {
+    id: 'a2-280',
+    word: 'either',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈaɪðər/', uk: '/ˈiːðə(r)/' },
+    examples: [
+      'Pete can\'t go and I can\'t either.',
+      '(especially North American English, informal) ‘I don\'t like it.’ ‘Me either.’ (= Neither do I).',
+    ]
+  },
+  {
+    id: 'a2-281',
+    word: 'either',
+    type: 'determiner',
+    level: 'A2',
+    phonetics: { us: '/ˈaɪðər/', uk: '/ˈiːðə(r)/' },
+    examples: [
+      'You can park on either side of the street.',
+      'You can keep one of the photos. Either of them—whichever you like.',
+      'There are two types of qualification—either is acceptable.',
+    ]
+  },
+  {
+    id: 'a2-282',
+    word: 'either',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/ˈaɪðər/', uk: '/ˈiːðə(r)/' },
+    examples: [
+      'You can park on either side of the street.',
+      'You can keep one of the photos. Either of them—whichever you like.',
+      'There are two types of qualification—either is acceptable.',
+    ]
+  },
+  {
+    id: 'a2-283',
+    word: 'electric',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪˈlektrɪk/', uk: '/ɪˈlektrɪk/' },
+    examples: [
+      'an electric car/vehicle',
+      'an electric guitar',
+      'an electric light/motor',
+      'an electric current/charge',
+      'The wind turbine supplies the farm with electric power.',
+      'Electrically charged particles have electric fields around them as a result of their charge.',
+      'an electric generator',
+      'an electric plug/socket/switch (= that carries electricity)',
+    ]
+  },
+  {
+    id: 'a2-284',
+    word: 'electrical',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪˈlektrɪkl/', uk: '/ɪˈlektrɪkl/' },
+    examples: [
+      'an electrical fault in the engine',
+      'electrical equipment/appliances',
+      'electrical power/energy',
+    ]
+  },
+  {
+    id: 'a2-285',
+    word: 'electricity',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪˌlekˈtrɪsəti/', uk: '/ɪˌlekˈtrɪsəti/' },
+    examples: [
+      'materials that conduct electricity',
+      'to produce/supply electricity',
+      'The wind farm will generate enough electricity for some 30 000 homes.',
+      'electricity from renewable sources',
+      'They are looking to develop more efficient ways of converting the energy from sunlight into electricity.',
+      'No progress was made towards harnessing electricity as an energy source.',
+      'electricity supply/generation',
+      'an electricity bill',
+      'a waste of electricity',
+      'The electricity is off (= there is no electric power supply).',
+    ]
+  },
+  {
+    id: 'a2-286',
+    word: 'electronic',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪˌlekˈtrɑːnɪk/', uk: '/ɪˌlekˈtrɒnɪk/' },
+    examples: [
+      'Airline passengers no longer have to turn off all electronic devices while on the plane.',
+      'If my kids want fancy electronic gadgets, they have to earn the money for them.',
+      'Sophisticated electronic calculators could give some students an unfair advantage.',
+      'electrical and electronic equipment',
+      'electronic voting machines',
+    ]
+  },
+  {
+    id: 'a2-287',
+    word: 'employ',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪmˈplɔɪ/', uk: '/ɪmˈplɔɪ/' },
+    examples: [
+      'employ somebody How many people does the company employ?',
+      'His company currently employs 135 workers in total.',
+      'We employ 16 full-time staff.',
+      'employ somebody as something For the past three years he has been employed as a firefighter.',
+      'employ somebody in something Twenty eight per cent of the workforce is employed in agriculture.',
+      'employ somebody on something From 1510 he was employed on projects for the emperor.',
+      'employ somebody to do something A number of people have been employed to deal with the backlog of work.',
+    ]
+  },
+  {
+    id: 'a2-288',
+    word: 'employee',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪmˈplɔɪiː/', uk: '/ɪmˈplɔɪiː/' },
+    examples: [
+      'The firm has over 500 employees.',
+      'They have eight full-time and two part-time employees.',
+      'government/state/federal employees',
+      'He is in charge of hiring and firing employees.',
+      'employees who work more than 20 hours per week',
+      'employee rights/relations',
+      'employee turnover/productivity',
+      'In addition to a competitive salary, the company offers attractive employee benefits.',
+      'A partnership can also improve employee morale.',
+    ]
+  },
+  {
+    id: 'a2-289',
+    word: 'employer',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪmˈplɔɪər/', uk: '/ɪmˈplɔɪə(r)/' },
+    examples: [
+      'They\'re very good employers (= they treat the people that work for them well).',
+      'They\'re one of the largest employers in the area.',
+      'These skills are highly regarded by potential employers.',
+      'A prospective employer will want to see your portfolio.',
+      'They had sought references from his former employer before hiring him.',
+      'The law requires employers to offer a safe work environment.',
+    ]
+  },
+  {
+    id: 'a2-290',
+    word: 'empty',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈempti/', uk: '/ˈempti/' },
+    examples: [
+      'an empty box/glass/bottle',
+      'empty hands (= not holding anything)',
+      'an empty plate (= with no food on it)',
+      'I noticed an empty space on the bookshelf.',
+      'I couldn\'t see any empty seats (= with nobody sitting in them).',
+      'The theatre was half empty.',
+      'an empty house/room/bus',
+      'As it got later, the streets became empty.',
+      'The house had been standing empty (= without people living in it) for some time.',
+      'It\'s not good to drink alcohol on an empty stomach (= without having eaten something).',
+      'empty of something (formal) The room was empty of furniture.',
+    ]
+  },
+  {
+    id: 'a2-291',
+    word: 'ending',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈendɪŋ/', uk: '/ˈendɪŋ/' },
+    examples: [
+      'His stories usually have a happy ending.',
+      'Friends don\'t spoil the endings of films for their friends.',
+      'ending to something It\'s a beautiful ending to the scene.',
+    ]
+  },
+  {
+    id: 'a2-292',
+    word: 'energy',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈenərdʒi/', uk: '/ˈenədʒi/' },
+    examples: [
+      'It\'s a waste of time and energy.',
+      'She\'s always full of energy.',
+      'I don\'t seem to have any energy these days.',
+      'nervous energy (= energy produced by feeling nervous)',
+      'For five years, she devoted considerable energy to photography.',
+      'He expends great energy trying to help them.',
+    ]
+  },
+  {
+    id: 'a2-293',
+    word: 'engine',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈendʒɪn/', uk: '/ˈendʒɪn/' },
+    examples: [
+      'a diesel/petrol engine',
+      'I got in the car and started the engine.',
+      'My car had to have a new engine.',
+      'The engine runs on diesel.',
+      'Its engine is powered by both gasoline and electricity.',
+      'The plane suffered catastrophic engine failure.',
+      'Their helicopter had developed engine trouble.',
+    ]
+  },
+  {
+    id: 'a2-294',
+    word: 'engineer',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌendʒɪˈnɪr/', uk: '/ˌendʒɪˈnɪə(r)/' },
+    examples: [
+      'We worked with a team of scientists and engineers.',
+      'You need the advice of a qualified engineer.',
+      'engineers who designed and built advanced military aircraft',
+    ]
+  },
+  {
+    id: 'a2-295',
+    word: 'enormous',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪˈnɔːrməs/', uk: '/ɪˈnɔːməs/' },
+    examples: [
+      'an enormous house/dog',
+      'an enormous amount of time',
+      'Current processors can perform an enormous number of operations per second.',
+      'Universities are under enormous pressure financially.',
+      'young dancers who show enormous potential',
+      'Their house is absolutely enormous!',
+    ]
+  },
+  {
+    id: 'a2-296',
+    word: 'enter',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ˈentər/', uk: '/ˈentə(r)/' },
+    examples: [
+      'Knock before you enter.',
+      'Enter Hamlet (= for example as stage directions in the text of a play).',
+      'enter something Someone entered the room behind me.',
+      'people who enter the country illegally',
+      'Where did the bullet enter the body?',
+      '(figurative) A note of defiance entered her voice.',
+      '(figurative) It never entered my head (= I never thought) that she would tell him about me.',
+    ]
+  },
+  {
+    id: 'a2-297',
+    word: 'environment',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈvaɪrənmənt/', uk: '/ɪnˈvaɪrənmənt/' },
+    examples: [
+      'The government should do more to protect the environment.',
+      'to preserve/pollute/harm the environment',
+      'damage to the natural environment',
+      'protection/destruction of the marine environment',
+      'The environment minister expressed concern over pollution levels.',
+    ]
+  },
+  {
+    id: 'a2-298',
+    word: 'equipment',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪˈkwɪpmənt/', uk: '/ɪˈkwɪpmənt/' },
+    examples: [
+      'a useful piece of equipment for the kitchen',
+      'Take care when using old electrical equipment.',
+      'electronic/communications/computer equipment',
+      'military equipment and supplies',
+      'office equipment',
+      'They have installed state-of-the-art medical equipment to help improve early diagnosis of the condition.',
+      'Everyone should bring the necessary equipment for camping in the mountains.',
+    ]
+  },
+  {
+    id: 'a2-299',
+    word: 'error',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈerər/', uk: '/ˈerə(r)/' },
+    examples: [
+      'spelling/typographical/grammatical errors',
+      'The report contains some factual errors that must be corrected.',
+      'They committed the fatal error of misjudging the weather conditions.',
+      'error in something There are too many errors in your work.',
+      'error in doing something I think you have made an error in calculating the total.',
+      'error of something A simple error of judgement meant that there was not enough food to go around.',
+      'an error of fact/principle',
+      'a serious/grave error',
+      'a glaring error (= a mistake that is very obvious)',
+      'in error The computer system was switched off in error (= by mistake.)',
+      'There is no room for error in this job.',
+      'I get an error message whenever I try to log on.',
+      'His attempts to arrange a party ended up as a comedy of errors (= he made so many mistakes it was funny).',
+    ]
+  },
+  {
+    id: 'a2-300',
+    word: 'especially',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ɪˈspeʃəli/', uk: '/ɪˈspeʃəli/' },
+    examples: [
+      'Teenagers are very fashion conscious, especially girls.',
+      'especially + adv./prep. I love Rome, especially in the spring.',
+      'especially if… The car is quite small, especially if you have children.',
+    ]
+  },
+  {
+    id: 'a2-301',
+    word: 'essay',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈeseɪ/', uk: '/ˈeseɪ/' },
+    examples: [
+      'I have to write an essay this weekend.',
+      'essay on something an essay on the causes of the First World War',
+      'essay about somebody/something Have you done your essay about Napoleon yet?',
+      'in an essay He made some very good points in his essay.',
+    ]
+  },
+  {
+    id: 'a2-302',
+    word: 'everyday',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈevrideɪ/', uk: '/ˈevrideɪ/' },
+    examples: [
+      'Change is a part of everyday life in business.',
+      'plates and dishes for everyday use',
+      'Using everyday objects, basic scientific principles can be explained to young children.',
+      'Violent crime is part of the everyday experience of the people in these neighbourhoods.',
+    ]
+  },
+  {
+    id: 'a2-303',
+    word: 'everywhere',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈevriwer/', uk: '/ˈevriweə(r)/' },
+    examples: [
+      'I\'ve looked everywhere.',
+      'He follows me everywhere.',
+      'We\'ll have to eat here—everywhere else is full.',
+      'Everywhere we went was full of tourists.',
+    ]
+  },
+  {
+    id: 'a2-304',
+    word: 'evidence',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈevɪdəns/', uk: '/ˈevɪdəns/' },
+    examples: [
+      'evidence (of something) Researchers have found clear scientific evidence of a link between exposure to sun and skin cancer.',
+      'evidence for something There is a growing body of evidence for the existence of black holes that are ten times as massive as the Sun.',
+      'evidence that… There is not a shred of evidence that the meeting actually took place.',
+      'evidence to suggest, support, show, etc. Have you any evidence to support this allegation?',
+      'The study provides empirical evidence (= based on experiments or experience) to prove that the drug has no long-term side effects.',
+      'Anecdotal evidence (= based on personal accounts) suggests that drivers over the age of 70 find it difficult to get insurance.',
+      'on the evidence of something On the evidence of their recent matches, it is unlikely the Spanish team will win.',
+      'In the absence of evidence to the contrary, it should be assumed that proper procedures were followed.',
+    ]
+  },
+  {
+    id: 'a2-305',
+    word: 'exact',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪɡˈzækt/', uk: '/ɪɡˈzækt/' },
+    examples: [
+      'The new palace is an exact replica of the original building.',
+      'It is an exact copy of the original document.',
+      'The model is exact in every detail.',
+      'For now they are keeping the exact date and location of the wedding a secret.',
+      'The exact nature of her illness (= precisely what her illness is) has not been made public.',
+      'Her second husband was the exact opposite of her first (= completely different).',
+      'The colours were an almost exact match.',
+      'She\'s in her mid-thirties—thirty-six to be exact.',
+      '(informal) I had the exact same problem as you when I first started.',
+      'What were his exact words?',
+      'A clear definition requires very exact wording.',
+      'Nobody knows the exact number of people affected, but it is over 10 000.',
+      'He started to phone me at the exact moment I started to phone him (= at the same time).',
+    ]
+  },
+  {
+    id: 'a2-306',
+    word: 'exactly',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ɪɡˈzæktli/', uk: '/ɪɡˈzæktli/' },
+    examples: [
+      'It\'s exactly nine o\'clock.',
+      'It happened almost exactly a year ago.',
+      'Your answer is exactly right.',
+      'It was a warm day, if not exactly hot.',
+      'exactly how, what, why, etc… I know exactly how she felt.',
+      'It\'s impossible to say exactly what happened.',
+      'exactly as… Do exactly as I tell you.',
+      'You haven\'t changed at all—you still look exactly the same.',
+      'His words had exactly the opposite effect.',
+    ]
+  },
+  {
+    id: 'a2-307',
+    word: 'excellent',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈeksələnt/', uk: '/ˈeksələnt/' },
+    examples: [
+      'an excellent book/article',
+      'excellent results/work',
+      'The meal looked and tasted excellent.',
+      'Both the food and the service were truly excellent.',
+      'The performances of the cast are uniformly excellent throughout.',
+      'She has done an excellent job of adapting the novel for the screen.',
+      'It is an excellent example of how a farm can work in harmony with nature.',
+      'The party provided an excellent opportunity to meet new people.',
+      'The apartment is in excellent condition and is ready to move into.',
+      'excellent at something He was great at sport and excellent at art.',
+      'excellent at doing something Our staff are excellent at advising small businesses.',
+      'excellent for something The experience was excellent for students\' self-confidence.',
+      'excellent for doing something Ferns are excellent for planting in shady parts of the garden.',
+    ]
+  },
+  {
+    id: 'a2-308',
+    word: 'except',
+    type: 'preposition',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈsept/', uk: '/ɪkˈsept/' },
+    examples: [
+      'We work every day except Sunday.',
+      'They all came except Matt.',
+      'I had nothing on except for my socks.',
+    ]
+  },
+  {
+    id: 'a2-309',
+    word: 'exist',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪɡˈzɪst/', uk: '/ɪɡˈzɪst/' },
+    examples: [
+      'Does life exist on other planets?',
+      'Few of these monkeys still exist in the wild.',
+      'Major differences continue to exist between the two countries.',
+      'A solution has been found and the problem no longer exists.',
+      'On his retirement the post will cease to exist.',
+      'Adequate facilities already exist to serve the needs of people visiting the town.',
+      'It is an art gallery that exists only on the internet.',
+      'Evidence of their relationship exists in the form of a series of letters.',
+      'I didn\'t think people like that existed any more.',
+      'exist to do something The charity exists to support victims of crime.',
+    ]
+  },
+  {
+    id: 'a2-310',
+    word: 'expect',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈspekt/', uk: '/ɪkˈspekt/' },
+    examples: [
+      'expect something The company is expecting record sales this year.',
+      'Change often happens when you least expect it.',
+      'expect something from somebody/something Don\'t expect sympathy from me!',
+      'expect something of somebody/something That\'s not the sort of behaviour I expect of you!',
+      'expect to do something They never expected to find their dream home.',
+      'I looked back, half expecting to see someone following me.',
+      'expect somebody/something to do something Analysts expect the company to announce growth of at least 5 per cent.',
+      'I fully expected her to refuse my offer.',
+      'House prices are expected to rise sharply.',
+      'Do you really expect me to believe you?',
+      'expect (that)… Many people were expecting (that) the peace talks would break down.',
+      'it is expected that… It is widely expected that interest rates will rise.',
+    ]
+  },
+  {
+    id: 'a2-311',
+    word: 'experience',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈspɪriəns/', uk: '/ɪkˈspɪəriəns/' },
+    examples: [
+      'My lack of practical experience was a disadvantage.',
+      'experience of something Do you have any previous experience of this type of work?',
+      'This new approach draws on years of experience of teaching children to read.',
+      'experience in doing something a doctor with experience in dealing with patients suffering from stress',
+      'experience in something He gained extensive experience in the field of artificial intelligence whilst working on the project.',
+      'experience as something I have over ten years’ experience as a teacher.',
+      'experience with something The course provides hands-on experience with various systems.',
+      'She didn\'t get paid much but it was all good experience.',
+      'We all learn by experience.',
+      'The new player will bring a wealth of experience to the team.',
+    ]
+  },
+  {
+    id: 'a2-312',
+    word: 'experiment',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈsperɪmənt/', uk: '/ɪkˈsperɪmənt/' },
+    examples: [
+      'to do/perform/conduct an experiment',
+      'laboratory experiments',
+      'The results of the experiment were inconclusive.',
+      'in an experiment The 30 subjects in each experiment were divided into two groups.',
+      'during an experiment The temperature was kept constant during the experiment.',
+      'experiment on somebody/something Many people do not like the idea of experiments on animals.',
+      'experiment with somebody/something The experiment with cells from other species was unsuccessful.',
+      'by experiment Facts can be established by observation and experiment.',
+    ]
+  },
+  {
+    id: 'a2-313',
+    word: 'expert',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈekspɜːrt/', uk: '/ˈekspɜːt/' },
+    examples: [
+      'to seek expert advice',
+      'Only a fully qualified doctor can give an expert opinion.',
+      'an expert witness',
+      'His expert evidence played a key role in the trial.',
+      'expert at/in/on something They are expert in these matters.',
+      'He has become expert on European politics.',
+      'expert at/in/on doing something She\'s expert at making cheap but stylish clothes.',
+    ]
+  },
+  {
+    id: 'a2-314',
+    word: 'expert',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈekspɜːrt/', uk: '/ˈekspɜːt/' },
+    examples: [
+      'a legal/security/medical/computer expert',
+      'Police consulted their own team of forensic experts.',
+      'according to an expert According to our panel of leading industry experts, a downturn is inevitable.',
+      'Experts believe/predict/say…',
+      'expert in something Experts in the field of child psychology warn of the dangers of social media.',
+      'expert on something I don\'t pretend to be an expert on the subject .',
+      'expert at something Nobody can be an expert at everything.',
+      'expert in doing something You will need to become an expert in analysing data.',
+      'expert on doing something an expert on managing change in the workplace',
+      'expert at doing something He\'s an expert at getting his own way.',
+      'Don\'t ask me—I\'m no expert!',
+    ]
+  },
+  {
+    id: 'a2-315',
+    word: 'explanation',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌekspləˈneɪʃn/', uk: '/ˌekspləˈneɪʃn/' },
+    examples: [
+      'The most likely explanation is that his plane was delayed.',
+      'It\'s the only explanation that makes any sense.',
+      'a plausible/an alternative explanation',
+      'to offer/provide an explanation',
+      'explanation for something I can\'t think of any possible explanation for his absence.',
+      'I\'m sure there\'s a perfectly simple explanation for this.',
+      'explanation for doing something She didn\'t give an adequate explanation for being late.',
+      'explanation of something The book opens with an explanation of why some drugs are banned.',
+      'explanation as to why… an explanation as to why he had left early',
+      'without explanation She left the room abruptly without explanation.',
+      '‘I had to see you,’ he said, by way of explanation.',
+    ]
+  },
+  {
+    id: 'a2-316',
+    word: 'express',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈspres/', uk: '/ɪkˈspres/' },
+    examples: [
+      'express something Teachers have expressed concern about the changes.',
+      'to express a view/an opinion',
+      'to express a hope/desire',
+      'to express fears/doubts',
+      'Customers expressed interest in trying the product.',
+      'express something to somebody I\'d like to express my gratitude to everyone who helped us.',
+      'express how, what, etc… Words cannot express how pleased I am.',
+    ]
+  },
+  {
+    id: 'a2-317',
+    word: 'expression',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈspreʃn/', uk: '/ɪkˈspreʃn/' },
+    examples: [
+      'What\'s the meaning of the expression ‘on cloud nine’?',
+      'She uses a lot of slang expressions that I\'ve never heard before.',
+      'Keep a list of useful words and expressions.',
+      '(informal) He\'s a pain in the butt, if you\'ll pardon the expression.',
+    ]
+  },
+  {
+    id: 'a2-318',
+    word: 'extreme',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈstriːm/', uk: '/ɪkˈstriːm/' },
+    examples: [
+      'We are working under extreme pressure at the moment.',
+      'people living in extreme poverty',
+      'extreme heat/cold/temperatures',
+      'The heat in the desert was extreme.',
+    ]
+  },
+  {
+    id: 'a2-319',
+    word: 'extremely',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ɪkˈstriːmli/', uk: '/ɪkˈstriːmli/' },
+    examples: [
+      'It is extremely important to follow the directions exactly.',
+      'extremely useful/valuable',
+      'extremely dangerous/serious/complex',
+      'extremely popular/successful',
+      'She found it extremely difficult to get a job.',
+      'It\'s still an extremely rare occurrence.',
+      'The risks involved are extremely high.',
+      'extremely low temperatures',
+      'I would be extremely grateful if you could have a word with her.',
+      'Their new tablet is selling extremely well.',
+      'He works extremely hard.',
+    ]
+  },
+  {
+    id: 'a2-320',
+    word: 'factor',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfæktər/', uk: '/ˈfæktə(r)/' },
+    examples: [
+      'Obesity is a major risk factor for heart disease.',
+      'the key/crucial/deciding factor',
+      'Criminality is associated with a range of individual, family and environmental factors.',
+      'The result will depend on a number of different factors.',
+      'factor in something The closure of the mine was the single most important factor in the town\'s decline.',
+      'We have identified a few key factors in the project\'s success.',
+    ]
+  },
+  {
+    id: 'a2-321',
+    word: 'factory',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfæktəri/', uk: '/ˈfæktəri/' },
+    examples: [
+      'a car factory',
+      'The factory closed down ten years ago.',
+      'in/at a factory She works in the local textile factory.',
+      'factory workers',
+    ]
+  },
+  {
+    id: 'a2-322',
+    word: 'fail',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/feɪl/', uk: '/feɪl/' },
+    examples: [
+      'Many diets fail because they are boring.',
+      'Ultimately all their efforts failed.',
+      'a policy/plan fails',
+      'fail in something I failed in my attempt to persuade her.',
+      'He failed in his bid for the presidency.',
+      'fail to do something The department failed to meet its sales targets.',
+      'They promised a lot, but utterly failed to deliver.',
+      'The song can\'t fail to be a hit (= definitely will be a hit).',
+    ]
+  },
+  {
+    id: 'a2-323',
+    word: 'fair',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/fer/', uk: '/feə(r)/' },
+    examples: [
+      'a fair deal/wage/price',
+      'The punishment was very fair.',
+      'In the end, a draw was a fair result.',
+      'I give you fair warning, I’m not always this generous.',
+      'fair to somebody We wanted to resolve this matter in a way that would be fair to her.',
+      'fair to somebody to do something Was it really fair to him to ask him to do all the work?',
+      'fair on somebody Moving to a new city wouldn\'t have been fair on the kids.',
+      'fair on somebody to do something It\'s not fair on the students to keep changing the timetable.',
+      'it is fair to do something It\'s only fair to add that they were not told about the problem until the last minute.',
+      'I think it is fair to say that they are pleased with this latest offer.',
+      'it is fair that… It\'s fair that they should give us something in return.',
+      'To be fair, she behaved better than we expected.',
+      '(especially British English) ‘You should really have asked me first.’ ‘Right, okay, fair comment.’',
+    ]
+  },
+  {
+    id: 'a2-324',
+    word: 'fall',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fɔːl/', uk: '/fɔːl/' },
+    examples: [
+      'I had a bad fall and broke my arm.',
+      'fall from something She was killed in a fall from a horse.',
+    ]
+  },
+  {
+    id: 'a2-325',
+    word: 'fan',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fæn/', uk: '/fæn/' },
+    examples: [
+      'sports/music fans',
+      'Movie fans will be familiar with his work already.',
+      'Crowds of football fans filled the streets.',
+      'I like his films, but I wouldn\'t say I\'m a diehard fan (= one who strongly admires somebody/something in all circumstances).',
+      'fan of somebody/something I\'m a big fan of her books.',
+      'I\'m a huge fan of Rihanna.',
+      'I\'m not a great fan of bushy beards (= I don\'t like them).',
+    ]
+  },
+  {
+    id: 'a2-326',
+    word: 'farm',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/fɑːrm/', uk: '/fɑːm/' },
+    examples: [
+      'The family has farmed in Kent for over two hundred years.',
+      'farm something They farm dairy cattle.',
+      'He farmed 200 acres of prime arable land.',
+      'They only buy organically farmed produce.',
+    ]
+  },
+  {
+    id: 'a2-327',
+    word: 'farming',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɑːrmɪŋ/', uk: '/ˈfɑːmɪŋ/' },
+    examples: [
+      'to take up farming',
+      'organic farming',
+      'sheep/fish/salmon farming',
+      'modern farming methods',
+      'a farming community',
+      'the British farming industry',
+    ]
+  },
+  {
+    id: 'a2-328',
+    word: 'fashion',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfæʃn/', uk: '/ˈfæʃn/' },
+    examples: [
+      'the latest fashion trends',
+      'the new season’s fashions',
+      'in fashion Jeans are always in fashion.',
+      'Long skirts have come into fashion again.',
+      'Some styles never go out of fashion.',
+    ]
+  },
+  {
+    id: 'a2-329',
+    word: 'fat',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fæt/', uk: '/fæt/' },
+    examples: [
+      'excess body fat',
+      'This ham has too much fat on it.',
+      'Exercise helps you burn off excess fat.',
+    ]
+  },
+  {
+    id: 'a2-330',
+    word: 'fear',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fɪr/', uk: '/fɪə(r)/' },
+    examples: [
+      'Her eyes showed no fear.',
+      'The child was shaking with fear.',
+      'I suddenly felt gripped by fear.',
+      'We were living in a perpetual state of fear and anxiety.',
+      'The attacks created a climate of fear.',
+      'Terror attacks are a tool to instil fear in the public.',
+      'He managed to overcome his fears.',
+      'fear of somebody/something Fear of crime can affect people\'s lives.',
+      'in fear of somebody/something We lived in constant fear of losing our jobs.',
+      'without fear of somebody/something Women should be able to work without fear of harassment.',
+    ]
+  },
+  {
+    id: 'a2-331',
+    word: 'feature',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfiːtʃər/', uk: '/ˈfiːtʃə(r)/' },
+    examples: [
+      'An interesting feature of the city is the old market.',
+      'geographical features',
+      'Teamwork is a key feature of the training programme.',
+      'I\'ve added some new features to my website.',
+      'new safety/security features',
+      'There are a number of special features included on the disc.',
+      'The main bonus feature on the DVD is a lengthy interview with the director.',
+      'The most distinctive feature of this track is the trumpet sound.',
+      'The one redeeming feature (= good thing about it) of the plan was its low cost.',
+    ]
+  },
+  {
+    id: 'a2-332',
+    word: 'feed',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/fiːd/', uk: '/fiːd/' },
+    examples: [
+      'feed somebody/something/yourself Have you fed the cat yet?',
+      'The baby can\'t feed itself yet (= can\'t put food into its own mouth).',
+      'feed somebody/something sth It\'s important to feed children a well-balanced diet.',
+      'He has to be fed liquids through a tube in his stomach.',
+      'feed somebody/something (on) something The cattle are fed (on) barley.',
+      'feed something to somebody/something The barley is fed to the cattle.',
+      'feed somebody/something with something The animals are fed with hay and grass.',
+    ]
+  },
+  {
+    id: 'a2-333',
+    word: 'female',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈfiːmeɪl/', uk: '/ˈfiːmeɪl/' },
+    examples: [
+      'a female student/employee/artist/athlete',
+      'She has written brilliant roles for strong female characters.',
+      'a predominantly female audience',
+      'Two of the candidates must be female.',
+    ]
+  },
+  {
+    id: 'a2-334',
+    word: 'female',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfiːmeɪl/', uk: '/ˈfiːmeɪl/' },
+    examples: [
+      'One adult female can lay 400 to 500 eggs.',
+      'Females may mate with a number of males.',
+    ]
+  },
+  {
+    id: 'a2-335',
+    word: 'fiction',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɪkʃn/', uk: '/ˈfɪkʃn/' },
+    examples: [
+      'a work of popular fiction',
+      'historical/romantic/crime fiction',
+      'to write/read fiction',
+      'a crime fiction writer',
+    ]
+  },
+  {
+    id: 'a2-336',
+    word: 'field',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fiːld/', uk: '/fiːld/' },
+    examples: [
+      'We had to walk across a ploughed field.',
+      'in a field We camped in a field near the village.',
+      'People were working in the fields.',
+      'field of something We saw golden fields of wheat.',
+      'He planted a field of beans.',
+      'a rice/wheat field',
+      'The house overlooks the sugar cane fields.',
+    ]
+  },
+  {
+    id: 'a2-337',
+    word: 'fight',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/faɪt/', uk: '/faɪt/' },
+    examples: [
+      'a street/gang fight',
+      'fight with somebody/something He got into a fight with a man in the bar.',
+      '(figurative) I had a fight with the ticket machine, which was being temperamental.',
+      'fight between A and B A fight broke out between rival groups of fans.',
+    ]
+  },
+  {
+    id: 'a2-338',
+    word: 'fight',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/faɪt/', uk: '/faɪt/' },
+    examples: [
+      'soldiers trained to fight',
+      'He fought in Vietnam.',
+      'fight against somebody My grandfather fought against the Fascists in Spain.',
+      'fight somebody/something to fight a war/battle',
+      'They gathered soldiers to fight the invading army.',
+      'fight for something They fought for control of the island.',
+      'fight somebody/something for something Didn\'t we fight a war for freedom?',
+      'fight over something They were fighting over disputed land.',
+      'fight somebody/something over something Future wars will be fought over water supplies.',
+    ]
+  },
+  {
+    id: 'a2-339',
+    word: 'figure',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɪɡjər/', uk: '/ˈfɪɡə(r)/' },
+    examples: [
+      'the latest sales/crime/unemployment figures',
+      'Official figures indicate that crime is falling.',
+      'Figures for April show a slight improvement on previous months.',
+      'By 2017, this figure had risen to 14 million.',
+      'Viewing figures for the series have dropped dramatically.',
+      'Figures released by the hospital reveal a rise in the number of admissions.',
+      'Experts put the real figure at closer to 75%.',
+      'according to… figures According to government figures, 3.6 million children are living in poverty.',
+      'Her argument is backed up with plenty of facts and figures.',
+    ]
+  },
+  {
+    id: 'a2-340',
+    word: 'film',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/fɪlm/', uk: '/fɪlm/' },
+    examples: [
+      'They are filming in Moscow right now.',
+      'film something/somebody The show was filmed on location in New York.',
+      'It took them six weeks to film the documentary.',
+      'That day, we filmed the scene in the church.',
+      'film somebody/something doing something A young boy was filmed by the security camera stealing a pair of jeans.',
+    ]
+  },
+  {
+    id: 'a2-341',
+    word: 'final',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfaɪnl/', uk: '/ˈfaɪnl/' },
+    examples: [
+      'She reached the final of the 100m hurdles.',
+      'The players met in last year\'s final.',
+      'The winner of each contest goes through to the grand final.',
+      'The victory secured them a place in the final.',
+      'final against somebody a nail-biting final against last year\'s victor',
+    ]
+  },
+  {
+    id: 'a2-342',
+    word: 'finally',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈfaɪnəli/', uk: '/ˈfaɪnəli/' },
+    examples: [
+      'The performance finally started half an hour late.',
+      'The law was finally passed in May 2019.',
+      'I finally managed to get her attention.',
+      'Are you finally going to tell me why I’m here?',
+      'When they finally arrived it was well past midnight.',
+      'Two years of hard work and waiting were finally over.',
+      'Here, finally, we come to the heart of the problem.',
+      'Finally ready, they all set off.',
+    ]
+  },
+  {
+    id: 'a2-343',
+    word: 'finger',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɪŋɡər/', uk: '/ˈfɪŋɡə(r)/' },
+    examples: [
+      'She ran her fingers through her hair.',
+      'Hold the material between finger and thumb.',
+      'He was about to speak but she raised a finger to her lips.',
+      'The old man wagged his finger at the youths.',
+      'Tina curled her slender fingers into a fist.',
+    ]
+  },
+  {
+    id: 'a2-344',
+    word: 'finish',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɪnɪʃ/', uk: '/ˈfɪnɪʃ/' },
+    examples: [
+      'It was a close finish as they had predicted.',
+      'They won in the end but it was a tight finish.',
+      'finish to something a dramatic finish to the race',
+      'The story was a lie from start to finish.',
+      'to the finish I want to see the job through to the finish.',
+      'at the finish Several runners needed medical attention at the finish.',
+    ]
+  },
+  {
+    id: 'a2-345',
+    word: 'first',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fɜːrst/', uk: '/fɜːst/' },
+    examples: [
+      'I was the first in my family to go to college.',
+      'Sheila and Jim were the first to arrive.',
+    ]
+  },
+  {
+    id: 'a2-346',
+    word: 'firstly',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈfɜːrstli/', uk: '/ˈfɜːstli/' },
+    examples: [
+      'There are two reasons for this decision: firstly…',
+      'Firstly let me introduce myself.',
+      'So where do we start? Well firstly, you need to assess your financial situation.',
+    ]
+  },
+  {
+    id: 'a2-347',
+    word: 'fish',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/fɪʃ/', uk: '/fɪʃ/' },
+    examples: [
+      'The trawler was fishing off the coast of Iceland.',
+      'Several people were fishing in the river.',
+      'fish for something You can fish for trout in this stream.',
+    ]
+  },
+  {
+    id: 'a2-348',
+    word: 'fishing',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɪʃɪŋ/', uk: '/ˈfɪʃɪŋ/' },
+    examples: [
+      'They often go fishing.',
+      'We enjoyed a day\'s fishing by the river.',
+      'deep-sea fishing',
+      'trout/salmon/tuna fishing',
+      'a fishing boat/vessel',
+      'the fishing industry',
+      'Do you want to go on a fishing trip this summer?',
+      'the rich fishing grounds off the coast of Namibia',
+      'the picturesque fishing village of Polperro',
+    ]
+  },
+  {
+    id: 'a2-349',
+    word: 'fit',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/fɪt/', uk: '/fɪt/' },
+    examples: [
+      'Top athletes have to be very fit.',
+      'She tries to keep fit by jogging every day.',
+      'Hiking helps keep him physically fit.',
+      'All the recruits seemed fit and healthy.',
+      'my new year\'s resolution to get fit',
+      'He is back in training after his back injury but is not yet considered match fit (= fit enough to play in a match).',
+    ]
+  },
+  {
+    id: 'a2-350',
+    word: 'fit',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/fɪt/', uk: '/fɪt/' },
+    examples: [
+      'I tried the dress on but it didn\'t fit.',
+      'That jacket fits well.',
+      'My shoes fit perfectly.',
+      'a close-fitting dress',
+      'fit somebody/something I can\'t find clothes to fit me.',
+      'The key doesn\'t fit the lock.',
+    ]
+  },
+  {
+    id: 'a2-351',
+    word: 'fix',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/fɪks/', uk: '/fɪks/' },
+    examples: [
+      'The car won\'t start—can you fix it?',
+      'I\'ve fixed the problem.',
+      'Businesses and government have spent billions of dollars to find and fix the bug.',
+      'We need to get the TV fixed.',
+      'If you suspect that you have a fuel leak have it fixed as soon as possible.',
+    ]
+  },
+  {
+    id: 'a2-352',
+    word: 'flat',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/flæt/', uk: '/flæt/' },
+    examples: [
+      'low buildings with flat roofs',
+      'I need a flat surface to write on.',
+      'A large flat screen was mounted on the wall.',
+      'We found a large flat rock to sit on.',
+      'People used to think the earth was flat.',
+      'a large, deep dish with a flat bottom',
+      'Exercise is the only way to get a flat stomach after having a baby.',
+    ]
+  },
+  {
+    id: 'a2-353',
+    word: 'flu',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fluː/', uk: '/fluː/' },
+    examples: [
+      'The whole family has the flu.',
+      '(British English) She\'s got flu.',
+      'She was off work for four days because of a bout with the flu.',
+      'a flu outbreak/epidemic/pandemic',
+      'a flu vaccine/vaccination',
+      '(British English, informal) a flu jab',
+      '(especially North American English, informal) a flu shot',
+      'He is suffering from flu-like symptoms.',
+    ]
+  },
+  {
+    id: 'a2-354',
+    word: 'fly',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/flaɪ/', uk: '/flaɪ/' },
+    examples: [
+      'A fly was buzzing against the window.',
+      'Flies rose in thick black swarms.',
+      'A fly settled on the butter.',
+      'I swatted the fly with a newspaper.',
+    ]
+  },
+  {
+    id: 'a2-355',
+    word: 'flying',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈflaɪɪŋ/', uk: '/ˈflaɪɪŋ/' },
+    examples: [
+      'flying insects',
+    ]
+  },
+  {
+    id: 'a2-356',
+    word: 'flying',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈflaɪɪŋ/', uk: '/ˈflaɪɪŋ/' },
+    examples: [
+      'I\'m terrified of flying.',
+    ]
+  },
+  {
+    id: 'a2-357',
+    word: 'focus',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfəʊkəs/', uk: '/ˈfəʊkəs/' },
+    examples: [
+      'focus of something It was the main focus of attention at the meeting.',
+      'The primary focus of the book is practical teaching techniques.',
+      'He decided to make colour the central focus of his work.',
+      'focus for something His comments provided a focus for debate.',
+      'focus on something We shall maintain our focus on the needs of the customer.',
+      'In today\'s lecture the focus will be on tax structures within the European Union.',
+      'The incident brought the problem of violence in schools into sharp focus.',
+      'The film loses focus near the end.',
+      'He began to shift his focus towards writing for the theatre.',
+      'What we need now is a change of focus (= to look at things in a different way).',
+    ]
+  },
+  {
+    id: 'a2-358',
+    word: 'focus',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ˈfəʊkəs/', uk: '/ˈfəʊkəs/' },
+    examples: [
+      'She was distracted and finding it hard to focus.',
+      'focus on/upon somebody/something The discussion focused on three main issues.',
+      'Each exercise focuses on a different grammar point.',
+      'focus + adv./prep. He had artistic interests but his teachers encouraged him to focus elsewhere.',
+      'The essay seems too narrowly focused.',
+      'focus something Music and crafts can help focus small children\'s energies.',
+      'focus something on/upon somebody/something The visit helped to focus world attention on the plight of the refugees.',
+      '(figurative) All eyes are focused on the presidential elections at the moment.',
+      '(figurative) The event will focus the spotlight on younger athletes.',
+      'focus something + adv./prep. We need to decide where to focus our efforts.',
+    ]
+  },
+  {
+    id: 'a2-359',
+    word: 'following',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈfɑːləʊɪŋ/', uk: '/ˈfɒləʊɪŋ/' },
+    examples: [
+      'Answer the following questions.',
+      'The following article was written in 2017.',
+    ]
+  },
+  {
+    id: 'a2-360',
+    word: 'foreign',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈfɔːrən/', uk: '/ˈfɒrən/' },
+    examples: [
+      'What foreign languages do you speak?',
+      'It can be a challenge at first living in a foreign country.',
+      'I went to the bank to get some foreign currency.',
+      'a foreign-owned company',
+      'foreign holidays',
+      'He spoke with a foreign accent.',
+      'You could tell she was foreign by the way she dressed.',
+    ]
+  },
+  {
+    id: 'a2-361',
+    word: 'forest',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɔːrɪst/', uk: '/ˈfɒrɪst/' },
+    examples: [
+      'a tropical/pine forest',
+      'One careless match can start a forest fire.',
+      'Thousands of hectares of forest are destroyed each year.',
+      'the forest floor/canopy',
+    ]
+  },
+  {
+    id: 'a2-362',
+    word: 'fork',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/fɔːrk/', uk: '/fɔːk/' },
+    examples: [
+      'to eat with a knife and fork',
+      'with a fork Mash the mixture with a fork.',
+    ]
+  },
+  {
+    id: 'a2-363',
+    word: 'formal',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈfɔːrml/', uk: '/ˈfɔːml/' },
+    examples: [
+      'ladies in formal evening wear',
+      'The dinner was a formal affair.',
+      'He kept the tone of the letter formal and businesslike.',
+      'His manner was stiffly formal.',
+    ]
+  },
+  {
+    id: 'a2-364',
+    word: 'fortunately',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈfɔːrtʃənətli/', uk: '/ˈfɔːtʃənətli/' },
+    examples: [
+      'I was late, but fortunately the meeting hadn\'t started.',
+      'The documents fortunately survived the fire.',
+      'Fortunately or unfortunately, those times have passed.',
+      'fortunately for somebody Fortunately for him, he was very soon offered another job.',
+    ]
+  },
+  {
+    id: 'a2-365',
+    word: 'forward',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈfɔːrwərd/', uk: '/ˈfɔːwəd/' },
+    examples: [
+      'She leaned forward and kissed him on the cheek.',
+      'He took two steps forwards.',
+      'They ran forward to welcome her.',
+      'The procession slowly moved forward.',
+      'Turn your wrists so that your palms face forward.',
+      'He stands by the fire, rocking backward and forward.',
+    ]
+  },
+  {
+    id: 'a2-366',
+    word: 'free',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/friː/', uk: '/friː/' },
+    examples: [
+      'Children under five travel free.',
+      'We will send you our booklet free of charge.',
+    ]
+  },
+  {
+    id: 'a2-367',
+    word: 'fresh',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/freʃ/', uk: '/freʃ/' },
+    examples: [
+      'Is this milk fresh?',
+      'fresh bread/flowers/fish',
+      'Eat plenty of fresh fruit and vegetables.',
+      'Our chefs use only the freshest produce available.',
+      'fresh from something vegetables fresh from the garden',
+      'fresh off something Doesn\'t fruit taste a lot better fresh off the tree?',
+    ]
+  },
+  {
+    id: 'a2-368',
+    word: 'fridge',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/frɪdʒ/', uk: '/frɪdʒ/' },
+    examples: [
+      'The kids tend to raid the fridge when they get home from school.',
+      'in the fridge There\'s no food in the fridge!',
+    ]
+  },
+  {
+    id: 'a2-369',
+    word: 'frog',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/frɑːɡ/', uk: '/frɒɡ/' },
+    examples: [
+      'the croaking of frogs',
+      'The frog jumped into the pond.',
+      'There are three native species of frogs and toads in the UK.',
+    ]
+  },
+  {
+    id: 'a2-370',
+    word: 'fun',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/fʌn/', uk: '/fʌn/' },
+    examples: [
+      'She\'s really fun to be with.',
+      'a film that\'s great fun to watch',
+      'This game looks fun!',
+      'Let\'s have a fun night out.',
+      'There are lots of fun things for young people to do here.',
+    ]
+  },
+  {
+    id: 'a2-371',
+    word: 'furniture',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈfɜːrnɪtʃər/', uk: '/ˈfɜːnɪtʃə(r)/' },
+    examples: [
+      'garden/office furniture',
+      'a dealer in antique furniture',
+      'a piece of furniture',
+      'We need to buy some new furniture.',
+    ]
+  },
+  {
+    id: 'a2-372',
+    word: 'further',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈfɜːrðər/', uk: '/ˈfɜːðə(r)/' },
+    examples: [
+      'Cook for a further 2 minutes.',
+      'For further details call this number.',
+      'Can you give me any further information?',
+      'further investigation/research/study/analysis',
+      'This week provided further evidence of an unfolding global energy crisis.',
+      'No further developments have been reported.',
+      'We have decided to take no further action.',
+      'The museum is closed until further notice (= until we say that it is open again).',
+    ]
+  },
+  {
+    id: 'a2-373',
+    word: 'future',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈfjuːtʃər/', uk: '/ˈfjuːtʃə(r)/' },
+    examples: [
+      'The land will remain untouched for future generations to enjoy.',
+      'The reasons for the decision will be announced at a future date.',
+      'future developments in artificial intelligence',
+      'present and future trends in industry',
+      'the ability to anticipate possible future events',
+      'She told us about her future plans.',
+      'He met his future wife at law school.',
+      'I wrote down the name of the hotel for future reference (= because it might be useful in the future).',
+    ]
+  },
+  {
+    id: 'a2-374',
+    word: 'gallery',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɡæləri/', uk: '/ˈɡæləri/' },
+    examples: [
+      'a picture gallery',
+      'at a gallery The painting is now on display at the National Gallery in London.',
+      'in a gallery the most famous sculpture in the gallery',
+      'The extension will provide plenty of new gallery space.',
+    ]
+  },
+  {
+    id: 'a2-375',
+    word: 'gap',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡæp/', uk: '/ɡæp/' },
+    examples: [
+      'Extra funding is needed to plug the gap.',
+      'gap in something Fill the gaps in these sentences.',
+      'There are huge gaps in their knowledge.',
+      'His death left an enormous gap in my life.',
+      'There were several gaps in my education.',
+      'We think we\'ve identified a gap in the market (= a business opportunity to make or sell something that is not yet available).',
+    ]
+  },
+  {
+    id: 'a2-376',
+    word: 'gas',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡæs/', uk: '/ɡæs/' },
+    examples: [
+      'Air is a mixture of gases.',
+      'Carbon monoxide is a poisonous gas.',
+    ]
+  },
+  {
+    id: 'a2-377',
+    word: 'gate',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡeɪt/', uk: '/ɡeɪt/' },
+    examples: [
+      'the front/main gate',
+      'the back/side gate',
+      'an iron gate',
+      'to open/close/shut a gate',
+      'He pushed open the garden gate.',
+      'outside a gate Students were still standing outside the school gates.',
+      'at a gate A crowd gathered at the factory gates.',
+      'gate to something Someone was waiting by the gate to his house.',
+    ]
+  },
+  {
+    id: 'a2-378',
+    word: 'general',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈdʒenrəl/', uk: '/ˈdʒenrəl/' },
+    examples: [
+      'books of general interest (= of interest to most people)',
+      'The general feeling was one of relief.',
+      'The general opinion is that the conference was a success.',
+      'There is general agreement on that point.',
+      'The general trend has been a slow decline in output.',
+      'The bad weather has been fairly general (= has affected most areas).',
+    ]
+  },
+  {
+    id: 'a2-379',
+    word: 'gift',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡɪft/', uk: '/ɡɪft/' },
+    examples: [
+      'to give/receive a gift',
+      'a Christmas/birthday/wedding gift',
+      'Thank you for your generous gift.',
+      'gift from somebody The watch was a gift from my mother.',
+      'gift for somebody a free gift for every reader',
+      'gift to somebody This dinner is my gift to you.',
+      'gift of something gifts of toys for the children',
+      'By becoming a blood donor you will be making a vital gift of life to someone else.',
+      '(formal) The family made a gift of his paintings to the gallery.',
+      'as a gift She gave me the book as a gift.',
+    ]
+  },
+  {
+    id: 'a2-380',
+    word: 'goal',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡəʊl/', uk: '/ɡəʊl/' },
+    examples: [
+      'He headed the ball into an open goal (= one that had nobody defending it).',
+      'in goal Nicky Roberts was outstanding in goal (= as goalkeeper).',
+      'The goalkeeper was injured so a defender had to go in goal.',
+    ]
+  },
+  {
+    id: 'a2-381',
+    word: 'god',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡɑːd/', uk: '/ɡɒd/' },
+    examples: [
+      'Do you believe in God?',
+      'Good luck and God bless you.',
+      'Christians believe that Jesus is the Son of God.',
+      'I swear by Almighty God that the evidence I shall give… (= in a court of law)',
+    ]
+  },
+  {
+    id: 'a2-382',
+    word: 'gold',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɡəʊld/', uk: '/ɡəʊld/' },
+    examples: [
+      'The company name was spelled out in gold letters.',
+      'The performers\' faces were covered in gold paint.',
+    ]
+  },
+  {
+    id: 'a2-383',
+    word: 'gold',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡəʊld/', uk: '/ɡəʊld/' },
+    examples: [
+      'gold coins/jewellery',
+      'He always wore a gold chain.',
+      'a gold ring/watch/necklace/bracelet',
+      'a fall in the gold price',
+      'The rubies were set in 18-carat gold.',
+      'made of solid/pure gold',
+    ]
+  },
+  {
+    id: 'a2-384',
+    word: 'golf',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡɑːlf/', uk: '/ɡɒlf/' },
+    examples: [
+      'I play golf every weekend.',
+      'He enjoyed a round of golf on a Sunday morning.',
+    ]
+  },
+  {
+    id: 'a2-385',
+    word: 'good',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡʊd/', uk: '/ɡʊd/' },
+    examples: [
+      'Do they even know the difference between good and evil?',
+      'Is religion always a force for good?',
+    ]
+  },
+  {
+    id: 'a2-386',
+    word: 'government',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɡʌvərnmənt/', uk: '/ˈɡʌvənmənt/' },
+    examples: [
+      'to lead/form a government',
+      'She has resigned from the Government.',
+      'The Government has/have been considering further tax cuts.',
+      'The government announced further austerity measures.',
+      'This legislation was passed under the last Conservative government.',
+      'EU national governments',
+      'the Nebraska state government',
+      'Ontario\'s new provincial government',
+      'The country still has an interim government.',
+      'the governments of many European countries',
+      'This was a decision taken by the government of the day.',
+      'the three branches of the US government',
+      'Foreign governments have been consulted about this decision.',
+      'government officials/ministers/employees',
+      'a government spokesman',
+      'a government department/agency',
+      'government policies/regulations',
+      'government spending/funding',
+    ]
+  },
+  {
+    id: 'a2-387',
+    word: 'grass',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡræs/', uk: '/ɡrɑːs/' },
+    examples: [
+      'a blade of grass',
+      'The dry grass caught fire.',
+    ]
+  },
+  {
+    id: 'a2-388',
+    word: 'greet',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɡriːt/', uk: '/ɡriːt/' },
+    examples: [
+      'greet somebody He greeted all the guests warmly as they arrived.',
+      'The winning team was greeted by cheering crowds.',
+      'greet somebody with something She greeted us with a smile.',
+    ]
+  },
+  {
+    id: 'a2-389',
+    word: 'ground',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡraʊnd/', uk: '/ɡraʊnd/' },
+    examples: [
+      'on the ground I found her lying on the ground.',
+      'to the ground He fell to the ground, crying out in pain.',
+      'above (the) ground The adult insects live above ground.',
+      'The helicopter hovered a couple of hundred metres above the ground.',
+      'below (the) ground The library has four levels below ground and seven above.',
+      'Most of the monkey\'s food is found at ground level.',
+    ]
+  },
+  {
+    id: 'a2-390',
+    word: 'guest',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡest/', uk: '/ɡest/' },
+    examples: [
+      'They only use the dining room when they have guests.',
+      'She had invited six guests to dinner.',
+      'She felt that she had to entertain her guests.',
+      'There were more than 100 wedding guests.',
+      'as a guest I went to the theatre club as Helen\'s guest.',
+      'He was the guest of honour (= the most important person invited to an event).',
+      'Liz was not on the guest list.',
+    ]
+  },
+  {
+    id: 'a2-391',
+    word: 'guide',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡaɪd/', uk: '/ɡaɪd/' },
+    examples: [
+      'Our tour guide showed us around the old town.',
+      'We hired a local guide to get us across the mountains.',
+    ]
+  },
+  {
+    id: 'a2-392',
+    word: 'guide',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɡaɪd/', uk: '/ɡaɪd/' },
+    examples: [
+      'guide somebody It\'s a dangerous route—you\'ll need someone to guide you.',
+      'guide somebody to something Sherpas guide climbers to the summit.',
+      'guide somebody through something She guided us through the busy streets.',
+      'guide somebody around something We were guided around the museums.',
+    ]
+  },
+  {
+    id: 'a2-393',
+    word: 'gun',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡʌn/', uk: '/ɡʌn/' },
+    examples: [
+      'I have never fired a gun in my life.',
+      'He pointed a gun at her head.',
+      'Should police officers carry guns?',
+      'a toy/replica gun',
+      'Anti-aircraft guns opened fire as the bombers flew overhead.',
+      'A loaded gun was found in the vehicle.',
+      'Look out, he\'s got a gun!',
+      'The guard drew his gun (= took it out so it was ready to use).',
+      'She pulled a gun on me (= took out a gun and aimed it at me).',
+      'The gun went off by accident.',
+      'The attacker held a gun to the hostage’s head.',
+      'a gun battle between rival gangs',
+      'high levels of gun crime/violence',
+      'gun owners/ownership',
+      'gun control/laws',
+    ]
+  },
+  {
+    id: 'a2-394',
+    word: 'guy',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɡaɪ/', uk: '/ɡaɪ/' },
+    examples: [
+      'a big/little guy',
+      'a nice/good/lovely/great guy',
+      'a cool/tough/smart guy',
+      'a young guy',
+      'an old guy',
+      'a white/black guy',
+      'The poor guy must have been terrified.',
+      'a Dutch/French/Korean guy',
+      'At the end of the film the bad guy gets shot.',
+      'While the cops should be the good guys, it\'s much more complex than that.',
+    ]
+  },
+  {
+    id: 'a2-395',
+    word: 'habit',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈhæbɪt/', uk: '/ˈhæbɪt/' },
+    examples: [
+      'You need to change your eating habits.',
+      'good/bad habits',
+      'Most of us have some undesirable habits.',
+      'habit of doing something The strategy is helping children develop the habit of reading for fun.',
+      'It\'s all right to borrow money occasionally, but don\'t let it become a habit.',
+      'I\'d prefer you not to make a habit of it.',
+      'I\'m trying to break the habit of staying up too late.',
+      'These things have a habit of coming back to haunt you.',
+      'in the habit of doing something I\'m not in the habit of letting strangers into my apartment.',
+      'I\'ve got into the habit of turning on the TV as soon as I get home.',
+    ]
+  },
+  {
+    id: 'a2-396',
+    word: 'half',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/hæf/', uk: '/hɑːf/' },
+    examples: [
+      'The glass was half full.',
+      'The hall was half empty.',
+      'She is half Italian.',
+    ]
+  },
+  {
+    id: 'a2-397',
+    word: 'hall',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/hɔːl/', uk: '/hɔːl/' },
+    examples: [
+      'in a hall Her brother was standing in the front hall.',
+      'She ran into the hall and up the stairs.',
+    ]
+  },
+  {
+    id: 'a2-398',
+    word: 'happily',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˈhæpɪli/', uk: '/ˈhæpɪli/' },
+    examples: [
+      'children playing happily on the beach',
+      'to be happily married',
+      'I think we can manage quite happily on our own.',
+      'And they all lived happily ever after (= used as the end of a fairy tale).',
+    ]
+  },
+  {
+    id: 'a2-399',
+    word: 'have',
+    type: 'auxiliary verb',
+    level: 'A2',
+    phonetics: { us: '/hæv/', uk: '/hæv/' },
+    examples: [
+      'I\'ve finished my work.',
+      'He\'s gone home, hasn\'t he?',
+      '‘Have you seen it?’ ‘Yes, I have/No, I haven’t.’',
+      'She\'ll have had the results by now.',
+      'Had they left before you got there?',
+      'If I hadn\'t seen it with my own eyes I wouldn\'t have believed it.',
+      '(formal) Had I known that (= if I had known that) I would never have come.',
+    ]
+  },
+  {
+    id: 'a2-400',
+    word: 'headache',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈhedeɪk/', uk: '/ˈhedeɪk/' },
+    examples: [
+      'He had a terrible headache.',
+      'Red wine gives me a headache.',
+      'to suffer from/get headaches',
+      'to cause headaches',
+      'I have a splitting headache (= a very bad one).',
+      'a migraine/tension headache',
+      'He developed a severe headache.',
+    ]
+  },
+  {
+    id: 'a2-401',
+    word: 'heart',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/hɑːrt/', uk: '/hɑːt/' },
+    examples: [
+      'The patient\'s heart stopped beating for a few seconds.',
+      'I could feel my heart pounding in my chest (= because of excitement, etc.).',
+      'to have a weak heart',
+      'heart disease/problems',
+      'to have a heart condition',
+      'heart patients/surgery',
+      'a heart transplant',
+    ]
+  },
+  {
+    id: 'a2-402',
+    word: 'heat',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/hiːt/', uk: '/hiːt/' },
+    examples: [
+      'Heat rises.',
+      'He could feel the heat of the sun on his back.',
+      'Computers generate heat of their own.',
+      'The fire gave out a fierce heat.',
+    ]
+  },
+  {
+    id: 'a2-403',
+    word: 'heat',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/hiːt/', uk: '/hiːt/' },
+    examples: [
+      'heat (something) Heat the oil and add the onions.',
+      'The system produced enough energy to heat several thousand homes.',
+      'While the oven is heating, roll out the dough.',
+      'heat something through Check the lasagne is heated through before serving.',
+    ]
+  },
+  {
+    id: 'a2-404',
+    word: 'heavy',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈhevi/', uk: '/ˈhevi/' },
+    examples: [
+      'a heavy weight/load',
+      'She was struggling with a heavy suitcase.',
+      'My brother is much heavier than me.',
+      'He tried to push the heavy door open.',
+      'How heavy is it (= how much does it weigh)?',
+      '(especially North American English) Many young people today are too heavy (= fat).',
+      '(figurative) Her father carried a heavy burden of responsibility.',
+    ]
+  },
+  {
+    id: 'a2-405',
+    word: 'height',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/haɪt/', uk: '/haɪt/' },
+    examples: [
+      'Height: 210 mm. Width: 57 mm. Length: 170 mm.',
+      'Please state your height and weight.',
+      'She is the same height as her sister.',
+      'to be of medium/average height',
+      'in height It is almost two metres in height.',
+      'height of somebody/something You can adjust the height of the chair.',
+      'The plant can reach a height of over six feet.',
+      'The table is available in several different heights.',
+    ]
+  },
+  {
+    id: 'a2-406',
+    word: 'helpful',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈhelpfl/', uk: '/ˈhelpfl/' },
+    examples: [
+      'helpful advice/information',
+      'helpful hints/tips/suggestions/comments',
+      'Sorry I can\'t be more helpful.',
+      'helpful for somebody This approach may be helpful for people with very severe symptoms.',
+      'helpful to do something You may find it helpful to read this before making any decisions.',
+      'It would be helpful to have more detailed information.',
+      'helpful for somebody to do something It would be helpful for me to see the damage for myself.',
+      'helpful in doing something Role-play is helpful in developing communication skills.',
+      'helpful to somebody This final section will be particularly helpful to students.',
+      'The booklet should be very helpful to parents of children with dyslexia.',
+    ]
+  },
+  {
+    id: 'a2-407',
+    word: 'hero',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈhɪrəʊ/', uk: '/ˈhɪərəʊ/' },
+    examples: [
+      'a war hero (= somebody who was very brave during a war)',
+      'a hero of the First World War',
+      'one of the country’s national heroes',
+      'His charity work has made him something of a local hero.',
+      'The Olympic team were given a hero\'s welcome on their return home.',
+      'Scientists like her are typically unsung heroes (= people who are not praised or famous but deserve to be).',
+      'He was hailed as a hero after the rescue.',
+    ]
+  },
+  {
+    id: 'a2-408',
+    word: 'hers',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/ɜːrz/', uk: '/ɜːz/' },
+    examples: [
+      'His eyes met hers.',
+      'The choice was hers.',
+      'a friend of hers',
+    ]
+  },
+  {
+    id: 'a2-409',
+    word: 'herself',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/hərˈself/', uk: '/həˈself/' },
+    examples: [
+      'She hurt herself.',
+      'She must be very proud of herself.',
+    ]
+  },
+  {
+    id: 'a2-410',
+    word: 'hide',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/haɪd/', uk: '/haɪd/' },
+    examples: [
+      'hide somebody/something + adv./prep. He hid the letter in a drawer.',
+      'hide somebody/something I keep my private papers hidden.',
+      'hide somebody/something from something (+ adv./prep.) They hid me from the police in their attic.',
+    ]
+  },
+  {
+    id: 'a2-411',
+    word: 'high',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/haɪ/', uk: '/haɪ/' },
+    examples: [
+      'to climb/jump/leap high',
+      'I can\'t jump any higher.',
+      'An eagle soared high overhead.',
+      'His desk was piled high with papers.',
+      'high above (something) The castle sits high above the wooded valley.',
+      'A plane flew high above.',
+    ]
+  },
+  {
+    id: 'a2-412',
+    word: 'hill',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/hɪl/', uk: '/hɪl/' },
+    examples: [
+      'a region of gently rolling hills',
+      'a hill farm/town/fort',
+      'on a hill The church is perched on a hill.',
+      'The house is built on the side of a hill overlooking the river.',
+      'up a hill They make their way up the hill.',
+      'down a hill We started to walk back down the hill.',
+      'in the hills I love walking in the hills (= in the area where there are hills).',
+      'They stopped at the top of the hill to admire the view.',
+      'A spring emerges at the bottom of the hill.',
+    ]
+  },
+  {
+    id: 'a2-413',
+    word: 'himself',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/hɪmˈself/', uk: '/hɪmˈself/' },
+    examples: [
+      'He introduced himself.',
+      'Peter ought to be ashamed of himself.',
+    ]
+  },
+  {
+    id: 'a2-414',
+    word: 'his',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/ɪz/', uk: '/ɪz/' },
+    examples: [
+      'He took my hand in his.',
+      'The choice was his.',
+      'a friend of his',
+    ]
+  },
+  {
+    id: 'a2-415',
+    word: 'hit',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/hɪt/', uk: '/hɪt/' },
+    examples: [
+      'Give it a good hit.',
+      'He made the winning hit.',
+    ]
+  },
+  {
+    id: 'a2-416',
+    word: 'hit',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/hɪt/', uk: '/hɪt/' },
+    examples: [
+      'hit somebody/something I was afraid he was going to hit me.',
+      'hit somebody/something with something She hit him with her umbrella.',
+      'hit somebody/something in/on something Someone hit him in the face.',
+      'hit somebody/something in/on something with something He hit the nail squarely on the head with the hammer.',
+    ]
+  },
+  {
+    id: 'a2-417',
+    word: 'hockey',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈhɑːki/', uk: '/ˈhɒki/' },
+    examples: [
+      'to play hockey',
+      'a hockey stick/pitch/player/team',
+    ]
+  },
+  {
+    id: 'a2-418',
+    word: 'hold',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/həʊld/', uk: '/həʊld/' },
+    examples: [
+      'hold somebody/something She was holding a large box.',
+      'They were holding hands (= the right hand of one person holding the left hand of the other).',
+      'hold somebody/something + adv./prep. I held the mouse by its tail.',
+      'The girl held her father\'s hand tightly.',
+      'He was holding the baby in his arms.',
+      'The winning captain held the trophy in the air.',
+      'The lovers held each other close.',
+    ]
+  },
+  {
+    id: 'a2-419',
+    word: 'hole',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/həʊl/', uk: '/həʊl/' },
+    examples: [
+      'He dug a deep hole in the garden.',
+      'hole in something The bomb blew a huge hole in the ground.',
+      'Water had collected in the holes in the road.',
+      'She drilled a small hole in the wall.',
+    ]
+  },
+  {
+    id: 'a2-420',
+    word: 'home',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/həʊm/', uk: '/həʊm/' },
+    examples: [
+      'home life (= with your family)',
+      'a person’s home address/country',
+      'We offer customers a free home delivery service.',
+    ]
+  },
+  {
+    id: 'a2-421',
+    word: 'hope',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/həʊp/', uk: '/həʊp/' },
+    examples: [
+      'Don\'t lose hope—we\'ll find her.',
+      'She told me all her hopes and dreams.',
+      'hope for somebody/something They have high hopes for their children.',
+      'Hopes for the missing men are fading.',
+      'The Mexican president expressed hope for cooperation on trade.',
+      'hope of something There are hopes of a lasting peace.',
+      'hope of doing something They have given up hope of finding any more survivors.',
+      'Don\'t raise your hopes too high, or you may be disappointed.',
+      'I\'ll do what I can, but don\'t get your hopes up.',
+      'in the hope of doing something I called early in the hope of catching her before she went to work.',
+      'hope that… The situation is not good but we live in hope that it will improve.',
+      'It is my sincere hope that she will find happiness at last.',
+      'in the hope that… He asked her again in the vain hope that he could persuade her to come (= it was impossible).',
+      'in hopes that… (North American English) I am writing this letter in hopes that it will be forwarded to the editor.',
+    ]
+  },
+  {
+    id: 'a2-422',
+    word: 'huge',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/hjuːdʒ/', uk: '/hjuːdʒ/' },
+    examples: [
+      'The sums of money involved are potentially huge.',
+      'A huge crowd had gathered in the square.',
+      'Huge amounts of data were lost.',
+      'I wasn\'t a huge fan of the movie.',
+      'Becoming a mother made a huge difference to me.',
+      'Anti-social behaviour affects a huge number of people daily.',
+      'The party was a huge success.',
+      'This is going to be a huge problem for us.',
+    ]
+  },
+  {
+    id: 'a2-423',
+    word: 'human',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈhjuːmən/', uk: '/ˈhjuːmən/' },
+    examples: [
+      'the human body/brain',
+      'a terrible loss of human life',
+      'human development/activity/behaviour',
+      'Human remains (= the body of a dead person) were found inside the house.',
+      'Contact with other people is a basic human need.',
+      'This food is not fit for human consumption.',
+      'one of the greatest leaders in human history',
+      'He tried to use a bystander as a human shield.',
+      'Firefighters formed a human chain (= a line of people) to carry the children to safety.',
+      'After washing her face, she felt almost human (= like her normal self) again.',
+    ]
+  },
+  {
+    id: 'a2-424',
+    word: 'human',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈhjuːmən/', uk: '/ˈhjuːmən/' },
+    examples: [
+      'Dogs can hear much better than humans.',
+      'That is no way to treat another human being.',
+      'the colonization of Europe by modern humans',
+    ]
+  },
+  {
+    id: 'a2-425',
+    word: 'hurt',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/hɜːrt/', uk: '/hɜːt/' },
+    examples: [
+      'None of the passengers were badly hurt.',
+      'Steve didn\'t look seriously hurt.',
+      'Stop that or you\'ll get hurt!',
+    ]
+  },
+  {
+    id: 'a2-426',
+    word: 'hurt',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/hɜːrt/', uk: '/hɜːt/' },
+    examples: [
+      'hurt something He hurt his back playing squash.',
+      'Strong light hurts my eyes.',
+      'hurt yourself Did you hurt yourself?',
+      'hurt (somebody) Stop it. You\'re hurting me.',
+      'No one was seriously hurt in the accident.',
+      'My back is really hurting me today.',
+      'My shoes hurt—they\'re too tight.',
+    ]
+  },
+  {
+    id: 'a2-427',
+    word: 'ideal',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/aɪˈdiːəl/', uk: '/aɪˈdiːəl/' },
+    examples: [
+      'an ideal location/place',
+      'ideal for somebody/something This beach is ideal for children.',
+      'She\'s the ideal candidate for the job.',
+      'The trip to Paris will be an ideal opportunity to practise my French.',
+      'The prime minister admitted the current situation was ‘not ideal’ (= was bad).',
+      'It was not the ideal solution to the problem.',
+      'Harvesting is being done in less than ideal conditions.',
+    ]
+  },
+  {
+    id: 'a2-428',
+    word: 'identify',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/aɪˈdentɪfaɪ/', uk: '/aɪˈdentɪfaɪ/' },
+    examples: [
+      'identify somebody/something She was able to identify her attacker.',
+      'Passengers were asked to identify their own suitcases before they were put on the plane.',
+      'identify yourself Many of those arrested refused to identify themselves (= would not say who they were).',
+      'identify somebody/something as somebody/something The bodies were identified as those of two suspected drug dealers.',
+      'identify somebody/something by something two species of waterbirds that can be identified by their distinctive beaks',
+    ]
+  },
+  {
+    id: 'a2-429',
+    word: 'ill',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪl/', uk: '/ɪl/' },
+    examples: [
+      'Her father is seriously ill in St Luke\'s hospital.',
+      'critically/gravely/severely ill',
+      'Uncle Harry is terminally ill with cancer (= he will die from his illness).',
+      'chronically ill patients (= who are ill for a long time )',
+      'She was taken ill suddenly.',
+      'We both started to feel ill shortly after the meal.',
+      'veterans who became ill after fighting in the Gulf War',
+      'Shortly after drinking the water I was violently ill.',
+      '(formal) He fell ill and died soon after.',
+      'I can\'t eat bananas as they make me ill.',
+      'ill with something He\'d been ill with cancer for months.',
+    ]
+  },
+  {
+    id: 'a2-430',
+    word: 'illness',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪlnəs/', uk: '/ˈɪlnəs/' },
+    examples: [
+      'The virus can cause illness in humans.',
+      'mental/respiratory/chronic illness',
+      'I missed a lot of school through illness last year.',
+    ]
+  },
+  {
+    id: 'a2-431',
+    word: 'image',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪmɪdʒ/', uk: '/ˈɪmɪdʒ/' },
+    examples: [
+      'Most simple leaflets will include text and images.',
+      'We already have more than 22  000 digital images on file.',
+      'The visual image is steadily replacing the written word.',
+      'image of somebody/something Images of deer and hunters decorate the cave walls.',
+      'Consider the images of war that fill the pages of our newspapers.',
+      'a wooden image of the Hindu god Ganesh',
+      'An exhibition of images of St Nicholas is on display in the cathedral.',
+      'in the image of somebody/something In the Bible it states that humans were created in the image of God.',
+    ]
+  },
+  {
+    id: 'a2-432',
+    word: 'immediately',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ɪˈmiːdiətli/', uk: '/ɪˈmiːdiətli/' },
+    examples: [
+      'She answered almost immediately.',
+      'They immediately began arguing.',
+      'The point of my question may not be immediately apparent.',
+      'It is immediately clear that he is out of his depth.',
+      'Details were not immediately available.',
+    ]
+  },
+  {
+    id: 'a2-433',
+    word: 'impossible',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪmˈpɑːsəbl/', uk: '/ɪmˈpɒsəbl/' },
+    examples: [
+      'almost/virtually/nearly impossible',
+      'Only a year ago and this would have seemed impossible.',
+      'Getting any kind of decent job was proving impossible.',
+      'an impossible dream/goal',
+      'impossible for somebody Going downstairs would be impossible for him with his sprained ankle.',
+      'impossible to do The outcome is impossible to predict.',
+      'It\'s impossible to prove.',
+      'Cheap rental accommodation was impossible to find.',
+      'it is impossible to do something It\'s impossible to say which is the best.',
+      'It is impossible to tell whether it will actually work.',
+      'I find it impossible to lie to her.',
+      'it is impossible for somebody to do something It\'s impossible for me to be there before eight.',
+    ]
+  },
+  {
+    id: 'a2-434',
+    word: 'included',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈkluːdɪd/', uk: '/ɪnˈkluːdɪd/' },
+    examples: [
+      'all of Europe (Britain included)',
+      'Is breakfast included?',
+      'We all went, me included.',
+      'included in/on something Also included on the disc are English subtitles.',
+    ]
+  },
+  {
+    id: 'a2-435',
+    word: 'including',
+    type: 'preposition',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈkluːdɪŋ/', uk: '/ɪnˈkluːdɪŋ/' },
+    examples: [
+      'I\'ve got three days\' holiday including New Year\'s Day.',
+      'Six people were killed in the riot, including a policeman.',
+      'It\'s £7.50, not including tax.',
+    ]
+  },
+  {
+    id: 'a2-436',
+    word: 'increase',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪŋkriːs/', uk: '/ˈɪŋkriːs/' },
+    examples: [
+      'price/tax/wage increases',
+      'Profits show a steady increase.',
+      'increase in something Last year the business saw a 3% increase in turnover.',
+      'a substantial increase in the number of products on the market',
+      'There has been a significant increase in oil prices.',
+      'The tax has resulted in a dramatic increase in rents.',
+      'increase of something an increase of 2p in the pound on income tax',
+      'increase on something The figure is a ten-fold increase on the earlier amount.',
+      'increase of something on something This is an increase of 12% on the previous year.',
+      'increase over something This represents a 14% increase over last year.',
+      'increase from something They report a massive increase from last year.',
+      'on the increase Homelessness is on the increase (= increasing).',
+      'The rate of increase is accelerating.',
+    ]
+  },
+  {
+    id: 'a2-437',
+    word: 'increase',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈkriːs/', uk: '/ɪnˈkriːs/' },
+    examples: [
+      'Costs have increased significantly.',
+      'to increase dramatically/substantially',
+      'The price of oil increased.',
+      'increase in something Oil increased in price.',
+      'increase by something The rate of inflation increased by 2 per cent.',
+      'increase from A to B The population has increased from 1.2 million to 1.8 million.',
+      'increase with something The effectiveness of the vaccine increases with time (= the more time passes, the more effective it is).',
+      'increase something Sun exposure may increase the risk of skin cancer.',
+      'Our aim is to increase the number of women in the sport.',
+      'The company plans to significantly increase product availability over the next year.',
+      'increase something by something They\'ve increased the price by 50 per cent.',
+      'increase something from A to B Last month the reward was increased from $20 000 to $40 000.',
+      'An increasing number of people live alone.',
+      'increasing levels of carbon dioxide in the earth’s atmosphere',
+    ]
+  },
+  {
+    id: 'a2-438',
+    word: 'incredible',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈkredəbl/', uk: '/ɪnˈkredəbl/' },
+    examples: [
+      'an incredible story',
+      'it is incredible that… It seemed incredible that she had been there a week already.',
+      'it is incredible to somebody that… It\'s just incredible to me that only one person was hurt.',
+      'it is incredible how… It really is incredible how she managed to get away with it.',
+      'it is incredible to do something It\'s incredible to think that the affair had been going on for years.',
+    ]
+  },
+  {
+    id: 'a2-439',
+    word: 'independent',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˌɪndɪˈpendənt/', uk: '/ˌɪndɪˈpendənt/' },
+    examples: [
+      'an independent state/nation/country',
+      'the newly independent republics of Central Asia in the 1990s',
+      'Mozambique became independent in 1975.',
+      'In 1961 the country was declared independent.',
+      'independent from something The country became fully independent from France in 1960.',
+      'independent of something Adams urged Congress to declare the American colonies independent of Britain.',
+    ]
+  },
+  {
+    id: 'a2-440',
+    word: 'individual',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˌɪndɪˈvɪdʒuəl/', uk: '/ˌɪndɪˈvɪdʒuəl/' },
+    examples: [
+      'We interviewed each individual member of the community.',
+      'The minister refused to comment on individual cases.',
+      'Farmers each have their own individual concerns about the changes.',
+      'The individual members of the team must all be motivated to contribute.',
+    ]
+  },
+  {
+    id: 'a2-441',
+    word: 'individual',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌɪndɪˈvɪdʒuəl/', uk: '/ˌɪndɪˈvɪdʒuəl/' },
+    examples: [
+      'The competition is open to both teams and individuals.',
+      'Treatment depends on the individual involved.',
+      'He has persuaded private individuals (= ordinary people rather than companies, etc.) to donate to the collection.',
+      'There is no single individual who is to blame.',
+      'Wealthy individuals currently account for about 75 per cent of hedge fund investment, and institutions make up the other 25 per cent.',
+      'We are concerned to protect the rights of the individual.',
+      'as an individual Every child is treated here as an individual.',
+      'among individuals Symptoms of depression vary among individuals.',
+      'between individuals Differences between individuals affect their susceptibility to disease.',
+    ]
+  },
+  {
+    id: 'a2-442',
+    word: 'industry',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪndəstri/', uk: '/ˈɪndəstri/' },
+    examples: [
+      'the needs of British industry',
+      'the Department of Trade and Industry',
+      'in industry She got a job in industry.',
+    ]
+  },
+  {
+    id: 'a2-443',
+    word: 'informal',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈfɔːrml/', uk: '/ɪnˈfɔːml/' },
+    examples: [
+      'an informal atmosphere',
+      'an informal meeting/gathering/visit',
+      'an informal arrangement',
+      'informal discussions/talks',
+      'an informal chat/conversation',
+      'Discussions are held on an informal basis within the department.',
+      'The aim of the trip was to make informal contact with potential customers.',
+      'These meetings should remain purely informal, with no obligation on either side.',
+    ]
+  },
+  {
+    id: 'a2-444',
+    word: 'injury',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪndʒəri/', uk: '/ˈɪndʒəri/' },
+    examples: [
+      'Two people sustained minor injuries.',
+      'One of the girls suffered serious injuries.',
+      'He was lucky to escape injury.',
+      'The passengers escaped with only minor injuries.',
+      'As a result of the accident, several passengers sustained serious head injuries.',
+      'injury to somebody/something One youth was treated for injuries to his arm.',
+      'He died from multiple injuries caused by the accident.',
+      'There were no injuries in the crash (= no people injured).',
+      'No damage or injuries were reported.',
+      'These new guidelines will help save lives and prevent injury.',
+      'Taking a few simple precautions will reduce your risk of injury.',
+      'This could result in serious injury or even death.',
+      'because of injury Two players are out of the team because of injury.',
+      '(British English, informal) Don\'t do that. You\'ll do yourself an injury (= hurt yourself).',
+    ]
+  },
+  {
+    id: 'a2-445',
+    word: 'insect',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪnsekt/', uk: '/ˈɪnsekt/' },
+    examples: [
+      'Most birds spend most of the day eating insects.',
+      'There are about 30 million species of insects in the world.',
+      'insect species',
+      'insect repellent (= a chemical that keeps insects away)',
+      'an insect bite',
+      'The pesticide is lethal to all insect life.',
+      'methods to ensure the plants are as free of disease and insect pests as possible',
+    ]
+  },
+  {
+    id: 'a2-446',
+    word: 'inside',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈɪnsaɪd/', uk: '/ˈɪnsaɪd/' },
+    examples: [
+      'the inside pages of a newspaper',
+      'an inside pocket',
+      '(British English) I was driving in the inside lane (= the part nearest the edge, not the middle of the road).',
+    ]
+  },
+  {
+    id: 'a2-447',
+    word: 'inside',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ˌɪnˈsaɪd/', uk: '/ˌɪnˈsaɪd/' },
+    examples: [
+      'She shook it to make sure there was nothing inside.',
+      'He went inside (= indoors) to get his car keys.',
+      '‘Get inside!’ he said and closed the door.',
+      'We had to move inside (= indoors) when it started to rain.',
+      '(figurative) I pretended not to care but I was screaming inside.',
+    ]
+  },
+  {
+    id: 'a2-448',
+    word: 'inside',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌɪnˈsaɪd/', uk: '/ˌɪnˈsaɪd/' },
+    examples: [
+      'The inside of the box was blue.',
+      'the insides of the windows',
+      'The cake has a slight crust while the inside is soft and moist.',
+      'PVC is used in dishwashers for lining the inside.',
+      'from the inside The door was locked from the inside.',
+      'on the inside The shell is smooth on the inside.',
+    ]
+  },
+  {
+    id: 'a2-449',
+    word: 'inside',
+    type: 'preposition',
+    level: 'A2',
+    phonetics: { us: '/ˌɪnˈsaɪd/', uk: '/ˌɪnˈsaɪd/' },
+    examples: [
+      'Go inside the house.',
+      'Inside the box was a gold watch.',
+      'She made a film about what life was like inside the refugee camp.',
+      'You\'ll feel better with a good meal inside you.',
+      '(figurative) Inside most of us is a small child screaming for attention.',
+    ]
+  },
+  {
+    id: 'a2-450',
+    word: 'instead',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈsted/', uk: '/ɪnˈsted/' },
+    examples: [
+      'Lee was ill so I went instead.',
+      'He didn\'t reply. Instead, he turned on his heel and left the room.',
+      'She said nothing, preferring instead to save her comments till later.',
+      'She might have pursued a successful career in business, but she chose instead to become a nun.',
+      'The UN resisted any tougher sanctions, opting instead for more time to give talks a chance.',
+      'While the Conservatives put the emphasis on the economy, Labour focused instead on public services.',
+    ]
+  },
+  {
+    id: 'a2-451',
+    word: 'instruction',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈstrʌkʃn/', uk: '/ɪnˈstrʌkʃn/' },
+    examples: [
+      'Follow the instructions on the packet carefully.',
+      'Always read the instructions before you start.',
+      'Step-by-step instructions are provided.',
+      'instructions on something The plant comes with full instructions on how to care for it.',
+      'instructions for something The tin or packet should be clearly labelled with instructions for use.',
+      'instructions for doing something The website has easy instructions for making dozens of costumes for children.',
+      'according to the instructions According to the instructions, you can get started in one hour.',
+    ]
+  },
+  {
+    id: 'a2-452',
+    word: 'instructor',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈstrʌktər/', uk: '/ɪnˈstrʌktə(r)/' },
+    examples: [
+      'a fitness/driving/ski instructor',
+      'a qualified/certified instructor',
+      'He worked for a time as an aerobics instructor.',
+    ]
+  },
+  {
+    id: 'a2-453',
+    word: 'instrument',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈɪnstrəmənt/', uk: '/ˈɪnstrəmənt/' },
+    examples: [
+      'to play an instrument',
+      'Is he learning an instrument?',
+      'percussion/brass/string instruments',
+      'an instrument maker',
+    ]
+  },
+  {
+    id: 'a2-454',
+    word: 'intelligent',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈtelɪdʒənt/', uk: '/ɪnˈtelɪdʒənt/' },
+    examples: [
+      'a highly intelligent child',
+      'She is clearly extremely intelligent.',
+      'to have an intelligent conversation/discussion/debate',
+      'to ask an intelligent question',
+    ]
+  },
+  {
+    id: 'a2-455',
+    word: 'international',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˌɪntərˈnæʃnəl/', uk: '/ˌɪntəˈnæʃnəl/' },
+    examples: [
+      'international trade/law',
+      'national and international affairs',
+      'the international community',
+      'an international organization/institution/agency',
+      'In crucial areas of international relations the nation state still dominates.',
+      'Japan\'s crime rate is still low by international standards.',
+      'an international conference on global trade',
+      'a drop in prices on the international markets',
+      'an international treaty/agreement',
+      'an international airport/school/company',
+      'He plays international rugby.',
+      'a pianist with an international reputation',
+    ]
+  },
+  {
+    id: 'a2-456',
+    word: 'introduction',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌɪntrəˈdʌkʃn/', uk: '/ˌɪntrəˈdʌkʃn/' },
+    examples: [
+      'a book with an excellent introduction and notes',
+      'introduction to something Can you write a brief introduction to the text?',
+      'introduction by somebody The English edition has an introduction by Herbert Read.',
+      'in an introduction His mother is mentioned in the introduction.',
+      'By way of introduction, let me give you the background to the story.',
+    ]
+  },
+  {
+    id: 'a2-457',
+    word: 'invent',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈvent/', uk: '/ɪnˈvent/' },
+    examples: [
+      'Who invented the steam engine?',
+      'I wish mobile phones had never been invented!',
+      'The term ‘sociology’ was invented by Auguste Comte.',
+    ]
+  },
+  {
+    id: 'a2-458',
+    word: 'invention',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈvenʃn/', uk: '/ɪnˈvenʃn/' },
+    examples: [
+      'Fax machines were a wonderful invention at the time.',
+      'He failed to patent his invention and never made a penny from it.',
+    ]
+  },
+  {
+    id: 'a2-459',
+    word: 'invitation',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˌɪnvɪˈteɪʃn/', uk: '/ˌɪnvɪˈteɪʃn/' },
+    examples: [
+      'to issue/extend an invitation',
+      'to accept/turn down/decline an invitation',
+      'invitation to something I received an invitation to the party',
+      'invitation for something She repeated her invitation for dinner at her place.',
+      'invitation from somebody/something We got a wedding invitation from Alex and Chris.',
+      'invitation to do something I have an open invitation (= not restricted to a particular date) to visit my friend in Japan.',
+    ]
+  },
+  {
+    id: 'a2-460',
+    word: 'invite',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈvaɪt/', uk: '/ɪnˈvaɪt/' },
+    examples: [
+      'invite somebody to something Have you been invited to their party?',
+      'She very kindly invited me to lunch.',
+      'invite somebody I\'d have liked to have gone but I wasn\'t invited.',
+      'My mother invited a few friends that she hadn\'t seen for 20 years.',
+      'invite somebody for something Let\'s invite them all for dinner.',
+      'invite somebody to do something They have invited me to go to Paris with them.',
+    ]
+  },
+  {
+    id: 'a2-461',
+    word: 'involve',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/ɪnˈvɑːlv/', uk: '/ɪnˈvɒlv/' },
+    examples: [
+      'involve something Any investment involves an element of risk.',
+      'involve doing something The process involves using steam to sterilize the instruments.',
+      'The test will involve answering questions about a photograph.',
+      'involve somebody/something doing something The job involves me travelling all over the country.',
+      '(formal) The job involves my travelling all over the country.',
+    ]
+  },
+  {
+    id: 'a2-462',
+    word: 'item',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈaɪtəm/', uk: '/ˈaɪtəm/' },
+    examples: [
+      'What\'s the next item on the agenda?',
+      'There are plenty of vegetarian items on the menu.',
+      'She still has five items on her to-do list.',
+      'Students had to select three topics from the list of items.',
+      'There is a maximum score of two points per test item.',
+    ]
+  },
+  {
+    id: 'a2-463',
+    word: 'itself',
+    type: 'pronoun',
+    level: 'A2',
+    phonetics: { us: '/ɪtˈself/', uk: '/ɪtˈself/' },
+    examples: [
+      'The cat was washing itself.',
+      'Does the computer turn itself off?',
+      'The company has got itself into difficulties.',
+      'There\'s no need for the team to feel proud of itself.',
+    ]
+  },
+  {
+    id: 'a2-464',
+    word: 'jam',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dʒæm/', uk: '/dʒæm/' },
+    examples: [
+      'strawberry jam',
+      'a jar/pot of jam',
+      'recipes for jams and preserves',
+      '(British English) a jam doughnut',
+    ]
+  },
+  {
+    id: 'a2-465',
+    word: 'jazz',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dʒæz/', uk: '/dʒæz/' },
+    examples: [
+      'traditional/modern jazz',
+      'a jazz band/club',
+      'jazz musicians',
+      'the rising stars of the New York jazz scene',
+    ]
+  },
+  {
+    id: 'a2-466',
+    word: 'jewellery',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdʒuːəlri/', uk: '/ˈdʒuːəlri/' },
+    examples: [
+      'silver/gold jewellery',
+      'She has some lovely pieces of jewellery.',
+      'I don\'t wear jewellery of any kind.',
+      'She inherited the family jewellery.',
+      'The nurse asked her to remove all her jewellery.',
+      '(British English) a jewellery shop',
+      '(US English) a jewelry store',
+    ]
+  },
+  {
+    id: 'a2-467',
+    word: 'joke',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dʒəʊk/', uk: '/dʒəʊk/' },
+    examples: [
+      'I can\'t tell jokes.',
+      'She\'s always cracking jokes.',
+      'They often make jokes at each other\'s expense.',
+      'I didn\'t get the joke (= understand it).',
+      'I wish he wouldn\'t tell dirty jokes (= about sex).',
+      'a sick joke (= about death, disease, etc.)',
+      'as a joke I only did it as a joke (= it was not meant seriously).',
+      'joke about somebody/something Have you heard the joke about the elephant and the mouse?',
+    ]
+  },
+  {
+    id: 'a2-468',
+    word: 'joke',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/dʒəʊk/', uk: '/dʒəʊk/' },
+    examples: [
+      'She was laughing and joking with the children.',
+      'I\'m the sort of person who likes to joke a lot.',
+      'joke about something They often joked about all the things that could go wrong.',
+      '+ speech ‘I cooked it myself, so be careful!’ he joked.',
+    ]
+  },
+  {
+    id: 'a2-469',
+    word: 'journalist',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈdʒɜːrnəlɪst/', uk: '/ˈdʒɜːnəlɪst/' },
+    examples: [
+      'a freelance journalist',
+      'She\'s an investigative journalist with a French newspaper.',
+      'The minister told journalists he was not going to resign.',
+    ]
+  },
+  {
+    id: 'a2-470',
+    word: 'jump',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/dʒʌmp/', uk: '/dʒʌmp/' },
+    examples: [
+      'to do a parachute jump',
+      'jump of… a jump of over six metres',
+      'jump from something Somehow he survived the jump from the third floor of the building.',
+    ]
+  },
+  {
+    id: 'a2-471',
+    word: 'jump',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/dʒʌmp/', uk: '/dʒʌmp/' },
+    examples: [
+      '‘Quick, jump!’ he shouted.',
+      'jump + adv./prep. She jumped into the water to save them.',
+      'He jumped into the air and started cheering.',
+      'She jumped down from the chair.',
+      'The children were jumping up and down with excitement.',
+      'The pilot jumped from the burning plane (= with a parachute).',
+      'He killed himself by jumping off a bridge.',
+      'jump + noun She has jumped 2.2 metres.',
+    ]
+  },
+  {
+    id: 'a2-472',
+    word: 'kid',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/kɪd/', uk: '/kɪd/' },
+    examples: [
+      'Do you have any kids?',
+      'How are the kids (= your children)?',
+      'A bunch of kids were hanging around outside.',
+      'a gang/group of kids',
+      'college/school kids',
+      'street kids who rely on their ingenuity to keep alive',
+      'You\'re acting like a little kid!',
+      'as a kid I remember reading with my grandmother as a young kid of 6.',
+      'I\'m looking forward to getting home to the wife and kids.',
+      'Here are some fun ways to teach your kids about healthy eating.',
+      'The kids love playing outside in the mud.',
+      'The game is aimed at kids of all ages.',
+    ]
+  },
+  {
+    id: 'a2-473',
+    word: 'kill',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/kɪl/', uk: '/kɪl/' },
+    examples: [
+      'kill (somebody/something) Cancer kills thousands of people every year.',
+      'Tiredness while driving can kill.',
+      'Dozens of civilians were killed or injured in the attack.',
+      'She was nearly killed by a car bomb.',
+      'Both members of the crew were killed instantly when the missile hit their aircraft.',
+      'Three soldiers were killed in action (= while fighting) yesterday.',
+      'She tried to kill me!',
+      'The terrorists threatened to kill the hostages.',
+      'I bought a spray to kill the weeds.',
+      '(informal) My mother will kill me (= be very angry with me) when she finds out.',
+      'kill yourself He tried to kill himself with sleeping pills.',
+      'kill yourself doing something (figurative) Don\'t kill yourself trying to get the work done by tomorrow. It can wait.',
+    ]
+  },
+  {
+    id: 'a2-474',
+    word: 'king',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/kɪŋ/', uk: '/kɪŋ/' },
+    examples: [
+      'the kings and queens of England',
+      'the French king',
+      'to be crowned king',
+      'King George V',
+    ]
+  },
+  {
+    id: 'a2-475',
+    word: 'knee',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/niː/', uk: '/niː/' },
+    examples: [
+      'a knee injury',
+      'I had knee surgery three years ago.',
+      'Bend your knees until you feel your thigh muscles working.',
+      'I grazed my knee when I fell.',
+      'He went down on one knee and asked her to marry him.',
+      'on your knees She was on her knees scrubbing the kitchen floor.',
+      'Everyone was down on (their) hands and knees (= crawling on the floor) looking for the ring.',
+      'He fell to his knees and begged for mercy.',
+      'My knees were knocking (= I was frightened).',
+    ]
+  },
+  {
+    id: 'a2-476',
+    word: 'knife',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/naɪf/', uk: '/naɪf/' },
+    examples: [
+      'knives and forks',
+      'a sharp knife',
+      'a bread knife (= one for cutting bread)',
+      'The aim is to deter young people from carrying knives.',
+      'He had been stabbed repeatedly with a kitchen knife.',
+      'a plan to tackle knife crime',
+      'She was murdered in a frenzied knife attack.',
+    ]
+  },
+  {
+    id: 'a2-477',
+    word: 'knock',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/nɑːk/', uk: '/nɒk/' },
+    examples: [
+      'He knocked three times and waited.',
+      'knock at/on something I knocked on the door and went straight in.',
+      'Somebody was knocking on the window.',
+    ]
+  },
+  {
+    id: 'a2-478',
+    word: 'knowledge',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈnɑːlɪdʒ/', uk: '/ˈnɒlɪdʒ/' },
+    examples: [
+      'scientific/technical knowledge and skills',
+      'intimate/first-hand/basic knowledge',
+      'a thirst for knowledge',
+      'It will be an opportunity to gain knowledge and experience.',
+      'knowledge of something She has acquired a detailed knowledge of the subject.',
+      'They enjoy sharing their knowledge of the business.',
+      'He had no prior knowledge of the language before visiting the country.',
+      'He has a wide knowledge of painting and music.',
+      'knowledge about something There is a lack of knowledge about the tax system.',
+    ]
+  },
+  {
+    id: 'a2-479',
+    word: 'lab',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/læb/', uk: '/læb/' },
+    examples: [
+      'a computer/research lab',
+      'the school science labs',
+      'in a lab She\'d been working in the lab all day.',
+      'a lab technician',
+      'a lab coat (= a white coat worn by scientists, etc. working in a laboratory)',
+    ]
+  },
+  {
+    id: 'a2-480',
+    word: 'lady',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈleɪdi/', uk: '/ˈleɪdi/' },
+    examples: [
+      'There\'s a lady waiting to see you.',
+      'an old/elderly lady',
+      'He was with an attractive young lady.',
+      'And who is this lovely lady?',
+      'the lady with the red hair',
+      'the lady in the designer dress',
+      'the ladies’ golf championship',
+      '(British English, old-fashioned) a tea lady (= a woman who serves tea in an office)',
+      '(North American English, approving) She\'s a tough lady.',
+      'a lady doctor/golfer',
+    ]
+  },
+  {
+    id: 'a2-481',
+    word: 'lake',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/leɪk/', uk: '/leɪk/' },
+    examples: [
+      'in a lake We swam in the lake.',
+      'on a lake There were a number of boats on the lake.',
+      'We stayed in a hotel on the edge of Lake Ontario.',
+      '(figurative) a wine lake (= a large supply of wine that is not being used)',
+    ]
+  },
+  {
+    id: 'a2-482',
+    word: 'lamp',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/læmp/', uk: '/læmp/' },
+    examples: [
+      'a desk/bedside lamp',
+      'a street lamp',
+      'an oil lamp',
+      '(British English) a paraffin lamp',
+      '(especially North American English) a kerosene lamp',
+      'a fluorescent/halogen lamp',
+      'to switch on/turn off a lamp',
+    ]
+  },
+  {
+    id: 'a2-483',
+    word: 'land',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/lænd/', uk: '/lænd/' },
+    examples: [
+      'The plane landed safely.',
+      'Both aircraft landed on the runway.',
+      'A fly landed on his nose.',
+    ]
+  },
+  {
+    id: 'a2-484',
+    word: 'laptop',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈlæptɑːp/', uk: '/ˈlæptɒp/' },
+    examples: [
+      'I opened my laptop and started typing.',
+      'on a laptop She was still working on her laptop.',
+    ]
+  },
+  {
+    id: 'a2-485',
+    word: 'last',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/læst/', uk: '/lɑːst/' },
+    examples: [
+      'He came last in the race.',
+      'They arrived last of all.',
+    ]
+  },
+  {
+    id: 'a2-486',
+    word: 'last',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/læst/', uk: '/lɑːst/' },
+    examples: [
+      'Sorry I\'m late—am I the last?',
+      'They were the last to arrive.',
+    ]
+  },
+  {
+    id: 'a2-487',
+    word: 'last',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/læst/', uk: '/lɑːst/' },
+    examples: [
+      'Each game lasts about an hour.',
+      'How long does the play last?',
+      'Nothing lasts forever.',
+      'last for something The meeting only lasted for a few minutes.',
+      'last until something The trial is expected to last until the end of the week.',
+    ]
+  },
+  {
+    id: 'a2-488',
+    word: 'later',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈleɪtər/', uk: '/ˈleɪtə(r)/' },
+    examples: [
+      'Rembrandt\'s later works',
+      'This is discussed in more detail in a later chapter.',
+      'The judge will give her ruling at a later date.',
+      'The match has been postponed to a later date.',
+    ]
+  },
+  {
+    id: 'a2-489',
+    word: 'laughter',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈlæftər/', uk: '/ˈlɑːftə(r)/' },
+    examples: [
+      'to roar/howl with laughter',
+      'tears/gales/peals of laughter',
+      'Everyone burst into fits of laughter.',
+      'a house full of laughter (= with a happy atmosphere)',
+      'He gave a snort of derisive laughter.',
+      'laughter from somebody When he said this, there was hysterical laughter from the audience.',
+    ]
+  },
+  {
+    id: 'a2-490',
+    word: 'law',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/lɔː/', uk: '/lɔː/' },
+    examples: [
+      'to pass a law (= officially make it part of the system of laws)',
+      'law against (doing) something Police don\'t have the resources to enforce the law against dumping waste.',
+      '(informal) There ought to be a law against it!',
+      'law on something The company\'s actions violated the law on equal employment.',
+      'The suspects were in clear violation of immigration laws.',
+    ]
+  },
+  {
+    id: 'a2-491',
+    word: 'lawyer',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈlɔɪər/', uk: '/ˈlɔɪə(r)/' },
+    examples: [
+      'to hire a lawyer',
+      'You would be wise to consult a lawyer.',
+      'a defence lawyer',
+      '(North American English) a trial lawyer',
+      'a human rights lawyer',
+      'The lawyer representing the family said he was very satisfied with the verdict.',
+      'lawyer for somebody Lawyers for all three defendants said their clients did not intend to kill the victim.',
+    ]
+  },
+  {
+    id: 'a2-492',
+    word: 'lazy',
+    type: 'adjective',
+    level: 'A2',
+    phonetics: { us: '/ˈleɪzi/', uk: '/ˈleɪzi/' },
+    examples: [
+      'He was not stupid, just lazy.',
+      'too lazy to do something I was feeling too lazy to go out.',
+      'He\'s just plain lazy.',
+    ]
+  },
+  {
+    id: 'a2-493',
+    word: 'lead',
+    type: 'verb',
+    level: 'A2',
+    phonetics: { us: '/liːd/', uk: '/liːd/' },
+    examples: [
+      'If you lead, I\'ll follow.',
+      'lead somebody/something + adv./prep. He led us out into the grounds.',
+      'The receptionist led the way to the boardroom.',
+      'She led the horse back into the stable.',
+      'The robbers led police on a high-speed chase through the city.',
+      '(figurative) I tried to lead the discussion back to the main issue.',
+    ]
+  },
+  {
+    id: 'a2-494',
+    word: 'leader',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈliːdər/', uk: '/ˈliːdə(r)/' },
+    examples: [
+      'party/world leaders',
+      'a religious/political leader',
+      'He was elected as leader of the Democratic Party.',
+      'She became leader of the campaign group.',
+      'Union leaders agreed to begin talks with the government.',
+      'Tomorrow the President will meet with business leaders.',
+      'He was not a natural leader.',
+      'She\'s a born leader.',
+    ]
+  },
+  {
+    id: 'a2-495',
+    word: 'learning',
+    type: 'noun',
+    level: 'A2',
+    phonetics: { us: '/ˈlɜːrnɪŋ/', uk: '/ˈlɜːnɪŋ/' },
+    examples: [
+      'adult learning',
+      'new methods to facilitate language learning',
+      'Field trips provide an opportunity for experiential learning.',
+      'teaching and learning',
+      'The school aims to provide a supportive learning environment.',
+      'Last season was a learning experience for the team.',
+      'The learning process is slightly different in each individual.',
+      'A large part of children\'s learning takes place in the home.',
+    ]
+  },
+  {
+    id: 'a2-496',
+    word: 'least',
+    type: 'adverb',
+    level: 'A2',
+    phonetics: { us: '/liːst/', uk: '/liːst/' },
+    examples: [
+      'He always turns up just when you least expect him.',
+      'She chose the least expensive of the hotels.',
+      'I never hid the truth, least of all from you.',
+      'We had to settle for the least worst option (= the best of several options that were all bad).',
+    ]
+  },
+];
