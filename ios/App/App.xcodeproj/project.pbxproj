@@ -7,18 +7,35 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0101242A8C80CBA9D1DC6C33 /* AudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAFA7606093D890FACB8745 /* AudioService.swift */; };
+		209E34FA6C067E296FF78241 /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = F109FF42BBE9FBE57BB352A9 /* ContentView.swift */; };
+		24D2DB24214371F9E49387C8 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD397E4664B1F5DA9FD1398 /* Colors.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
+		4B21D8A5B27F649810C47685 /* ProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C905450FAC03FAF7132FF510 /* ProgressService.swift */; };
+		4E037E90A1656ED7FF4517F0 /* VocabularyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		7D4197BF2265B2399230F674 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92303A00F92BED6BE63141A5 /* Word.swift */; };
+		942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3BEAC261493509191CBB67 /* LearnView.swift */; };
+		987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF736059A901232C8D2297B /* Buttons.swift */; };
+		9CB5BAAA662E06D30F0B3F44 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DB232B31F794FDDFB89685 /* GlassCard.swift */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
+		AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */; };
+		C1AC34834AA30338680B2A5A /* OtherTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1911E28486ADF1DD637173 /* OtherTabs.swift */; };
+		FB934CFA7129DD9AB38A8F7C /* OxfordPronunciationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 86B2AE115961FC8D18052E60 /* OxfordPronunciationApp.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0C3BEAC261493509191CBB67 /* LearnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LearnView.swift; path = Learn/LearnView.swift; sourceTree = "<group>"; };
+		21DB232B31F794FDDFB89685 /* GlassCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GlassCard.swift; path = Components/GlassCard.swift; sourceTree = "<group>"; };
+		2C1911E28486ADF1DD637173 /* OtherTabs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OtherTabs.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		3DD397E4664B1F5DA9FD1398 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = Search/SearchViewModel.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -27,8 +44,15 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocabularyService.swift; sourceTree = "<group>"; };
+		86B2AE115961FC8D18052E60 /* OxfordPronunciationApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OxfordPronunciationApp.swift; sourceTree = "<group>"; };
+		92303A00F92BED6BE63141A5 /* Word.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
+		ADAFA7606093D890FACB8745 /* AudioService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		BEF736059A901232C8D2297B /* Buttons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Buttons.swift; path = Components/Buttons.swift; sourceTree = "<group>"; };
+		C905450FAC03FAF7132FF510 /* ProgressService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
+		F109FF42BBE9FBE57BB352A9 /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -50,6 +74,28 @@
 				AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */,
 			);
 			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		315F345E747E41C7EDB0E2A9 /* Services */ = {
+			isa = PBXGroup;
+			children = (
+				ADAFA7606093D890FACB8745 /* AudioService.swift */,
+				7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */,
+				C905450FAC03FAF7132FF510 /* ProgressService.swift */,
+			);
+			name = Services;
+			path = Services;
+			sourceTree = "<group>";
+		};
+		42D9239D18B49F187443213A /* Features */ = {
+			isa = PBXGroup;
+			children = (
+				0C3BEAC261493509191CBB67 /* LearnView.swift */,
+				42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */,
+				2C1911E28486ADF1DD637173 /* OtherTabs.swift */,
+			);
+			name = Features;
+			path = Features;
 			sourceTree = "<group>";
 		};
 		504EC2FB1FED79650016851F = {
@@ -81,6 +127,12 @@
 				504EC3131FED79650016851F /* Info.plist */,
 				2FAD9762203C412B000D30F8 /* config.xml */,
 				50B271D01FEDC1A000F3C39B /* public */,
+				86B2AE115961FC8D18052E60 /* OxfordPronunciationApp.swift */,
+				F109FF42BBE9FBE57BB352A9 /* ContentView.swift */,
+				BE3321991FA382BF38879721 /* Models */,
+				315F345E747E41C7EDB0E2A9 /* Services */,
+				42D9239D18B49F187443213A /* Features */,
+				FD080E9A7625536A0F2B01F6 /* DesignSystem */,
 			);
 			path = App;
 			sourceTree = "<group>";
@@ -92,6 +144,26 @@
 				AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */,
 			);
 			name = Pods;
+			sourceTree = "<group>";
+		};
+		BE3321991FA382BF38879721 /* Models */ = {
+			isa = PBXGroup;
+			children = (
+				92303A00F92BED6BE63141A5 /* Word.swift */,
+			);
+			name = Models;
+			path = Models;
+			sourceTree = "<group>";
+		};
+		FD080E9A7625536A0F2B01F6 /* DesignSystem */ = {
+			isa = PBXGroup;
+			children = (
+				BEF736059A901232C8D2297B /* Buttons.swift */,
+				21DB232B31F794FDDFB89685 /* GlassCard.swift */,
+				3DD397E4664B1F5DA9FD1398 /* Colors.swift */,
+			);
+			name = DesignSystem;
+			path = DesignSystem;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,8 +213,6 @@
 				Base,
 			);
 			mainGroup = 504EC2FB1FED79650016851F;
-			packageReferences = (
-			);
 			productRefGroup = 504EC3051FED79650016851F /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -210,6 +280,18 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				FB934CFA7129DD9AB38A8F7C /* OxfordPronunciationApp.swift in Sources */,
+				209E34FA6C067E296FF78241 /* ContentView.swift in Sources */,
+				7D4197BF2265B2399230F674 /* Word.swift in Sources */,
+				0101242A8C80CBA9D1DC6C33 /* AudioService.swift in Sources */,
+				4E037E90A1656ED7FF4517F0 /* VocabularyService.swift in Sources */,
+				4B21D8A5B27F649810C47685 /* ProgressService.swift in Sources */,
+				942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */,
+				AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */,
+				C1AC34834AA30338680B2A5A /* OtherTabs.swift in Sources */,
+				987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */,
+				9CB5BAAA662E06D30F0B3F44 /* GlassCard.swift in Sources */,
+				24D2DB24214371F9E49387C8 /* Colors.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
