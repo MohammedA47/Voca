@@ -12,7 +12,7 @@ struct GlassCard<Content: View>: View {
             .padding()
             .background(.ultraThinMaterial)
             .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
-            .shadow(color: Color.black.opacity(0.1), radius: 10, x: 0, y: 5)
+            .shadow(color: Color.oxfordNavy.opacity(0.08), radius: 20, x: 0, y: 4)
     }
 }
 

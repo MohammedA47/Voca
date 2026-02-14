@@ -146,7 +146,7 @@ struct LevelSelector: View {
                     .padding(.horizontal, 16)
                     .padding(.vertical, 8)
                     .background(selectedLevel == level ? Color.brandPrimary : Color.surface)
-                    .foregroundColor(selectedLevel == level ? .white : .primary)
+                    .foregroundColor(selectedLevel == level ? .white : .webForeground)
                     .clipShape(Capsule())
             }
             .buttonStyle(PlainButtonStyle()) // remove default flash
@@ -178,16 +178,18 @@ struct WordCardView: View {
                 // Word Header
                 VStack(spacing: 8) {
                     Text(word.word)
-                        .font(.system(size: 48, weight: .bold, design: .serif))
+                        .font(.oxfordDisplay(size: 48))
+                        .foregroundColor(.webForeground)
                     
                     HStack {
                         Text(word.type)
                             .italic()
-                            .foregroundColor(.secondary)
+                            .font(.oxfordBody(size: 18))
+                            .foregroundColor(.webSecondary) // Pinkish secondary
                         
                         Divider().frame(height: 12)
                         
-                        Text(word.phonetics.us ?? "") // fallback logic later
+                        Text(word.phonetics.us ?? "")
                             .font(.system(.body, design: .monospaced))
                             .foregroundColor(.secondary)
                     }
@@ -198,8 +200,10 @@ struct WordCardView: View {
                     Image(systemName: "speaker.wave.3.fill")
                         .font(.largeTitle)
                         .padding()
-                        .background(Material.regular)
+                        .background(Color.webPrimary)
+                        .foregroundColor(.white)
                         .clipShape(Circle())
+                        .shadow(color: .webPrimary.opacity(0.4), radius: 10, x: 0, y: 5)
                 }
                 
                 Divider()
@@ -207,9 +211,11 @@ struct WordCardView: View {
                 // Example
                 if let example = word.example {
                     Text(example)
-                        .font(.body)
+                        .font(.oxfordDisplay(size: 20)) // Using Display font for example for elegance
+                        .italic()
                         .multilineTextAlignment(.center)
                         .padding(.horizontal)
+                        .foregroundColor(.webForeground.opacity(0.8))
                 }
                 
                 // Navigation Controls
