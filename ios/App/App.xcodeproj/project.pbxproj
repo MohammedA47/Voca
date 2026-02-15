@@ -27,6 +27,7 @@
 		5C8D5426F6BC9C2488375941 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC8AB358C5CA2BF6044AC3C /* Typography.swift */; };
 		68960DFF21C581F410DB8B38 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E194CC1F78CDA0E2C70B6A13 /* SearchViewModel.swift */; };
 		7D4197BF2265B2399230F674 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92303A00F92BED6BE63141A5 /* Word.swift */; };
+		84F77901D51B6D11E407ED82 /* oxford_vocabulary.json in Resources */ = {isa = PBXBuildFile; fileRef = 86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */; };
 		942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3BEAC261493509191CBB67 /* LearnView.swift */; };
 		9777AEA2AB5BECCDDD1E036F /* OxfordPronunciationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9DF97E6EE3616C06E7CF119 /* OxfordPronunciationApp.swift */; };
 		987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF736059A901232C8D2297B /* Buttons.swift */; };
@@ -62,6 +63,7 @@
 		799AFC8CE50ADE592541958B /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocabularyService.swift; sourceTree = "<group>"; };
 		84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "Color+HSL.swift"; sourceTree = "<group>"; };
+		86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */ = {isa = PBXFileReference; includeInIndex = 1; path = oxford_vocabulary.json; sourceTree = "<group>"; };
 		91B307A17769D7E8A299CAA4 /* AudioService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		92303A00F92BED6BE63141A5 /* Word.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
 		A5715A0F40EF4DED207C5812 /* Buttons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Buttons.swift; path = Components/Buttons.swift; sourceTree = "<group>"; };
@@ -115,6 +117,7 @@
 				ADAFA7606093D890FACB8745 /* AudioService.swift */,
 				7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */,
 				C905450FAC03FAF7132FF510 /* ProgressService.swift */,
+				86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */,
 			);
 			name = Services;
 			path = Services;
@@ -305,6 +308,7 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
+				84F77901D51B6D11E407ED82 /* oxford_vocabulary.json in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

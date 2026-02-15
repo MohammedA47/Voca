@@ -16,11 +16,15 @@ struct LearnView: View {
                         
                         if let currentWord = viewModel.currentWord {
                             WordCardView(word: currentWord,
+                                         index: viewModel.currentIndex,
+                                         total: viewModel.totalWords,
                                          isBookmarked: viewModel.isBookmarked,
-                                         onPlay: viewModel.playAudio, 
+                                         isLearned: viewModel.isLearned,
+                                         onPlay: viewModel.playAudio,
                                          onNext: viewModel.nextWord,
                                          onPrevious: viewModel.previousWord,
-                                         onBookmark: viewModel.toggleBookmark)
+                                         onBookmark: viewModel.toggleBookmark,
+                                         onToggleLearned: viewModel.toggleLearned)
                                 .transition(.scale)
                         } else {
                             ContentUnavailableView("No words found", systemImage: "text.book.closed")
@@ -53,7 +57,7 @@ class LearnViewModel: ObservableObject {
     @Published var currentWord: Word?
     
     private var words: [Word] = []
-    private var currentIndex: Int = 0
+    var currentIndex: Int = 0 
     private let vocabularyService = VocabularyService()
     // In a real app, use Dependency Injection. Passing via init for simplicity.
     private var progressService: ProgressService?
@@ -81,10 +85,29 @@ class LearnViewModel: ObservableObject {
         return service.isBookmarked(id)
     }
     
+    var isLearned: Bool {
+        guard let id = currentWord?.id, let service = progressService else { return false }
+        return service.isLearned(id)
+    }
+    
+    var totalWords: Int {
+        words.count
+    }
+    
     func toggleBookmark() {
         guard let id = currentWord?.id, let service = progressService else { return }
         service.toggleBookmark(id)
         objectWillChange.send() // Force UI update
+    }
+    
+    func toggleLearned() {
+        guard let id = currentWord?.id, let service = progressService else { return }
+        if service.isLearned(id) {
+            service.unmarkLearned(id)
+        } else {
+            service.markAsLearned(id)
+        }
+        objectWillChange.send()
     }
     
     func playAudio() {
@@ -94,6 +117,7 @@ class LearnViewModel: ObservableObject {
     
     func nextWord() {
         guard !words.isEmpty else { return }
+        // Simple sequential navigation
         if currentIndex < words.count - 1 {
             currentIndex += 1
         } else {
@@ -156,84 +180,194 @@ struct LevelSelector: View {
 
 struct WordCardView: View {
     let word: Word
+    let index: Int
+    let total: Int
     var isBookmarked: Bool
+    var isLearned: Bool
     var onPlay: () -> Void
     var onNext: () -> Void
     var onPrevious: () -> Void
     var onBookmark: () -> Void
+    var onToggleLearned: () -> Void
+    
+    @State private var currentExampleIndex = 0
     
     var body: some View {
         GlassCard {
-            VStack(spacing: 24) {
-                // Top Actions
+            VStack(spacing: 12) {
+                // Top Row: Count & Bookmark
                 HStack {
+                    Text("WORD \(index + 1) OF \(total)")
+                        .font(.caption)
+                        .fontWeight(.bold)
+                        .foregroundColor(.secondary)
+                        .tracking(1)
+                    
                     Spacer()
+                    
                     Button(action: onBookmark) {
                         Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                            .font(.title2)
-                            .foregroundColor(isBookmarked ? .accentColor : .secondary)
+                            .font(.title3)
+                            .foregroundColor(isBookmarked ? .webPrimary : .secondary)
                     }
                 }
                 
-                // Word Header
-                VStack(spacing: 8) {
+                // Word Row with Navigation
+                HStack(spacing: 16) {
+                    Button(action: onPrevious) {
+                        Image(systemName: "chevron.left")
+                            .font(.title3)
+                            .foregroundColor(.secondary)
+                    }
+                    
                     Text(word.word)
                         .font(.oxfordDisplay(size: 48))
                         .foregroundColor(.webForeground)
+                        .minimumScaleFactor(0.5)
+                        .lineLimit(1)
                     
-                    HStack {
-                        Text(word.type)
-                            .italic()
-                            .font(.oxfordBody(size: 18))
-                            .foregroundColor(.webSecondary) // Pinkish secondary
-                        
-                        Divider().frame(height: 12)
-                        
-                        Text(word.phonetics.us ?? "")
-                            .font(.system(.body, design: .monospaced))
+                    Button(action: onNext) {
+                        Image(systemName: "chevron.right")
+                            .font(.title3)
                             .foregroundColor(.secondary)
                     }
                 }
+                .padding(.vertical, 4)
                 
-                // Audio Control
-                Button(action: onPlay) {
-                    Image(systemName: "speaker.wave.3.fill")
-                        .font(.largeTitle)
-                        .padding()
-                        .background(Color.webPrimary)
-                        .foregroundColor(.white)
-                        .clipShape(Circle())
-                        .shadow(color: .webPrimary.opacity(0.4), radius: 10, x: 0, y: 5)
+                // Phonetics Row
+                HStack(spacing: 8) {
+                    Text("US")
+                        .font(.caption2)
+                        .fontWeight(.bold)
+                        .foregroundColor(.webPrimary)
+                    
+                    Text(word.phonetics.us ?? "/.../")
+                        .font(.system(.subheadline, design: .monospaced))
+                        .foregroundColor(.secondary)
+                    
+                    Button(action: onPlay) {
+                        Image(systemName: "speaker.wave.3.fill")
+                            .font(.subheadline)
+                            .foregroundColor(.webPrimary)
+                    }
                 }
+                
+                // Type / Part of Speech Pill
+                HStack(spacing: 4) {
+                    Image(systemName: "book")
+                        .font(.caption)
+                    Text(word.type)
+                        .italic()
+                        .font(.oxfordBody(size: 14))
+                }
+                .foregroundColor(.webForeground)
+                .padding(.vertical, 6)
+                .padding(.horizontal, 16)
+                .frame(maxWidth: .infinity)
+                .background(Color.webPrimary.opacity(0.1))
+                .clipShape(RoundedRectangle(cornerRadius: 8))
                 
                 Divider()
+                    .padding(.vertical, 4)
                 
-                // Example
-                if let example = word.example {
-                    Text(example)
-                        .font(.oxfordDisplay(size: 20)) // Using Display font for example for elegance
-                        .italic()
-                        .multilineTextAlignment(.center)
-                        .padding(.horizontal)
-                        .foregroundColor(.webForeground.opacity(0.8))
-                }
-                
-                // Navigation Controls
-                HStack {
-                    Button(action: onPrevious) {
-                        Image(systemName: "chevron.left")
+                // Example Carousel
+                if let examples = word.examples, !examples.isEmpty {
+                    VStack(spacing: 8) {
+                        // Example Nav
+                        HStack {
+                            Button(action: {
+                                withAnimation {
+                                    currentExampleIndex = (currentExampleIndex - 1 + examples.count) % examples.count
+                                }
+                            }) {
+                                Image(systemName: "chevron.left")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                            
+                            Text("Example \(currentExampleIndex + 1) of \(examples.count)")
+                                .font(.caption2)
+                                .foregroundColor(.secondary)
+                            
+                            Button(action: {
+                                withAnimation {
+                                    currentExampleIndex = (currentExampleIndex + 1) % examples.count
+                                }
+                            }) {
+                                Image(systemName: "chevron.right")
+                                    .font(.caption2)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                        
+                        // Example Text
+                        Text("\"" + examples[currentExampleIndex] + "\"")
+                            .font(.oxfordDisplay(size: 18))
+                            .italic()
+                            .multilineTextAlignment(.center)
+                            .foregroundColor(.webForeground.opacity(0.9))
+                            .frame(height: 60) // Reduced fixed height
+                            .id("example-\(word.id)-\(currentExampleIndex)")
+                            .transition(.opacity)
                     }
-                    .buttonStyle(.secondary)
-                    
-                    Spacer()
-                    
-                    Button("Next", action: onNext)
-                        .buttonStyle(.primary)
-                        .frame(width: 120)
+                } else {
+                    Text("No examples available")
+                        .font(.caption)
+                        .italic()
+                        .foregroundColor(.secondary)
+                        .padding(.vertical, 20)
                 }
-                .padding(.top)
+                
+                Spacer(minLength: 0) // Allow collapsing if needed
+                
+                // Action Buttons
+                HStack(spacing: 12) {
+                    Button(action: onPlay) {
+                        Label("Listen", systemImage: "speaker.wave.3")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.webForeground)
+                            .padding(.vertical, 10)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.webBorder, lineWidth: 1)
+                            )
+                    }
+                    
+                    Button(action: {}) {
+                        Label("Example", systemImage: "text.book.closed")
+                            .font(.subheadline.weight(.semibold))
+                            .foregroundColor(.webForeground)
+                            .padding(.vertical, 10)
+                            .frame(maxWidth: .infinity)
+                            .background(
+                                RoundedRectangle(cornerRadius: 25)
+                                    .stroke(Color.webBorder, lineWidth: 1)
+                            )
+                    }
+                }
+                
+                // Mark as Learned
+                Button(action: onToggleLearned) {
+                    HStack {
+                        Image(systemName: isLearned ? "checkmark.circle.fill" : "checkmark.circle")
+                        Text(isLearned ? "Learned" : "Mark as Learned")
+                    }
+                    .font(.subheadline.weight(.bold))
+                    .foregroundColor(.white)
+                    .padding(.vertical, 12)
+                    .frame(maxWidth: .infinity)
+                    .background(
+                        LinearGradient(colors: [.webPrimary, .webPrimary.opacity(0.8)], startPoint: .leading, endPoint: .trailing)
+                    )
+                    .clipShape(Capsule())
+                    .shadow(color: .webPrimary.opacity(0.3), radius: 8, y: 4)
+                }
             }
-            .padding()
+            .padding(16) // Reduced outer padding
+        }
+        .onChange(of: word.id) { _ in
+            currentExampleIndex = 0
         }
     }
 }

@@ -25,6 +25,9 @@ extension Color {
     // --muted: 40 20% 92%
     static let webMuted = Color(hue: 40, saturation: 0.20, lightness: 0.92)
     
+    // --border: 220 20% 88%
+    static let webBorder = Color(hue: 220, saturation: 0.20, lightness: 0.88)
+    
     // MARK: - Semantic Aliases
     static let brandPrimary = webPrimary
     static let brandSecondary = webSecondary

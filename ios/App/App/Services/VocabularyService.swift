@@ -11,23 +11,23 @@ class VocabularyService: ObservableObject {
     }
     
     private func loadWords() {
-        // ideally load from Bundle.main.url(forResource: "oxford_vocabulary", withExtension: "json")
-        // For now we will mock some data or expect the user to provide the JSON file.
-        // I will create a small subset of data for testing.
-        self.words = MockData.words
-        self.groupWords()
+        guard let url = Bundle.main.url(forResource: "oxford_vocabulary", withExtension: "json") else {
+            print("ERROR: oxford_vocabulary.json not found in bundle.")
+            return
+        }
+        
+        do {
+            let data = try Data(contentsOf: url)
+            let decoder = JSONDecoder()
+            self.words = try decoder.decode([Word].self, from: data)
+            self.groupWords()
+            print("Successfully loaded \(words.count) words.")
+        } catch {
+            print("ERROR: Failed to decode vocabulary: \(error)")
+        }
     }
     
     private func groupWords() {
         self.wordsByLevel = Dictionary(grouping: words, by: { $0.level })
     }
-}
-
-// TODO: Replace with real JSON loading
-struct MockData {
-    static let words: [Word] = [
-        Word(id: "1", word: "Ability", type: "noun", level: "A2", phonetics: Phonetics(us: "/əˈbɪləti/", uk: "/əˈbɪləti/"), example: "She has the ability to pass the test."),
-        Word(id: "2", word: "Able", type: "adjective", level: "A2", phonetics: Phonetics(us: "/ˈeɪbl/", uk: "/ˈeɪbl/"), example: "You must be able to speak English."),
-        Word(id: "3", word: "About", type: "preposition", level: "A1", phonetics: Phonetics(us: "/əˈbaʊt/", uk: "/əˈbaʊt/"), example: "Tell me about yourself.")
-    ]
 }
