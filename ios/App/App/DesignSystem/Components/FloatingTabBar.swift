@@ -34,7 +34,7 @@ struct FloatingTabBar: View {
                         shadowYOffset: 4
                     )
             }
-            .padding(.trailing, 8)
+            .accessibilityLabel("Search")
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
@@ -61,13 +61,14 @@ struct TabBarButton: View {
         Button(action: action) {
             VStack(spacing: 4) {
                 Image(systemName: icon)
-                    .font(.system(size: 20))
+                    .font(.system(size: 16, weight: .semibold))
                 Text(text)
                     .font(.caption2)
                     .fontWeight(.medium)
             }
             .foregroundStyle(isSelected ? GlassStyle.activeTint : GlassStyle.inactiveTint)
             .frame(maxWidth: .infinity)
+            .padding(.vertical, 2)
         }
     }
 }
