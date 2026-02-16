@@ -2,28 +2,60 @@ import SwiftUI
 
 struct SearchView: View {
     @StateObject private var viewModel = SearchViewModel()
-    
+
     var body: some View {
         NavigationStack {
-            List(viewModel.filteredWords) { word in
-                HStack {
-                    VStack(alignment: .leading) {
-                        Text(word.word)
-                            .font(.headline)
-                        Text(word.type)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
+            VStack(spacing: 12) {
+                HStack(spacing: 10) {
+                    Image(systemName: "magnifyingglass")
+                        .foregroundStyle(GlassStyle.inactiveTint)
+
+                    TextField("Search words...", text: $viewModel.searchText)
+                        .textInputAutocapitalization(.never)
+                        .autocorrectionDisabled(true)
+
+                    if !viewModel.searchText.isEmpty {
+                        Button {
+                            viewModel.searchText = ""
+                        } label: {
+                            Image(systemName: "xmark.circle.fill")
+                                .foregroundStyle(GlassStyle.inactiveTint)
+                        }
+                        .buttonStyle(.plain)
                     }
-                    Spacer()
-                    Text(word.level)
-                        .font(.caption)
-                        .padding(4)
-                        .background(Color.secondary.opacity(0.1))
-                        .clipShape(RoundedRectangle(cornerRadius: 4))
                 }
+                .padding(.horizontal, 14)
+                .padding(.vertical, 12)
+                .glassTreatment(
+                    shape: RoundedRectangle(cornerRadius: GlassStyle.searchFieldCornerRadius, style: .continuous),
+                    material: .thinMaterial,
+                    borderOpacity: 0.32,
+                    shadowOpacity: 0.07,
+                    shadowRadius: 12,
+                    shadowYOffset: 4
+                )
+
+                List(viewModel.filteredWords) { word in
+                    HStack {
+                        VStack(alignment: .leading) {
+                            Text(word.word)
+                                .font(.headline)
+                            Text(word.type)
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        Spacer()
+                        Text(word.level)
+                            .font(.caption)
+                            .padding(4)
+                            .background(Color.secondary.opacity(0.1))
+                            .clipShape(RoundedRectangle(cornerRadius: 4))
+                    }
+                }
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
-            .searchable(text: $viewModel.searchText, prompt: "Search words...")
+            .padding(.horizontal, 16)
+            .padding(.top, 8)
             .navigationTitle("Search")
         }
     }

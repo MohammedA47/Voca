@@ -2,48 +2,52 @@ import SwiftUI
 
 struct FloatingTabBar: View {
     @Binding var selectedTab: Int
-    var onSearchTap: () -> Void = {}
 
     var body: some View {
-        HStack(spacing: 12) {
-            HStack(spacing: 0) {
-                TabBarButton(icon: "house.fill", text: "Home", isSelected: selectedTab == 0) {
-                    selectedTab = 0
-                }
-
-                TabBarButton(icon: "bookmark.fill", text: "Saved", isSelected: selectedTab == 1) {
-                    selectedTab = 1
-                }
-
-                TabBarButton(icon: "chart.bar.fill", text: "Stats", isSelected: selectedTab == 2) {
-                    selectedTab = 2
-                }
-
-                TabBarButton(icon: "person.fill", text: "Profile", isSelected: selectedTab == 3) {
-                    selectedTab = 3
-                }
+        HStack(spacing: 0) {
+            TabBarButton(icon: "house.fill", text: "Home", isSelected: selectedTab == 0) {
+                selectedTab = 0
             }
 
-            Button(action: onSearchTap) {
+            TabBarButton(icon: "bookmark.fill", text: "Saved", isSelected: selectedTab == 1) {
+                selectedTab = 1
+            }
+
+            TabBarButton(icon: "chart.bar.fill", text: "Stats", isSelected: selectedTab == 2) {
+                selectedTab = 2
+            }
+
+            Spacer()
+
+            Button(action: {
+                selectedTab = 3
+            }) {
                 Image(systemName: "magnifyingglass")
-                    .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.webForeground)
-                    .frame(width: 52, height: 52)
-                    .background(.ultraThinMaterial)
-                    .clipShape(Circle())
-                    .shadow(color: Color.black.opacity(0.08), radius: 8, x: 0, y: 4)
+                    .font(.title2)
+                    .foregroundStyle(selectedTab == 3 ? GlassStyle.activeTint : GlassStyle.inactiveTint)
+                    .frame(width: 48, height: 48)
+                    .glassTreatment(
+                        shape: Circle(),
+                        material: .thinMaterial,
+                        shadowOpacity: 0.12,
+                        shadowRadius: 10,
+                        shadowYOffset: 4
+                    )
             }
             .accessibilityLabel("Search")
         }
-        .padding(.vertical, 10)
-        .padding(.leading, 16)
-        .padding(.trailing, 12)
-        .background(
-            Capsule()
-                .fill(Color.white.opacity(0.9))
-                .shadow(color: Color.black.opacity(0.08), radius: 12, x: 0, y: 6)
-        )
+        .padding(.vertical, 8)
         .padding(.horizontal, 16)
+        .glassTreatment(
+            shape: Capsule(style: .continuous),
+            material: .ultraThinMaterial,
+            borderOpacity: 0.38,
+            shadowOpacity: 0.08,
+            shadowRadius: 18,
+            shadowYOffset: 8
+        )
+        .clipShape(Capsule(style: .continuous))
+        .padding(.horizontal, 24)
     }
 }
 
@@ -62,7 +66,7 @@ struct TabBarButton: View {
                     .font(.caption2)
                     .fontWeight(.medium)
             }
-            .foregroundColor(isSelected ? .webPrimary : .secondary)
+            .foregroundStyle(isSelected ? GlassStyle.activeTint : GlassStyle.inactiveTint)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 2)
         }
