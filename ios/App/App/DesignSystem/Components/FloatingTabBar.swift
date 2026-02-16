@@ -2,6 +2,7 @@ import SwiftUI
 
 struct FloatingTabBar: View {
     @Binding var selectedTab: Int
+    var onSearch: () -> Void = {}
 
     var body: some View {
         HStack(spacing: 0) {
@@ -19,34 +20,22 @@ struct FloatingTabBar: View {
 
             Spacer()
 
+            // Search button — separate glass circle
             Button(action: {
                 selectedTab = 3
+                onSearch()
             }) {
                 Image(systemName: "magnifyingglass")
-                    .font(.title2)
+                    .font(.system(size: 18, weight: .semibold))
                     .foregroundStyle(selectedTab == 3 ? GlassStyle.activeTint : GlassStyle.inactiveTint)
                     .frame(width: 48, height: 48)
-                    .glassTreatment(
-                        shape: Circle(),
-                        material: .thinMaterial,
-                        shadowOpacity: 0.12,
-                        shadowRadius: 10,
-                        shadowYOffset: 4
-                    )
             }
+            .glassEffect(.regular.interactive(), in: .circle)
             .accessibilityLabel("Search")
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .glassTreatment(
-            shape: Capsule(style: .continuous),
-            material: .ultraThinMaterial,
-            borderOpacity: 0.38,
-            shadowOpacity: 0.08,
-            shadowRadius: 18,
-            shadowYOffset: 8
-        )
-        .clipShape(Capsule(style: .continuous))
+        .glassEffect(in: .capsule)
         .padding(.horizontal, 24)
     }
 }
