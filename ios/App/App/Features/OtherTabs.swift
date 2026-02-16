@@ -26,8 +26,8 @@ struct SearchView: View {
                 }
                 .padding(.horizontal, 14)
                 .padding(.vertical, 12)
-                .glassSurface(
-                    in: RoundedRectangle(cornerRadius: GlassStyle.searchFieldCornerRadius, style: .continuous),
+                .glassTreatment(
+                    shape: RoundedRectangle(cornerRadius: GlassStyle.searchFieldCornerRadius, style: .continuous),
                     material: .thinMaterial,
                     borderOpacity: 0.32,
                     shadowOpacity: 0.07,
@@ -67,11 +67,11 @@ struct BookmarksView: View {
     // In a real app, use Dependency Injection or Singleton for VocabService.
     // For now, instantiate locally as it's cheap (mock data).
     @StateObject private var vocabService = VocabularyService()
-
+    
     var bookmarkedWords: [Word] {
         vocabService.words.filter { progressService.isBookmarked($0.id) }
     }
-
+    
     var body: some View {
         NavigationStack {
             if bookmarkedWords.isEmpty {
@@ -101,7 +101,7 @@ struct BookmarksView: View {
 
 struct ProfileView: View {
     @EnvironmentObject var progressService: ProgressService
-
+    
     var body: some View {
         NavigationStack {
             List {

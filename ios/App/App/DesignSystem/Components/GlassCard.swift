@@ -1,11 +1,11 @@
 import SwiftUI
 
 enum GlassStyle {
-    static let barCornerRadius: CGFloat = 28
     static let cardCornerRadius: CGFloat = 16
+    static let barCornerRadius: CGFloat = 28
     static let searchFieldCornerRadius: CGFloat = 18
 
-    static let borderOpacity: Double = 0.35
+    static let borderOpacity: Double = 0.34
     static let borderLineWidth: CGFloat = 1
 
     static let shadowOpacity: Double = 0.10
@@ -17,8 +17,8 @@ enum GlassStyle {
 }
 
 extension View {
-    func glassSurface<S: InsettableShape>(
-        in shape: S,
+    func glassTreatment<S: InsettableShape>(
+        shape: S,
         material: Material = .ultraThinMaterial,
         borderOpacity: Double = GlassStyle.borderOpacity,
         shadowOpacity: Double = GlassStyle.shadowOpacity,
@@ -36,16 +36,16 @@ extension View {
 
 struct GlassCard<Content: View>: View {
     var content: Content
-    
+
     init(@ViewBuilder content: () -> Content) {
         self.content = content()
     }
-    
+
     var body: some View {
         content
             .padding()
-            .glassSurface(
-                in: RoundedRectangle(cornerRadius: GlassStyle.cardCornerRadius, style: .continuous),
+            .glassTreatment(
+                shape: RoundedRectangle(cornerRadius: GlassStyle.cardCornerRadius, style: .continuous),
                 material: .ultraThinMaterial,
                 shadowOpacity: 0.08,
                 shadowRadius: 20,

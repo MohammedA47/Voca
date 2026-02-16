@@ -26,10 +26,9 @@ struct FloatingTabBar: View {
                     .font(.title2)
                     .foregroundStyle(selectedTab == 3 ? GlassStyle.activeTint : GlassStyle.inactiveTint)
                     .frame(width: 48, height: 48)
-                    .glassSurface(
-                        in: Circle(),
+                    .glassTreatment(
+                        shape: Circle(),
                         material: .thinMaterial,
-                        borderOpacity: GlassStyle.borderOpacity,
                         shadowOpacity: 0.12,
                         shadowRadius: 10,
                         shadowYOffset: 4
@@ -39,8 +38,8 @@ struct FloatingTabBar: View {
         }
         .padding(.vertical, 8)
         .padding(.horizontal, 16)
-        .glassSurface(
-            in: Capsule(style: .continuous),
+        .glassTreatment(
+            shape: Capsule(style: .continuous),
             material: .ultraThinMaterial,
             borderOpacity: 0.38,
             shadowOpacity: 0.08,
