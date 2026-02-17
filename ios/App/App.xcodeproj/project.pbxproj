@@ -29,6 +29,7 @@
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
 		AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */; };
 		C1AC34834AA30338680B2A5A /* OtherTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1911E28486ADF1DD637173 /* OtherTabs.swift */; };
+		F1A2B3C4D5E6F7081234ABCD /* WordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */; };
 		CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */; };
 		D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE10E077EB19A349A5775D7 /* FloatingTabBar.swift */; };
 /* End PBXBuildFile section */
@@ -39,6 +40,7 @@
 		21DB232B31F794FDDFB89685 /* GlassCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GlassCard.swift; path = Components/GlassCard.swift; sourceTree = "<group>"; };
 		29B7905B12D97B7782DF61D2 /* LearnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LearnView.swift; path = Learn/LearnView.swift; sourceTree = "<group>"; };
 		2C1911E28486ADF1DD637173 /* OtherTabs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OtherTabs.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WordDetailView.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
 		3CF51A9CCAACF1ADDB6A008B /* GlassCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GlassCard.swift; path = Components/GlassCard.swift; sourceTree = "<group>"; };
 		3DD397E4664B1F5DA9FD1398 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -130,6 +132,7 @@
 				0C3BEAC261493509191CBB67 /* LearnView.swift */,
 				42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */,
 				2C1911E28486ADF1DD637173 /* OtherTabs.swift */,
+				A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -358,6 +361,7 @@
 				942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */,
 				AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */,
 				C1AC34834AA30338680B2A5A /* OtherTabs.swift in Sources */,
+				F1A2B3C4D5E6F7081234ABCD /* WordDetailView.swift in Sources */,
 				987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */,
 				9CB5BAAA662E06D30F0B3F44 /* GlassCard.swift in Sources */,
 				24D2DB24214371F9E49387C8 /* Colors.swift in Sources */,

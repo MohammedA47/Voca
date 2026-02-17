@@ -1,41 +1,12 @@
 import SwiftUI
 
 struct SearchView: View {
-    @StateObject private var viewModel = SearchViewModel()
+    @ObservedObject var viewModel: SearchViewModel
 
     var body: some View {
         NavigationStack {
-            VStack(spacing: 12) {
-                HStack(spacing: 10) {
-                    Image(systemName: "magnifyingglass")
-                        .foregroundStyle(GlassStyle.inactiveTint)
-
-                    TextField("Search words...", text: $viewModel.searchText)
-                        .textInputAutocapitalization(.never)
-                        .autocorrectionDisabled(true)
-
-                    if !viewModel.searchText.isEmpty {
-                        Button {
-                            viewModel.searchText = ""
-                        } label: {
-                            Image(systemName: "xmark.circle.fill")
-                                .foregroundStyle(GlassStyle.inactiveTint)
-                        }
-                        .buttonStyle(.plain)
-                    }
-                }
-                .padding(.horizontal, 14)
-                .padding(.vertical, 12)
-                .glassTreatment(
-                    shape: RoundedRectangle(cornerRadius: GlassStyle.searchFieldCornerRadius, style: .continuous),
-                    material: .thinMaterial,
-                    borderOpacity: 0.32,
-                    shadowOpacity: 0.07,
-                    shadowRadius: 12,
-                    shadowYOffset: 4
-                )
-
-                List(viewModel.filteredWords) { word in
+            List(viewModel.filteredWords) { word in
+                NavigationLink(value: word) {
                     HStack {
                         VStack(alignment: .leading) {
                             Text(word.word)
@@ -52,11 +23,12 @@ struct SearchView: View {
                             .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                 }
-                .listStyle(.plain)
             }
-            .padding(.horizontal, 16)
-            .padding(.top, 8)
+            .listStyle(.plain)
             .navigationTitle("Search")
+            .navigationDestination(for: Word.self) { word in
+                WordDetailView(word: word)
+            }
         }
     }
 }
@@ -79,21 +51,27 @@ struct BookmarksView: View {
                     .navigationTitle("Bookmarks")
             } else {
                 List(bookmarkedWords) { word in
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(word.word).font(.headline)
-                            Text(word.type).font(.caption).foregroundColor(.secondary)
-                        }
-                        Spacer()
-                        Button(action: {
-                            progressService.toggleBookmark(word.id)
-                        }) {
-                            Image(systemName: "bookmark.fill")
-                                .foregroundColor(.accentColor)
+                    NavigationLink(value: word) {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(word.word).font(.headline)
+                                Text(word.type).font(.caption).foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Button(action: {
+                                progressService.toggleBookmark(word.id)
+                            }) {
+                                Image(systemName: "bookmark.fill")
+                                    .foregroundColor(.accentColor)
+                            }
+                            .buttonStyle(.plain)
                         }
                     }
                 }
                 .navigationTitle("Bookmarks")
+                .navigationDestination(for: Word.self) { word in
+                    WordDetailView(word: word)
+                }
             }
         }
     }

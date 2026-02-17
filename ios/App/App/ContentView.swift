@@ -4,6 +4,7 @@ enum Tabs {
 }
 struct ContentView: View {
     @State private var selectedTab: Tabs = .home
+    @StateObject private var searchViewModel = SearchViewModel()
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -19,14 +20,9 @@ struct ContentView: View {
                 ProfileView() // Reusing as Stats placeholder
             }
 
-            Tab(value : .search, role: .search) {
-                NavigationStack {
-                    List {
-                        Text("Search Screen")
-                    }
-                    .navigationTitle("Search")
-                    .searchable(text: .constant(""))
-                }
+            Tab(value: .search, role: .search) {
+                SearchView(viewModel: searchViewModel)
+                    .searchable(text: $searchViewModel.searchText, prompt: "Search words...")
             }
         }
         .tint(.webPrimary)
