@@ -3,6 +3,7 @@ import SwiftUI
 struct LearnView: View {
     @StateObject private var viewModel = LearnViewModel()
     @EnvironmentObject var progressService: ProgressService
+    @State private var showAccountSheet = false
     
     var body: some View {
         ZStack {
@@ -26,14 +27,18 @@ struct LearnView: View {
                     
                     Spacer()
                     
-                    Button(action: viewModel.toggleSettings) {
-                        Image(systemName: "ellipsis")
-                            .font(.body.bold())
-                            .foregroundColor(.webForeground)
-                            .frame(width: 36, height: 36)
-                            .background(.ultraThinMaterial)
-                            .clipShape(Circle())
+                    Button {
+                        // Haptic feedback on tap (matches Apple system apps)
+                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        showAccountSheet = true
+                    } label: {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 28))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundColor(.webPrimary)
                     }
+                    .accessibilityLabel("Account")
+                    .accessibilityHint("Opens your account panel")
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 8)
@@ -139,6 +144,11 @@ struct LearnView: View {
         .onAppear {
             viewModel.setProgressService(progressService)
         }
+        .sheet(isPresented: $showAccountSheet) {
+            AccountSheetView()
+                .presentationDetents([.medium, .large])
+                .presentationDragIndicator(.visible)
+        }
     }
 }
 
@@ -220,7 +230,7 @@ class LearnViewModel: ObservableObject {
         }
     }
     
-    func toggleSettings() { /* placeholder */ }
+    // Settings toggle removed — replaced by AccountSheetView
 }
 
 // MARK: - Level Selector
