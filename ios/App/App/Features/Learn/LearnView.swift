@@ -518,11 +518,47 @@ private struct CardBackFace: View {
                     .foregroundColor(.webPrimary)
                     .tracking(1)
                 
-                Text(word.example ?? "No definition available.")
+                Text(word.definition ?? "No definition available.")
                     .font(.oxfordBody(size: 17))
                     .foregroundColor(.webForeground)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
+                
+                // ── Example ──────────────────────────────────
+                if let example = word.example, !example.isEmpty {
+                    Text("“\(example)”")
+                        .font(.oxfordBody(size: 16))
+                        .foregroundColor(.secondary)
+                        .italic()
+                        .padding(.top, 4)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+                
+                // ── Synonyms ─────────────────────────────────
+                if let synonyms = word.synonyms, !synonyms.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        Text("Synonyms:")
+                            .font(.system(size: 14, weight: .regular))
+                            .foregroundColor(.secondary)
+                        
+                        ScrollView(.horizontal, showsIndicators: false) {
+                            HStack(spacing: 8) {
+                                ForEach(synonyms, id: \.self) { syn in
+                                    Text(syn)
+                                        .font(.system(size: 14))
+                                        .foregroundColor(.webForeground)
+                                        .padding(.horizontal, 14)
+                                        .padding(.vertical, 8)
+                                        .overlay(
+                                            Capsule()
+                                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
+                                        )
+                                }
+                            }
+                        }
+                    }
+                    .padding(.top, 12)
+                }
             }
             .padding(.top, 4)
             

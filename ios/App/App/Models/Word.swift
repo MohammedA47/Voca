@@ -9,11 +9,9 @@ struct Word: Codable, Identifiable, Hashable {
     let level: Level
     let phonetics: Phonetics
     let examples: [String]?
-    
-    // Computed property for backward compatibility or easy access
-    var example: String? {
-        examples?.first
-    }
+    let definition: String?
+    let example: String?
+    let synonyms: [String]?
 }
 
 struct Phonetics: Codable, Hashable {
