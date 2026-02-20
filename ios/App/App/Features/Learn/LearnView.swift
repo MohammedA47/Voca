@@ -34,8 +34,8 @@ struct LearnView: View {
                         Text(type.capitalized)
                             .font(.system(size: 13, weight: .semibold))
                             .foregroundColor(.webPrimary)
-                            .padding(.horizontal, 10)
-                            .padding(.vertical, 5)
+                            .padding(.horizontal, Spacing.sm + 2)
+                            .padding(.vertical, Spacing.xs + 1)
                             .background(Color.webPrimary.opacity(0.12))
                             .clipShape(Capsule())
                     }
@@ -109,14 +109,16 @@ struct LearnView: View {
                     .accessibilityLabel("Account")
                     .accessibilityHint("Opens your account panel")
                 }
-                .padding(.horizontal, 20)
-                .padding(.top, 8)
-                .padding(.bottom, 12)
+                .padding(.horizontal, Spacing.md)
+                .padding(.top, Spacing.sm)
+                .padding(.bottom, Spacing.sm + Spacing.xs)
                 
                 // ── Level Selector Pills ────────────────────
                 LevelSelector(selectedLevel: $viewModel.selectedLevel)
-                    .padding(.horizontal, 16)
-                    .padding(.bottom, 16)
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.md)
+                    
+                Spacer(minLength: 0)
                 
                 // ── Main Card (Swipeable) ───────────────────
                 if let currentWord = viewModel.currentWord {
@@ -136,7 +138,9 @@ struct LearnView: View {
                                 onBookmark: viewModel.toggleBookmark,
                                 onToggleLearned: viewModel.toggleLearned
                             )
-                            .padding(.horizontal, 16)
+                            .padding(.horizontal, Spacing.md)
+                            .padding(.top, Spacing.lg)
+                            .padding(.bottom, Spacing.lg)
                         }
                         // ── Card transforms ──
                         .offset(x: dragOffset, y: -abs(dragOffset) * 0.08)
@@ -213,8 +217,8 @@ struct LearnView: View {
                             .tracking(0.8)
                     }
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
+                .padding(.horizontal, Spacing.md)
+                .padding(.bottom, Spacing.md)
                 
                 // ── Play / Pause Button ─────────────────────
                 Button {
@@ -265,7 +269,7 @@ struct LearnView: View {
                     .animation(.easeInOut(duration: 0.3), value: viewModel.isPlayAnimating)
                 }
                 .buttonStyle(PlayButtonStyle())
-                .padding(.bottom, 12)
+                .padding(.bottom, Spacing.xl)
             }
         }
         .onAppear {

@@ -11,8 +11,8 @@ struct SearchView: View {
                     selectedType: $viewModel.selectedWordType,
                     availableTypes: viewModel.allWordTypes
                 )
-                .padding(.horizontal, 16)
-                .padding(.vertical, 10)
+                .padding(.horizontal, Spacing.md)
+                .padding(.vertical, Spacing.sm + 2)
                 
                 List(viewModel.filteredWords) { word in
                     NavigationLink(value: word) {

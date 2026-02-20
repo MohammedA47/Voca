@@ -49,7 +49,7 @@ struct AccountSheetView: View {
     
     private var profileHeaderSection: some View {
         Section {
-            VStack(spacing: 12) {
+            VStack(spacing: Spacing.sm + Spacing.xs) {
                 // Avatar
                 Image(systemName: "person.crop.circle.fill")
                     .font(.system(size: 72))
@@ -74,8 +74,8 @@ struct AccountSheetView: View {
                     Text("Edit Profile")
                         .font(.subheadline.weight(.medium))
                         .foregroundColor(.webPrimary)
-                        .padding(.horizontal, 20)
-                        .padding(.vertical, 8)
+                        .padding(.horizontal, Spacing.md + Spacing.xs)
+                        .padding(.vertical, Spacing.sm)
                         .background(
                             Capsule()
                                 .fill(Color.webPrimary.opacity(0.12))
@@ -86,7 +86,7 @@ struct AccountSheetView: View {
                 .accessibilityHint("Opens profile editing screen")
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 12)
+            .padding(.vertical, Spacing.sm + Spacing.xs)
             .listRowBackground(Color.clear)
         }
     }
@@ -114,10 +114,10 @@ struct AccountSheetView: View {
     private var preferencesSection: some View {
         Section(header: Text("Settings")) {
             // ── Loop Gap ──────────────────────────────────
-            HStack(spacing: 14) {
+            HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(systemName: "timer", color: .orange)
                 
-                VStack(alignment: .leading, spacing: 2) {
+                VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                     Text("Loop Gap")
                         .font(.body)
                         .foregroundColor(.primary)
@@ -135,8 +135,8 @@ struct AccountSheetView: View {
             .accessibilityLabel("Loop gap \(loopGapSeconds, specifier: "%.1f") seconds")
             
             // ── Playback Speed ────────────────────────────
-            VStack(spacing: 8) {
-                HStack(spacing: 14) {
+            VStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.sm + Spacing.xs) {
                     SettingsIcon(systemName: "gauge.with.needle", color: .blue)
                     
                     Text("Playback Speed")
@@ -155,14 +155,14 @@ struct AccountSheetView: View {
                     .accessibilityLabel("Playback speed")
                     .accessibilityValue("\(playbackSpeed, specifier: "%.1f") times")
             }
-            .padding(.vertical, 4)
+            .padding(.vertical, Spacing.xs)
             
             // ── Random Speed ──────────────────────────────
-            HStack(spacing: 14) {
+            HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(systemName: "dice", color: .purple)
                 
                 Toggle(isOn: $randomSpeedEnabled) {
-                    VStack(alignment: .leading, spacing: 2) {
+                    VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                         Text("Random Speed")
                             .font(.body)
                             .foregroundColor(.primary)
@@ -176,7 +176,7 @@ struct AccountSheetView: View {
             .accessibilityElement(children: .combine)
             
             // ── Appearance ────────────────────────────────
-            HStack(spacing: 14) {
+            HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(
                     systemName: appearanceMode == "dark" ? "moon.fill" : "sun.max.fill",
                     color: appearanceMode == "dark" ? .indigo : .yellow
@@ -250,7 +250,7 @@ struct AccountMenuItem: View {
         Button(action: {
             // TODO: Handle navigation
         }) {
-            HStack(spacing: 14) {
+            HStack(spacing: Spacing.sm + Spacing.xs) {
                 // Icon with rounded-rect background (Apple Settings style)
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .medium))
