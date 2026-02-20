@@ -5,26 +5,36 @@ struct SearchView: View {
 
     var body: some View {
         NavigationStack {
-            List(viewModel.filteredWords) { word in
-                NavigationLink(value: word) {
-                    HStack {
-                        VStack(alignment: .leading) {
-                            Text(word.word)
-                                .font(.headline)
-                            Text(word.type)
+            VStack(spacing: 0) {
+                // ── Word Type Filter ────────────────────────
+                WordTypeSelector(
+                    selectedType: $viewModel.selectedWordType,
+                    availableTypes: viewModel.allWordTypes
+                )
+                .padding(.horizontal, 16)
+                .padding(.vertical, 10)
+                
+                List(viewModel.filteredWords) { word in
+                    NavigationLink(value: word) {
+                        HStack {
+                            VStack(alignment: .leading) {
+                                Text(word.word)
+                                    .font(.headline)
+                                Text(word.type)
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            Spacer()
+                            Text(word.level)
                                 .font(.caption)
-                                .foregroundColor(.secondary)
+                                .padding(4)
+                                .background(Color.secondary.opacity(0.1))
+                                .clipShape(RoundedRectangle(cornerRadius: 4))
                         }
-                        Spacer()
-                        Text(word.level)
-                            .font(.caption)
-                            .padding(4)
-                            .background(Color.secondary.opacity(0.1))
-                            .clipShape(RoundedRectangle(cornerRadius: 4))
                     }
                 }
+                .listStyle(.plain)
             }
-            .listStyle(.plain)
             .navigationTitle("Search")
             .navigationDestination(for: Word.self) { word in
                 WordDetailView(word: word)

@@ -1,14 +1,19 @@
 import SwiftUI
+import UIKit
 
 extension Color {
-    // MARK: - Web Theme Colors
-    // Converted from HSL in index.css
+    // MARK: - HSL Initialiser
     
-    // --background: 40 33% 97%
-    static let webBackground = Color(hue: 40, saturation: 0.33, lightness: 0.97)
+    /// Convenience init matching CSS `hsl(h, s%, l%)`.
+    init(hue h: Double, saturation s: Double, lightness l: Double) {
+        let h360 = h / 360.0
+        let t = s * min(l, 1 - l)
+        let sHSV = (l > 0 && l < 1) ? 2 * t / (l + t) : 0
+        let bHSV = l + t
+        self.init(hue: h360, saturation: sHSV, brightness: bHSV)
+    }
     
-    // --foreground: 220 40% 13%
-    static let webForeground = Color(hue: 220, saturation: 0.40, lightness: 0.13)
+    // MARK: - Web Theme Colors (static, light-only originals)
     
     // --primary: 330 65% 50%
     static let webPrimary = Color(hue: 330, saturation: 0.65, lightness: 0.50)
@@ -16,16 +21,85 @@ extension Color {
     // --secondary: 330 45% 70%
     static let webSecondary = Color(hue: 330, saturation: 0.45, lightness: 0.70)
     
-    // --oxford-navy: 220 40% 18%
-    static let oxfordNavy = Color(hue: 220, saturation: 0.40, lightness: 0.18)
-    
-    // --oxford-gold: 330 65% 55% (Note: Source CSS has 330 hue which is pinkish, keeping faithful to source)
+    // --oxford-gold: 330 65% 55%
     static let oxfordGold = Color(hue: 330, saturation: 0.65, lightness: 0.55)
     
-    // --muted: 40 20% 92%
-    static let webMuted = Color(hue: 40, saturation: 0.20, lightness: 0.92)
+    // MARK: - Adaptive Semantic Colors
+    // These switch automatically between light and dark mode.
     
-    // --border: 220 20% 88%
+    /// Main page background gradient start
+    static let adaptiveBackground = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.10, green: 0.10, blue: 0.12, alpha: 1)
+            : UIColor(red: 0.98, green: 0.96, blue: 0.97, alpha: 1)
+    })
+    
+    /// Main page background gradient end
+    static let adaptiveBackgroundEnd = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.08, green: 0.08, blue: 0.11, alpha: 1)
+            : UIColor(red: 0.95, green: 0.93, blue: 0.96, alpha: 1)
+    })
+    
+    /// Card / elevated surface fill
+    static let adaptiveCardBackground = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.16, green: 0.16, blue: 0.19, alpha: 1)
+            : UIColor(red: 1.0, green: 1.0, blue: 1.0, alpha: 1)
+    })
+    
+    /// Secondary card surface (back face, examples area)
+    static let adaptiveCardBackgroundSecondary = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.19, green: 0.18, blue: 0.22, alpha: 1)
+            : UIColor(red: 0.97, green: 0.96, blue: 0.98, alpha: 1)
+    })
+    
+    /// Card back face gradient end
+    static let adaptiveCardBackEnd = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.14, green: 0.13, blue: 0.18, alpha: 1)
+            : UIColor(red: 0.97, green: 0.96, blue: 0.99, alpha: 1)
+    })
+    
+    /// Unselected pill / chip background
+    static let adaptivePillBackground = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.22, green: 0.22, blue: 0.26, alpha: 1)
+            : UIColor.white.withAlphaComponent(0.7)
+    })
+    
+    /// Pill border in light, subtle border in dark
+    static let adaptivePillBorder = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor.white.withAlphaComponent(0.08)
+            : UIColor.black.withAlphaComponent(0.06)
+    })
+    
+    /// Card shadow color
+    static let adaptiveCardShadow = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor.black.withAlphaComponent(0.30)
+            : UIColor.black.withAlphaComponent(0.06)
+    })
+    
+    /// Primary text (titles, headings)  — oxford navy adapts
+    static let oxfordNavy = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.85, green: 0.85, blue: 0.92, alpha: 1)
+            : UIColor(red: 0.16, green: 0.18, blue: 0.25, alpha: 1)
+    })
+    
+    /// Body / foreground text
+    static let webForeground = Color(UIColor { traits in
+        traits.userInterfaceStyle == .dark
+            ? UIColor(red: 0.88, green: 0.87, blue: 0.90, alpha: 1)
+            : UIColor(red: 0.14, green: 0.15, blue: 0.19, alpha: 1)
+    })
+    
+    // Legacy aliases kept for compatibility
+    static let webBackground = Color(hue: 40, saturation: 0.33, lightness: 0.97)
+    static let webMuted = Color(hue: 40, saturation: 0.20, lightness: 0.92)
     static let webBorder = Color(hue: 220, saturation: 0.20, lightness: 0.88)
     
     // MARK: - Semantic Aliases
@@ -35,6 +109,3 @@ extension Color {
     static let surface = webMuted
 }
 
-// Dark Mode Overrides (Simplistic approach for now)
-// In a real app, we'd use Asset Catalog named colors for automatic light/dark switching.
-// For this generated code, we'll keep it simple or user can use .colorScheme environment.

@@ -8,6 +8,12 @@ struct AccountSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
     
+    // MARK: - Persisted Settings
+    @AppStorage("loopGapSeconds") private var loopGapSeconds: Double = 1.0
+    @AppStorage("playbackSpeed") private var playbackSpeed: Double = 1.0
+    @AppStorage("randomSpeedEnabled") private var randomSpeedEnabled: Bool = false
+    @AppStorage("appearanceMode") private var appearanceMode: String = "system"
+    
     var body: some View {
         NavigationStack {
             List {
@@ -33,6 +39,10 @@ struct AccountSheetView: View {
                 }
             }
         }
+        .preferredColorScheme(
+            appearanceMode == "dark" ? .dark :
+            appearanceMode == "light" ? .light : nil
+        )
     }
     
     // MARK: - Profile Header
@@ -102,13 +112,91 @@ struct AccountSheetView: View {
     // MARK: - Preferences Section
     
     private var preferencesSection: some View {
-        Section {
-            AccountMenuItem(
-                icon: "gearshape.fill",
-                iconColor: .gray,
-                title: "Settings"
-            )
+        Section(header: Text("Settings")) {
+            // ── Loop Gap ──────────────────────────────────
+            HStack(spacing: 14) {
+                SettingsIcon(systemName: "timer", color: .orange)
+                
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Loop Gap")
+                        .font(.body)
+                        .foregroundColor(.primary)
+                    Text("\(loopGapSeconds, specifier: "%.1f")s between repeats")
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                }
+                
+                Spacer()
+                
+                Stepper("", value: $loopGapSeconds, in: 0...10, step: 0.5)
+                    .labelsHidden()
+            }
+            .accessibilityElement(children: .combine)
+            .accessibilityLabel("Loop gap \(loopGapSeconds, specifier: "%.1f") seconds")
             
+            // ── Playback Speed ────────────────────────────
+            VStack(spacing: 8) {
+                HStack(spacing: 14) {
+                    SettingsIcon(systemName: "gauge.with.needle", color: .blue)
+                    
+                    Text("Playback Speed")
+                        .font(.body)
+                        .foregroundColor(.primary)
+                    
+                    Spacer()
+                    
+                    Text("\(playbackSpeed, specifier: "%.1f")×")
+                        .font(.subheadline.monospacedDigit().bold())
+                        .foregroundColor(.webPrimary)
+                }
+                
+                Slider(value: $playbackSpeed, in: 0.5...2.0, step: 0.1)
+                    .tint(.webPrimary)
+                    .accessibilityLabel("Playback speed")
+                    .accessibilityValue("\(playbackSpeed, specifier: "%.1f") times")
+            }
+            .padding(.vertical, 4)
+            
+            // ── Random Speed ──────────────────────────────
+            HStack(spacing: 14) {
+                SettingsIcon(systemName: "dice", color: .purple)
+                
+                Toggle(isOn: $randomSpeedEnabled) {
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text("Random Speed")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                        Text("Vary playback speed randomly")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .tint(.webPrimary)
+            }
+            .accessibilityElement(children: .combine)
+            
+            // ── Appearance ────────────────────────────────
+            HStack(spacing: 14) {
+                SettingsIcon(
+                    systemName: appearanceMode == "dark" ? "moon.fill" : "sun.max.fill",
+                    color: appearanceMode == "dark" ? .indigo : .yellow
+                )
+                
+                Picker(selection: $appearanceMode) {
+                    Text("System").tag("system")
+                    Text("Light").tag("light")
+                    Text("Dark").tag("dark")
+                } label: {
+                    Text("Appearance")
+                        .font(.body)
+                        .foregroundColor(.primary)
+                }
+                .pickerStyle(.menu)
+                .tint(.webPrimary)
+            }
+            .accessibilityElement(children: .combine)
+            
+            // ── Notifications (existing) ──────────────────
             AccountMenuItem(
                 icon: "bell.badge.fill",
                 iconColor: .red,
@@ -188,6 +276,25 @@ struct AccountMenuItem: View {
         .buttonStyle(.plain)
         .accessibilityLabel(title)
         .accessibilityAddTraits(.isButton)
+    }
+}
+
+// MARK: - Settings Icon
+// Small rounded-rect icon matching Apple Settings style, for use in custom rows.
+
+struct SettingsIcon: View {
+    let systemName: String
+    let color: Color
+    
+    var body: some View {
+        Image(systemName: systemName)
+            .font(.system(size: 15, weight: .medium))
+            .foregroundColor(.white)
+            .frame(width: 30, height: 30)
+            .background(
+                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                    .fill(color)
+            )
     }
 }
 

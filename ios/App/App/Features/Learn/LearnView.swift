@@ -4,14 +4,18 @@ struct LearnView: View {
     @StateObject private var viewModel = LearnViewModel()
     @EnvironmentObject var progressService: ProgressService
     @State private var showAccountSheet = false
+    @State private var dragOffset: CGFloat = 0
+    @State private var cardScale: CGFloat = 1.0
+    @State private var cardOpacity: Double = 1.0
+    @State private var isTransitioning = false
     
     var body: some View {
         ZStack {
             // Background Gradient
             LinearGradient(
                 colors: [
-                    Color(red: 0.98, green: 0.96, blue: 0.97),
-                    Color(red: 0.95, green: 0.93, blue: 0.96)
+                    Color.adaptiveBackground,
+                    Color.adaptiveBackgroundEnd
                 ],
                 startPoint: .top,
                 endPoint: .bottom
@@ -25,10 +29,74 @@ struct LearnView: View {
                         .font(.title2.bold())
                         .foregroundColor(.webPrimary)
                     
+                    if let type = viewModel.selectedWordType {
+                        Text(type.capitalized)
+                            .font(.system(size: 13, weight: .semibold))
+                            .foregroundColor(.webPrimary)
+                            .padding(.horizontal, 10)
+                            .padding(.vertical, 5)
+                            .background(Color.webPrimary.opacity(0.12))
+                            .clipShape(Capsule())
+                    }
+                    
                     Spacer()
                     
+                    // ── Options Menu ────────────────────────
+                    Menu {
+                        // Word Type submenu
+                        Menu {
+                            Button {
+                                viewModel.selectedWordType = nil
+                            } label: {
+                                Label("All Types", systemImage: viewModel.selectedWordType == nil ? "checkmark" : "")
+                            }
+                            
+                            Divider()
+                            
+                            ForEach(viewModel.availableWordTypes, id: \.self) { type in
+                                Button {
+                                    viewModel.selectedWordType = type
+                                } label: {
+                                    Label(type.capitalized, systemImage: viewModel.selectedWordType == type ? "checkmark" : "")
+                                }
+                            }
+                        } label: {
+                            Label("Word Type", systemImage: "textformat")
+                        }
+                        
+                        Divider()
+                        
+                        Button {
+                            viewModel.isLooping.toggle()
+                        } label: {
+                            Label("Loop", systemImage: viewModel.isLooping ? "repeat" : "repeat")
+                            if viewModel.isLooping {
+                                Image(systemName: "checkmark")
+                            }
+                        }
+                        
+                        Menu {
+                            Button {
+                                viewModel.phoneticsMode = .us
+                            } label: {
+                                Label("US", systemImage: viewModel.phoneticsMode == .us ? "checkmark" : "")
+                            }
+                            
+                            Button {
+                                viewModel.phoneticsMode = .uk
+                            } label: {
+                                Label("UK", systemImage: viewModel.phoneticsMode == .uk ? "checkmark" : "")
+                            }
+                        } label: {
+                            Label("Phonetics", systemImage: "character.phonetic")
+                        }
+                    } label: {
+                        Image(systemName: "line.3.horizontal.decrease.circle")
+                            .font(.system(size: 22))
+                            .foregroundColor(.webPrimary)
+                    }
+                    
                     Button {
-                        // Haptic feedback on tap (matches Apple system apps)
                         UIImpactFeedbackGenerator(style: .light).impactOccurred()
                         showAccountSheet = true
                     } label: {
@@ -49,20 +117,63 @@ struct LearnView: View {
                     .padding(.horizontal, 16)
                     .padding(.bottom, 16)
                 
-                // ── Main Card ───────────────────────────────
+                // ── Main Card (Swipeable) ───────────────────
                 if let currentWord = viewModel.currentWord {
-                    ScrollView(.vertical, showsIndicators: false) {
-                        WordCardView(
-                            word: currentWord,
-                            index: viewModel.currentIndex,
-                            total: viewModel.totalWords,
-                            isBookmarked: viewModel.isBookmarked,
-                            isLearned: viewModel.isLearned,
-                            onPlay: viewModel.playAudio,
-                            onBookmark: viewModel.toggleBookmark,
-                            onToggleLearned: viewModel.toggleLearned
+                    GeometryReader { geometry in
+                        let screenW = geometry.size.width
+                        let dragPct = dragOffset / screenW  // -1…0…1
+                        
+                        ScrollView(.vertical, showsIndicators: false) {
+                            WordCardView(
+                                word: currentWord,
+                                index: viewModel.currentIndex,
+                                total: viewModel.totalWords,
+                                isBookmarked: viewModel.isBookmarked,
+                                isLearned: viewModel.isLearned,
+                                phoneticsMode: viewModel.phoneticsMode,
+                                onPlay: viewModel.playAudio,
+                                onBookmark: viewModel.toggleBookmark,
+                                onToggleLearned: viewModel.toggleLearned
+                            )
+                            .padding(.horizontal, 16)
+                        }
+                        // ── Card transforms ──
+                        .offset(x: dragOffset, y: -abs(dragOffset) * 0.08)
+                        .rotationEffect(
+                            .degrees(Double(dragPct) * 12),
+                            anchor: .bottom
                         )
-                        .padding(.horizontal, 16)
+                        .scaleEffect(cardScale)
+                        .opacity(cardOpacity)
+                        // ── Gesture ──
+                        .allowsHitTesting(!isTransitioning)
+                        .gesture(
+                            DragGesture(minimumDistance: 25)
+                                .onChanged { value in
+                                    guard !isTransitioning else { return }
+                                    if abs(value.translation.width) > abs(value.translation.height) {
+                                        withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.7)) {
+                                            dragOffset = value.translation.width
+                                        }
+                                    }
+                                }
+                                .onEnded { value in
+                                    guard !isTransitioning else { return }
+                                    let threshold: CGFloat = screenW * 0.2
+                                    let velocity = value.predictedEndTranslation.width
+                                    
+                                    if value.translation.width < -threshold || velocity < -250 {
+                                        performSwipe(direction: -1, screenWidth: screenW, action: viewModel.nextWord)
+                                    } else if value.translation.width > threshold || velocity > 250 {
+                                        performSwipe(direction: 1, screenWidth: screenW, action: viewModel.previousWord)
+                                    } else {
+                                        // Snap back with bounce
+                                        withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) {
+                                            dragOffset = 0
+                                        }
+                                    }
+                                }
+                        )
                     }
                 } else {
                     Spacer()
@@ -150,6 +261,47 @@ struct LearnView: View {
                 .presentationDragIndicator(.visible)
         }
     }
+    
+    // MARK: - Swipe Animation
+    
+    private func performSwipe(direction: CGFloat, screenWidth: CGFloat, action: @escaping () -> Void) {
+        isTransitioning = true
+        
+        // Phase 1: Toss the card off-screen with rotation
+        withAnimation(.easeIn(duration: 0.28)) {
+            dragOffset = direction * screenWidth * 1.4
+            cardOpacity = 0
+        }
+        
+        // Phase 2: Swap the data while card is invisible
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
+            action()
+            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            
+            // Reset position, shrink for pop-in
+            dragOffset = 0
+            cardScale = 0.85
+            cardOpacity = 0
+            
+            // Phase 3: Pop the new card in with scale + fade
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+                cardScale = 1.0
+                cardOpacity = 1.0
+            }
+            
+            // Light secondary haptic for the "land"
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                isTransitioning = false
+            }
+        }
+    }
+}
+
+// MARK: - Phonetics Mode
+
+enum PhoneticsMode {
+    case us, uk
 }
 
 // MARK: - ViewModel
@@ -157,10 +309,18 @@ struct LearnView: View {
 class LearnViewModel: ObservableObject {
     @Published var selectedLevel: String = "A1" {
         didSet {
+            selectedWordType = nil
+            loadWordsForLevel()
+        }
+    }
+    @Published var selectedWordType: String? = nil {
+        didSet {
             loadWordsForLevel()
         }
     }
     @Published var currentWord: Word?
+    @Published var isLooping: Bool = true
+    @Published var phoneticsMode: PhoneticsMode = .us
     
     private var words: [Word] = []
     var currentIndex: Int = 0
@@ -176,8 +336,18 @@ class LearnViewModel: ObservableObject {
         self.progressService = service
     }
     
+    var availableWordTypes: [String] {
+        let levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
+        let counts = Dictionary(grouping: levelWords, by: { $0.type }).mapValues { $0.count }
+        return counts.keys.sorted { counts[$0, default: 0] > counts[$1, default: 0] }
+    }
+    
     private func loadWordsForLevel() {
-        self.words = vocabularyService.wordsByLevel[selectedLevel] ?? []
+        var levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
+        if let type = selectedWordType {
+            levelWords = levelWords.filter { $0.type == type }
+        }
+        self.words = levelWords
         self.currentIndex = 0
         self.currentWord = words.first
     }
@@ -214,13 +384,21 @@ class LearnViewModel: ObservableObject {
     
     func nextWord() {
         guard !words.isEmpty else { return }
-        currentIndex = (currentIndex + 1) % words.count
+        if isLooping {
+            currentIndex = (currentIndex + 1) % words.count
+        } else {
+            currentIndex = min(currentIndex + 1, words.count - 1)
+        }
         updateCurrentWord()
     }
     
     func previousWord() {
         guard !words.isEmpty else { return }
-        currentIndex = (currentIndex - 1 + words.count) % words.count
+        if isLooping {
+            currentIndex = (currentIndex - 1 + words.count) % words.count
+        } else {
+            currentIndex = max(currentIndex - 1, 0)
+        }
         updateCurrentWord()
     }
     
@@ -248,15 +426,65 @@ struct LevelSelector: View {
                     Text(level)
                         .font(.system(size: 14, weight: .bold))
                         .frame(width: 48, height: 34)
-                        .background(selectedLevel == level ? Color.webPrimary : Color.white.opacity(0.7))
+                        .background(selectedLevel == level ? Color.webPrimary : Color.adaptivePillBackground)
                         .foregroundColor(selectedLevel == level ? .white : .webForeground)
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
-                                .stroke(selectedLevel == level ? Color.clear : Color.black.opacity(0.06), lineWidth: 1)
+                                .stroke(selectedLevel == level ? Color.clear : Color.adaptivePillBorder, lineWidth: 1)
                         )
                 }
                 .buttonStyle(.plain)
+            }
+        }
+    }
+}
+
+// MARK: - Word Type Selector
+
+struct WordTypeSelector: View {
+    @Binding var selectedType: String?
+    let availableTypes: [String]
+    
+    var body: some View {
+        ScrollView(.horizontal, showsIndicators: false) {
+            HStack(spacing: 8) {
+                // "All" pill
+                Button(action: {
+                    withAnimation(.easeInOut(duration: 0.2)) { selectedType = nil }
+                }) {
+                    Text("All")
+                        .font(.system(size: 13, weight: .semibold))
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 7)
+                        .background(selectedType == nil ? Color.webPrimary : Color.adaptivePillBackground)
+                        .foregroundColor(selectedType == nil ? .white : .webForeground)
+                        .clipShape(Capsule())
+                        .overlay(
+                            Capsule()
+                                .stroke(selectedType == nil ? Color.clear : Color.adaptivePillBorder, lineWidth: 1)
+                        )
+                }
+                .buttonStyle(.plain)
+                
+                ForEach(availableTypes, id: \.self) { type in
+                    Button(action: {
+                        withAnimation(.easeInOut(duration: 0.2)) { selectedType = type }
+                    }) {
+                        Text(type.capitalized)
+                            .font(.system(size: 13, weight: .semibold))
+                            .padding(.horizontal, 14)
+                            .padding(.vertical, 7)
+                            .background(selectedType == type ? Color.webPrimary : Color.adaptivePillBackground)
+                            .foregroundColor(selectedType == type ? .white : .webForeground)
+                            .clipShape(Capsule())
+                            .overlay(
+                                Capsule()
+                                    .stroke(selectedType == type ? Color.clear : Color.adaptivePillBorder, lineWidth: 1)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                }
             }
         }
     }
@@ -270,6 +498,7 @@ struct WordCardView: View {
     let total: Int
     var isBookmarked: Bool
     var isLearned: Bool
+    var phoneticsMode: PhoneticsMode
     var onPlay: () -> Void
     var onBookmark: () -> Void
     var onToggleLearned: () -> Void
@@ -286,6 +515,7 @@ struct WordCardView: View {
                 word: word,
                 isBookmarked: isBookmarked,
                 isLearned: isLearned,
+                phoneticsMode: phoneticsMode,
                 cardHeight: cardHeight,
                 onPlay: onPlay,
                 onBookmark: onBookmark,
@@ -330,6 +560,7 @@ private struct CardFrontFace: View {
     let word: Word
     var isBookmarked: Bool
     var isLearned: Bool
+    var phoneticsMode: PhoneticsMode
     let cardHeight: CGFloat
     var onPlay: () -> Void
     var onBookmark: () -> Void
@@ -367,7 +598,19 @@ private struct CardFrontFace: View {
                 
                 // ── Phonetics ───────────────────────────────
                 HStack(spacing: 8) {
-                    Text(word.phonetics.us ?? "/.../")
+                    let phonetic = phoneticsMode == .uk
+                        ? (word.phonetics.uk ?? word.phonetics.us ?? "/.../")
+                        : (word.phonetics.us ?? word.phonetics.uk ?? "/.../")
+                    
+                    Text(phoneticsMode == .uk ? "UK" : "US")
+                        .font(.system(size: 11, weight: .bold))
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 6)
+                        .padding(.vertical, 2)
+                        .background(Color.webPrimary.opacity(0.8))
+                        .cornerRadius(4)
+                    
+                    Text(phonetic)
                         .font(.system(size: 17, weight: .medium, design: .monospaced))
                         .foregroundColor(.webPrimary)
                     
@@ -430,7 +673,7 @@ private struct CardFrontFace: View {
                         .padding(16)
                         .background(
                             RoundedRectangle(cornerRadius: 14)
-                                .fill(Color(red: 0.97, green: 0.96, blue: 0.98))
+                                .fill(Color.adaptiveCardBackgroundSecondary)
                         )
                         .gesture(
                             DragGesture(minimumDistance: 30).onEnded { value in
@@ -448,14 +691,22 @@ private struct CardFrontFace: View {
                 
                 Spacer(minLength: 0)
                 
-                // ── Tap Hint ────────────────────────────────
+                // ── Hint ──────────────────────────────
                 HStack {
                     Spacer()
-                    HStack(spacing: 6) {
-                        Image(systemName: "hand.tap.fill")
-                            .font(.system(size: 13))
-                        Text("Tap to see definition")
-                            .font(.system(size: 13, weight: .medium))
+                    VStack(spacing: 4) {
+                        HStack(spacing: 6) {
+                            Image(systemName: "hand.tap.fill")
+                                .font(.system(size: 13))
+                            Text("Tap to see definition")
+                                .font(.system(size: 13, weight: .medium))
+                        }
+                        HStack(spacing: 6) {
+                            Image(systemName: "hand.draw.fill")
+                                .font(.system(size: 13))
+                            Text("Swipe to navigate")
+                                .font(.system(size: 13, weight: .medium))
+                        }
                     }
                     .foregroundColor(.secondary.opacity(0.5))
                     Spacer()
@@ -476,8 +727,8 @@ private struct CardFrontFace: View {
         .frame(height: cardHeight)
         .background(
             RoundedRectangle(cornerRadius: 28)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.06), radius: 16, x: 0, y: 8)
+                .fill(Color.adaptiveCardBackground)
+                .shadow(color: Color.adaptiveCardShadow, radius: 16, x: 0, y: 8)
         )
     }
 }
@@ -583,12 +834,12 @@ private struct CardBackFace: View {
             RoundedRectangle(cornerRadius: 28)
                 .fill(
                     LinearGradient(
-                        colors: [Color.white, Color(red: 0.97, green: 0.96, blue: 0.99)],
+                        colors: [Color.adaptiveCardBackground, Color.adaptiveCardBackEnd],
                         startPoint: .topLeading,
                         endPoint: .bottomTrailing
                     )
                 )
-                .shadow(color: Color.webPrimary.opacity(0.08), radius: 16, x: 0, y: 8)
+                .shadow(color: Color.adaptiveCardShadow, radius: 16, x: 0, y: 8)
         )
     }
 }

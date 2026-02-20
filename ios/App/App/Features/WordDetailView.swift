@@ -75,7 +75,7 @@ struct WordDetailView: View {
                     .padding(18)
                     .background(
                         RoundedRectangle(cornerRadius: 16)
-                            .fill(Color(red: 0.97, green: 0.96, blue: 0.98))
+                            .fill(Color.adaptiveCardBackgroundSecondary)
                     )
                 }
 
@@ -86,8 +86,8 @@ struct WordDetailView: View {
         .background(
             LinearGradient(
                 colors: [
-                    Color(red: 0.98, green: 0.96, blue: 0.97),
-                    Color(red: 0.95, green: 0.93, blue: 0.96)
+                    Color.adaptiveBackground,
+                    Color.adaptiveBackgroundEnd
                 ],
                 startPoint: .top,
                 endPoint: .bottom
