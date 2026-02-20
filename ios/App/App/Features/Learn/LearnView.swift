@@ -1,4 +1,5 @@
 import SwiftUI
+import Combine
 
 struct LearnView: View {
     @StateObject private var viewModel = LearnViewModel()
@@ -215,40 +216,55 @@ struct LearnView: View {
                 .padding(.horizontal, 20)
                 .padding(.bottom, 16)
                 
-                // ── Playback Controls ───────────────────────
-                HStack(spacing: 0) {
-                    Button(action: viewModel.previousWord) {
-                        Image(systemName: "chevron.left")
-                            .font(.title2.bold())
-                            .foregroundColor(.webPrimary)
-                            .frame(width: 56, height: 56)
+                // ── Play / Pause Button ─────────────────────
+                Button {
+                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    viewModel.togglePlayPause()
+                } label: {
+                    HStack(spacing: 12) {
+                        // Animated speaker icon
+                        Image(systemName: viewModel.isPlayAnimating ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
+                            .font(.system(size: 18, weight: .semibold))
+                            .symbolEffect(.variableColor.iterative, isActive: viewModel.isPlayAnimating)
+                            .contentTransition(.symbolEffect(.replace))
+                        
+                        Text(viewModel.isPlayAnimating ? "Playing…" : "Play Pronunciation")
+                            .font(.system(size: 16, weight: .semibold))
+                            .contentTransition(.numericText())
+                        
+                        Image(systemName: viewModel.isPlayAnimating ? "pause.fill" : "play.fill")
+                            .font(.system(size: 14))
+                            .contentTransition(.symbolEffect(.replace))
                     }
-                    
-                    Spacer()
-                    
-                    // Big Play Button
-                    Button(action: viewModel.playAudio) {
-                        Image(systemName: "play.fill")
-                            .font(.system(size: 28))
-                            .foregroundColor(.white)
-                            .frame(width: 64, height: 64)
-                            .background(
-                                Circle()
-                                    .fill(Color.webPrimary)
-                                    .shadow(color: .webPrimary.opacity(0.35), radius: 12, y: 6)
+                    .foregroundColor(.white)
+                    .frame(height: 22)
+                    .padding(.horizontal, 28)
+                    .padding(.vertical, 16)
+                    .fixedSize(horizontal: true, vertical: false)
+                    .background(
+                        Capsule()
+                            .fill(
+                                LinearGradient(
+                                    colors: viewModel.isPlayAnimating
+                                        ? [Color.webPrimary.opacity(0.9), Color.webPrimary.opacity(0.6)]
+                                        : [Color.webPrimary, Color.webPrimary.opacity(0.8)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
                             )
-                    }
-                    
-                    Spacer()
-                    
-                    Button(action: viewModel.nextWord) {
-                        Image(systemName: "chevron.right")
-                            .font(.title2.bold())
-                            .foregroundColor(.webPrimary)
-                            .frame(width: 56, height: 56)
-                    }
+                            .shadow(
+                                color: .webPrimary.opacity(viewModel.isPlayAnimating ? 0.5 : 0.35),
+                                radius: viewModel.isPlayAnimating ? 20 : 16,
+                                y: 8
+                            )
+                    )
+                    .overlay(
+                        Capsule()
+                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
+                    )
+                    .animation(.easeInOut(duration: 0.3), value: viewModel.isPlayAnimating)
                 }
-                .padding(.horizontal, 40)
+                .buttonStyle(PlayButtonStyle())
                 .padding(.bottom, 12)
             }
         }
@@ -298,6 +314,17 @@ struct LearnView: View {
     }
 }
 
+// MARK: - Play Button Style
+
+private struct PlayButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .scaleEffect(configuration.isPressed ? 0.95 : 1.0)
+            .opacity(configuration.isPressed ? 0.9 : 1.0)
+            .animation(.easeInOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
 // MARK: - Phonetics Mode
 
 enum PhoneticsMode {
@@ -321,6 +348,11 @@ class LearnViewModel: ObservableObject {
     @Published var currentWord: Word?
     @Published var isLooping: Bool = true
     @Published var phoneticsMode: PhoneticsMode = .us
+    @Published var isSpeaking: Bool = false
+    @Published var isPlayAnimating: Bool = false
+    
+    private var speakingObserver: Any?
+    private var animationTimer: Timer?
     
     private var words: [Word] = []
     var currentIndex: Int = 0
@@ -330,6 +362,20 @@ class LearnViewModel: ObservableObject {
     init(progressService: ProgressService? = nil) {
         self.progressService = progressService
         loadWordsForLevel()
+        
+        // Observe AudioService speaking state
+        speakingObserver = AudioService.shared.$isSpeaking
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] speaking in
+                guard let self = self else { return }
+                self.isSpeaking = speaking
+                
+                if self.isLooping {
+                    // Loop mode: follow real speaking state
+                    self.isPlayAnimating = speaking
+                }
+                // Non-loop mode: animation is handled by timer in togglePlayPause
+            }
     }
     
     func setProgressService(_ service: ProgressService) {
@@ -380,6 +426,35 @@ class LearnViewModel: ObservableObject {
     func playAudio() {
         guard let word = currentWord else { return }
         AudioService.shared.speak(text: word.word)
+    }
+    
+    func togglePlayPause() {
+        if isPlayAnimating {
+            // Stop everything
+            AudioService.shared.stop()
+            animationTimer?.invalidate()
+            animationTimer = nil
+            withAnimation(.easeOut(duration: 0.2)) {
+                isPlayAnimating = false
+            }
+        } else if isLooping {
+            // Loop mode: animation follows real speech
+            playAudio()
+        } else {
+            // Non-loop mode: guaranteed 1-second animation pulse
+            playAudio()
+            withAnimation(.easeInOut(duration: 0.25)) {
+                isPlayAnimating = true
+            }
+            animationTimer?.invalidate()
+            animationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
+                DispatchQueue.main.async {
+                    withAnimation(.easeOut(duration: 0.3)) {
+                        self?.isPlayAnimating = false
+                    }
+                }
+            }
+        }
     }
     
     func nextWord() {
