@@ -262,7 +262,7 @@ struct LevelSelector: View {
     }
 }
 
-// MARK: - Word Card
+// MARK: - Word Card (Flippable)
 
 struct WordCardView: View {
     let word: Word
@@ -274,66 +274,251 @@ struct WordCardView: View {
     var onBookmark: () -> Void
     var onToggleLearned: () -> Void
     
+    @State private var isFlipped = false
+    @State private var currentExampleIndex = 0
+    
+    private let cardHeight: CGFloat = 420
+    
+    var body: some View {
+        ZStack {
+            // ── FRONT FACE ──────────────────────────────
+            CardFrontFace(
+                word: word,
+                isBookmarked: isBookmarked,
+                isLearned: isLearned,
+                cardHeight: cardHeight,
+                onPlay: onPlay,
+                onBookmark: onBookmark,
+                onToggleLearned: onToggleLearned
+            )
+            .opacity(isFlipped ? 0 : 1)
+            .rotation3DEffect(
+                .degrees(isFlipped ? 180 : 0),
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.5
+            )
+            
+            // ── BACK FACE ───────────────────────────────
+            CardBackFace(
+                word: word,
+                cardHeight: cardHeight
+            )
+            .opacity(isFlipped ? 1 : 0)
+            .rotation3DEffect(
+                .degrees(isFlipped ? 0 : -180),
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.5
+            )
+        }
+        .frame(height: cardHeight)
+        .onTapGesture {
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
+                isFlipped.toggle()
+            }
+        }
+        .onChange(of: word.id) { _ in
+            // Reset to front when word changes
+            isFlipped = false
+            currentExampleIndex = 0
+        }
+    }
+}
+
+// MARK: - Card Front Face
+
+private struct CardFrontFace: View {
+    let word: Word
+    var isBookmarked: Bool
+    var isLearned: Bool
+    let cardHeight: CGFloat
+    var onPlay: () -> Void
+    var onBookmark: () -> Void
+    var onToggleLearned: () -> Void
+    
     @State private var currentExampleIndex = 0
     
     var body: some View {
+        ZStack(alignment: .bottomLeading) {
+            VStack(alignment: .leading, spacing: 16) {
+                // ── Word Title + Learned Circle ─────────────
+                HStack(alignment: .top) {
+                    Text(word.word.capitalized)
+                        .font(.oxfordDisplay(size: 36))
+                        .foregroundColor(.oxfordNavy)
+                    
+                    Spacer()
+                    
+                    Button(action: onToggleLearned) {
+                        Circle()
+                            .strokeBorder(isLearned ? Color.webPrimary : Color.secondary.opacity(0.3), lineWidth: 2)
+                            .background(
+                                Circle().fill(isLearned ? Color.webPrimary : Color.clear)
+                            )
+                            .frame(width: 28, height: 28)
+                            .overlay(
+                                isLearned
+                                    ? Image(systemName: "checkmark")
+                                        .font(.caption.bold())
+                                        .foregroundColor(.white)
+                                    : nil
+                            )
+                    }
+                }
+                
+                // ── Phonetics ───────────────────────────────
+                HStack(spacing: 8) {
+                    Text(word.phonetics.us ?? "/.../")
+                        .font(.system(size: 17, weight: .medium, design: .monospaced))
+                        .foregroundColor(.webPrimary)
+                    
+                    Button(action: onPlay) {
+                        Image(systemName: "speaker.wave.3.fill")
+                            .font(.callout)
+                            .foregroundColor(.webPrimary)
+                    }
+                }
+                
+                // ── Part of Speech Pill ─────────────────────
+                Text(word.type.uppercased())
+                    .font(.system(size: 11, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .padding(.horizontal, 10)
+                    .padding(.vertical, 5)
+                    .background(Color.secondary.opacity(0.08))
+                    .cornerRadius(6)
+                
+                // ── Usage Examples ──────────────────────────
+                if let examples = word.examples, !examples.isEmpty {
+                    VStack(alignment: .leading, spacing: 10) {
+                        HStack {
+                            Text("USAGE EXAMPLES")
+                                .font(.system(size: 11, weight: .bold))
+                                .foregroundColor(.webPrimary)
+                                .tracking(1)
+                            
+                            Spacer()
+                            
+                            Text("\(currentExampleIndex + 1) of \(examples.count)")
+                                .font(.system(size: 12))
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        VStack(alignment: .leading, spacing: 12) {
+                            Text("\"" + examples[currentExampleIndex] + "\"")
+                                .font(.oxfordBody(size: 16))
+                                .foregroundColor(.webForeground)
+                                .lineSpacing(5)
+                                .fixedSize(horizontal: false, vertical: true)
+                                .id("front-ex-\(word.id)-\(currentExampleIndex)")
+                            
+                            HStack(spacing: 6) {
+                                Button(action: onPlay) {
+                                    Image(systemName: "play.fill")
+                                        .font(.system(size: 11))
+                                        .foregroundColor(.webPrimary)
+                                }
+                                
+                                Spacer()
+                                
+                                ForEach(0..<min(examples.count, 5), id: \.self) { i in
+                                    Circle()
+                                        .fill(i == currentExampleIndex ? Color.webPrimary : Color.secondary.opacity(0.25))
+                                        .frame(width: 7, height: 7)
+                                }
+                            }
+                        }
+                        .padding(16)
+                        .background(
+                            RoundedRectangle(cornerRadius: 14)
+                                .fill(Color(red: 0.97, green: 0.96, blue: 0.98))
+                        )
+                        .gesture(
+                            DragGesture(minimumDistance: 30).onEnded { value in
+                                withAnimation(.easeInOut(duration: 0.2)) {
+                                    if value.translation.width < -30 {
+                                        currentExampleIndex = (currentExampleIndex + 1) % examples.count
+                                    } else if value.translation.width > 30 {
+                                        currentExampleIndex = (currentExampleIndex - 1 + examples.count) % examples.count
+                                    }
+                                }
+                            }
+                        )
+                    }
+                }
+                
+                Spacer(minLength: 0)
+                
+                // ── Tap Hint ────────────────────────────────
+                HStack {
+                    Spacer()
+                    HStack(spacing: 6) {
+                        Image(systemName: "hand.tap.fill")
+                            .font(.system(size: 13))
+                        Text("Tap to see definition")
+                            .font(.system(size: 13, weight: .medium))
+                    }
+                    .foregroundColor(.secondary.opacity(0.5))
+                    Spacer()
+                }
+                .padding(.bottom, 24)
+            }
+            .padding(22)
+            
+            // ── Bookmark Button (pinned bottom-left) ────
+            Button(action: onBookmark) {
+                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
+                    .font(.title3)
+                    .foregroundColor(isBookmarked ? .webPrimary : .secondary.opacity(0.4))
+            }
+            .padding(.leading, 22)
+            .padding(.bottom, 22)
+        }
+        .frame(height: cardHeight)
+        .background(
+            RoundedRectangle(cornerRadius: 28)
+                .fill(Color.white)
+                .shadow(color: Color.black.opacity(0.06), radius: 16, x: 0, y: 8)
+        )
+    }
+}
+
+// MARK: - Card Back Face
+
+private struct CardBackFace: View {
+    let word: Word
+    let cardHeight: CGFloat
+    
+    var body: some View {
         VStack(alignment: .leading, spacing: 16) {
-            // ── Word Title + Learned Circle ─────────────
-            HStack(alignment: .top) {
+            // ── Header ──────────────────────────────────
+            HStack {
                 Text(word.word.capitalized)
-                    .font(.oxfordDisplay(size: 36))
+                    .font(.oxfordDisplay(size: 24))
                     .foregroundColor(.oxfordNavy)
                 
                 Spacer()
                 
-                // Learned circle indicator
-                Button(action: onToggleLearned) {
-                    Circle()
-                        .strokeBorder(isLearned ? Color.webPrimary : Color.secondary.opacity(0.3), lineWidth: 2)
-                        .background(
-                            Circle().fill(isLearned ? Color.webPrimary : Color.clear)
-                        )
-                        .frame(width: 28, height: 28)
-                        .overlay(
-                            isLearned
-                                ? Image(systemName: "checkmark")
-                                    .font(.caption.bold())
-                                    .foregroundColor(.white)
-                                : nil
-                        )
-                }
+                // Part of Speech Pill
+                Text(word.type.uppercased())
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.white)
+                    .padding(.horizontal, 8)
+                    .padding(.vertical, 4)
+                    .background(Color.webPrimary)
+                    .cornerRadius(6)
             }
             
-            // ── Phonetics ───────────────────────────────
-            HStack(spacing: 8) {
-                Text(word.phonetics.us ?? "/.../")
-                    .font(.system(size: 17, weight: .medium, design: .monospaced))
-                    .foregroundColor(.webPrimary)
-                
-                Button(action: onPlay) {
-                    Image(systemName: "speaker.wave.3.fill")
-                        .font(.callout)
-                        .foregroundColor(.webPrimary)
-                }
-            }
-            
-            // ── Part of Speech Pill ─────────────────────
-            Text(word.type.uppercased())
-                .font(.system(size: 11, weight: .bold))
-                .foregroundColor(.secondary)
-                .padding(.horizontal, 10)
-                .padding(.vertical, 5)
-                .background(Color.secondary.opacity(0.08))
-                .cornerRadius(6)
+            Divider()
+                .background(Color.webPrimary.opacity(0.2))
             
             // ── Definition ──────────────────────────────
             VStack(alignment: .leading, spacing: 6) {
                 Text("DEFINITION")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.secondary)
+                    .foregroundColor(.webPrimary)
                     .tracking(1)
                 
-                Text("A large natural elevation of the earth's surface rising abruptly from the surrounding level.")
+                Text(word.example ?? "No definition available.")
                     .font(.oxfordBody(size: 17))
                     .foregroundColor(.webForeground)
                     .lineSpacing(5)
@@ -341,86 +526,34 @@ struct WordCardView: View {
             }
             .padding(.top, 4)
             
-            // ── Usage Examples ──────────────────────────
-            if let examples = word.examples, !examples.isEmpty {
-                VStack(alignment: .leading, spacing: 10) {
-                    HStack {
-                        Text("USAGE EXAMPLES")
-                            .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.webPrimary)
-                            .tracking(1)
-                        
-                        Spacer()
-                        
-                        Text("\(currentExampleIndex + 1) of \(examples.count)")
-                            .font(.system(size: 12))
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    // Example inner card
-                    VStack(alignment: .leading, spacing: 12) {
-                        Text("\"" + examples[currentExampleIndex] + "\"")
-                            .font(.oxfordBody(size: 16))
-                            .foregroundColor(.webForeground)
-                            .lineSpacing(5)
-                            .fixedSize(horizontal: false, vertical: true)
-                            .id("ex-\(word.id)-\(currentExampleIndex)")
-                        
-                        // Play icon + Dots
-                        HStack(spacing: 6) {
-                            Button(action: {}) {
-                                Image(systemName: "play.fill")
-                                    .font(.system(size: 11))
-                                    .foregroundColor(.webPrimary)
-                            }
-                            
-                            Spacer()
-                            
-                            ForEach(0..<min(examples.count, 5), id: \.self) { i in
-                                Circle()
-                                    .fill(i == currentExampleIndex ? Color.webPrimary : Color.secondary.opacity(0.25))
-                                    .frame(width: 7, height: 7)
-                            }
-                        }
-                    }
-                    .padding(16)
-                    .background(
-                        RoundedRectangle(cornerRadius: 14)
-                            .fill(Color(red: 0.97, green: 0.96, blue: 0.98))
-                    )
-                    .gesture(
-                        DragGesture(minimumDistance: 30).onEnded { value in
-                            withAnimation(.easeInOut(duration: 0.2)) {
-                                if value.translation.width < -30 {
-                                    currentExampleIndex = (currentExampleIndex + 1) % examples.count
-                                } else if value.translation.width > 30 {
-                                    currentExampleIndex = (currentExampleIndex - 1 + examples.count) % examples.count
-                                }
-                            }
-                        }
-                    )
-                }
-            }
+            Spacer(minLength: 8)
             
-            // ── Bookmark Button (Bottom-Left) ───────────
+            // ── Tap Hint ────────────────────────────────
             HStack {
-                Button(action: onBookmark) {
-                    Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                        .font(.title3)
-                        .foregroundColor(isBookmarked ? .webPrimary : .secondary.opacity(0.4))
+                Spacer()
+                HStack(spacing: 6) {
+                    Image(systemName: "arrow.uturn.backward")
+                        .font(.system(size: 13))
+                    Text("Tap to flip back")
+                        .font(.system(size: 13, weight: .medium))
                 }
+                .foregroundColor(.secondary.opacity(0.5))
                 Spacer()
             }
-            .padding(.top, 4)
         }
         .padding(22)
+        .frame(height: cardHeight, alignment: .top)
         .background(
             RoundedRectangle(cornerRadius: 28)
-                .fill(Color.white)
-                .shadow(color: Color.black.opacity(0.06), radius: 16, x: 0, y: 8)
+                .fill(
+                    LinearGradient(
+                        colors: [Color.white, Color(red: 0.97, green: 0.96, blue: 0.99)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .shadow(color: Color.webPrimary.opacity(0.08), radius: 16, x: 0, y: 8)
         )
-        .onChange(of: word.id) { _ in
-            currentExampleIndex = 0
-        }
     }
 }
+
