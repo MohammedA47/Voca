@@ -9,6 +9,8 @@ struct AccountSheetView: View {
     @Environment(\.colorScheme) private var colorScheme
     
     // MARK: - Persisted Settings
+    @AppStorage("isLooping") private var isLooping: Bool = true
+    @AppStorage("phoneticsMode") private var phoneticsMode: String = "us"
     @AppStorage("loopGapSeconds") private var loopGapSeconds: Double = 1.0
     @AppStorage("playbackSpeed") private var playbackSpeed: Double = 1.0
     @AppStorage("randomSpeedEnabled") private var randomSpeedEnabled: Bool = false
@@ -113,6 +115,44 @@ struct AccountSheetView: View {
     
     private var preferencesSection: some View {
         Section(header: Text("Settings")) {
+            // ── Loop Words ────────────────────────────────
+            HStack(spacing: Spacing.sm + Spacing.xs) {
+                SettingsIcon(systemName: "repeat", color: .green)
+                
+                Toggle(isOn: $isLooping) {
+                    VStack(alignment: .leading, spacing: Spacing.xs / 2) {
+                        Text("Loop Words")
+                            .font(.body)
+                            .foregroundColor(.primary)
+                        Text("Repeat list when finished")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                .tint(.webPrimary)
+            }
+            .accessibilityElement(children: .combine)
+            
+            // ── Phonetics Mode ────────────────────────────
+            HStack(spacing: Spacing.sm + Spacing.xs) {
+                SettingsIcon(
+                    systemName: "character.phonetic",
+                    color: .indigo
+                )
+                
+                Picker(selection: $phoneticsMode) {
+                    Text("US English").tag("us")
+                    Text("UK English").tag("uk")
+                } label: {
+                    Text("Phonetics")
+                        .font(.body)
+                        .foregroundColor(.primary)
+                }
+                .pickerStyle(.menu)
+                .tint(.webPrimary)
+            }
+            .accessibilityElement(children: .combine)
+            
             // ── Loop Gap ──────────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(systemName: "timer", color: .orange)

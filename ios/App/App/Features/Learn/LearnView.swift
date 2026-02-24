@@ -42,57 +42,25 @@ struct LearnView: View {
                     
                     Spacer()
                     
-                    // ── Options Menu ────────────────────────
+                    // ── Options Menu (Word Type Filter) ─────
                     Menu {
-                        // Word Type submenu
-                        Menu {
-                            Button {
-                                viewModel.selectedWordType = nil
-                            } label: {
-                                Label("All Types", systemImage: viewModel.selectedWordType == nil ? "checkmark" : "")
-                            }
-                            
-                            Divider()
-                            
-                            ForEach(viewModel.availableWordTypes, id: \.self) { type in
-                                Button {
-                                    viewModel.selectedWordType = type
-                                } label: {
-                                    Label(type.capitalized, systemImage: viewModel.selectedWordType == type ? "checkmark" : "")
-                                }
-                            }
+                        Button {
+                            viewModel.selectedWordType = nil
                         } label: {
-                            Label("Word Type", systemImage: "textformat")
+                            Label("All Types", systemImage: viewModel.selectedWordType == nil ? "checkmark" : "")
                         }
                         
                         Divider()
                         
-                        Button {
-                            viewModel.isLooping.toggle()
-                        } label: {
-                            Label("Loop", systemImage: viewModel.isLooping ? "repeat" : "repeat")
-                            if viewModel.isLooping {
-                                Image(systemName: "checkmark")
-                            }
-                        }
-                        
-                        Menu {
+                        ForEach(viewModel.availableWordTypes, id: \.self) { type in
                             Button {
-                                viewModel.phoneticsMode = .us
+                                viewModel.selectedWordType = type
                             } label: {
-                                Label("US", systemImage: viewModel.phoneticsMode == .us ? "checkmark" : "")
+                                Label(type.capitalized, systemImage: viewModel.selectedWordType == type ? "checkmark" : "")
                             }
-                            
-                            Button {
-                                viewModel.phoneticsMode = .uk
-                            } label: {
-                                Label("UK", systemImage: viewModel.phoneticsMode == .uk ? "checkmark" : "")
-                            }
-                        } label: {
-                            Label("Phonetics", systemImage: "character.phonetic")
                         }
                     } label: {
-                        Image(systemName: "line.3.horizontal.decrease.circle")
+                        Image(systemName: viewModel.selectedWordType == nil ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
                             .font(.system(size: 22))
                             .foregroundColor(.webPrimary)
                     }
@@ -126,7 +94,7 @@ struct LearnView: View {
                         let screenW = geometry.size.width
                         let dragPct = dragOffset / screenW  // -1…0…1
                         
-                        ScrollView(.vertical, showsIndicators: false) {
+                        ZStack(alignment: .center) {
                             WordCardView(
                                 word: currentWord,
                                 index: viewModel.currentIndex,
@@ -139,11 +107,11 @@ struct LearnView: View {
                                 onToggleLearned: viewModel.toggleLearned
                             )
                             .padding(.horizontal, Spacing.md)
-                            .padding(.top, Spacing.lg)
-                            .padding(.bottom, Spacing.lg)
+                            .padding(.top, Spacing.sm) // Reduced top padding slightly since it's centered now
+                            .padding(.bottom, Spacing.sm)
                         }
                         // ── Card transforms ──
-                        .offset(x: dragOffset, y: -abs(dragOffset) * 0.08)
+                        .offset(x: dragOffset)
                         .rotationEffect(
                             .degrees(Double(dragPct) * 12),
                             anchor: .bottom
@@ -277,7 +245,7 @@ struct LearnView: View {
         }
         .sheet(isPresented: $showAccountSheet) {
             AccountSheetView()
-                .presentationDetents([.medium, .large])
+                .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
         }
     }
@@ -331,7 +299,7 @@ private struct PlayButtonStyle: ButtonStyle {
 
 // MARK: - Phonetics Mode
 
-enum PhoneticsMode {
+enum PhoneticsMode: String {
     case us, uk
 }
 
@@ -350,13 +318,18 @@ class LearnViewModel: ObservableObject {
         }
     }
     @Published var currentWord: Word?
-    @Published var isLooping: Bool = true
-    @Published var phoneticsMode: PhoneticsMode = .us
+    @Published var isLooping: Bool = UserDefaults.standard.object(forKey: "isLooping") as? Bool ?? true {
+        didSet { UserDefaults.standard.set(isLooping, forKey: "isLooping") }
+    }
+    @Published var phoneticsMode: PhoneticsMode = PhoneticsMode(rawValue: UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us") ?? .us {
+        didSet { UserDefaults.standard.set(phoneticsMode.rawValue, forKey: "phoneticsMode") }
+    }
     @Published var isSpeaking: Bool = false
     @Published var isPlayAnimating: Bool = false
     
     private var speakingObserver: Any?
     private var animationTimer: Timer?
+    private var cancellables = Set<AnyCancellable>()
     
     private var words: [Word] = []
     var currentIndex: Int = 0
@@ -380,6 +353,23 @@ class LearnViewModel: ObservableObject {
                 }
                 // Non-loop mode: animation is handled by timer in togglePlayPause
             }
+            
+        // Observe changes from UserDefaults
+        NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
+            .receive(on: DispatchQueue.main)
+            .sink { [weak self] _ in
+                guard let self = self else { return }
+                let newLooping = UserDefaults.standard.object(forKey: "isLooping") as? Bool ?? true
+                let newPhonetics = PhoneticsMode(rawValue: UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us") ?? .us
+                
+                if self.isLooping != newLooping {
+                    self.isLooping = newLooping
+                }
+                if self.phoneticsMode != newPhonetics {
+                    self.phoneticsMode = newPhonetics
+                }
+            }
+            .store(in: &cancellables)
     }
     
     func setProgressService(_ service: ProgressService) {
