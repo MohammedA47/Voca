@@ -30,58 +30,13 @@ struct LearnView: View {
             
             VStack(spacing: 0) {
                 // ── Header ──────────────────────────────────
-                HStack {
-                    Text(viewModel.selectedLevel)
-                        .font(.title2.bold())
-                        .foregroundColor(.webPrimary)
-                    
-                    if let type = viewModel.selectedWordType {
-                        Text(type.capitalized)
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundColor(.webPrimary)
-                            .padding(.horizontal, Spacing.sm + 2)
-                            .padding(.vertical, Spacing.xs + 1)
-                            .background(Color.webPrimary.opacity(0.12))
-                            .clipShape(Capsule())
-                    }
-                    
-                    Spacer()
-                    
-                    // ── Options Menu (Word Type Filter) ─────
-                    Menu {
-                        Button {
-                            viewModel.selectedWordType = nil
-                        } label: {
-                            Label("All Types", systemImage: viewModel.selectedWordType == nil ? "checkmark" : "")
-                        }
-                        
-                        Divider()
-                        
-                        ForEach(viewModel.availableWordTypes, id: \.self) { type in
-                            Button {
-                                viewModel.selectedWordType = type
-                            } label: {
-                                Label(type.capitalized, systemImage: viewModel.selectedWordType == type ? "checkmark" : "")
-                            }
-                        }
-                    } label: {
-                        Image(systemName: viewModel.selectedWordType == nil ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
-                            .font(.system(size: 22))
-                            .foregroundColor(.webPrimary)
-                    }
-                    
-                    Button {
-                        lightHaptic.impactOccurred()
-                        showAccountSheet = true
-                    } label: {
-                        Image(systemName: "person.crop.circle.fill")
-                            .font(.system(size: 28))
-                            .symbolRenderingMode(.hierarchical)
-                            .foregroundColor(.webPrimary)
-                    }
-                    .accessibilityLabel("Account")
-                    .accessibilityHint("Opens your account panel")
-                }
+                LearnHeaderView(
+                    selectedLevel: viewModel.selectedLevel,
+                    selectedWordType: $viewModel.selectedWordType,
+                    availableWordTypes: viewModel.availableWordTypes,
+                    onAccountTapped: { showAccountSheet = true },
+                    lightHaptic: lightHaptic
+                )
                 .padding(.horizontal, Spacing.md)
                 .padding(.top, Spacing.sm)
                 .padding(.bottom, Spacing.sm + Spacing.xs)
@@ -162,86 +117,19 @@ struct LearnView: View {
                 Spacer(minLength: 8)
                 
                 // ── Progress Bar ────────────────────────────
-                VStack(spacing: 6) {
-                    GeometryReader { geo in
-                        ZStack(alignment: .leading) {
-                            Capsule()
-                                .fill(Color.webPrimary.opacity(0.15))
-                                .frame(height: 6)
-                            
-                            Capsule()
-                                .fill(Color.webPrimary)
-                                .frame(width: max(0, geo.size.width * CGFloat(viewModel.currentIndex + 1) / CGFloat(max(viewModel.totalWords, 1))), height: 6)
-                        }
-                    }
-                    .frame(height: 6)
-                    
-                    HStack {
-                        Text("STUDY PROGRESS")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.secondary)
-                            .tracking(0.8)
-                        
-                        Spacer()
-                        
-                        Text("\(viewModel.currentIndex + 1) / \(viewModel.totalWords) WORDS")
-                            .font(.system(size: 10, weight: .bold))
-                            .foregroundColor(.secondary)
-                            .tracking(0.8)
-                    }
-                }
+                LearnProgressView(
+                    currentIndex: viewModel.currentIndex,
+                    totalWords: viewModel.totalWords
+                )
                 .padding(.horizontal, Spacing.md)
                 .padding(.bottom, Spacing.md)
                 
                 // ── Play / Pause Button ─────────────────────
-                Button {
-                    lightHaptic.impactOccurred()
-                    viewModel.togglePlayPause()
-                } label: {
-                    HStack(spacing: 12) {
-                        // Animated speaker icon
-                        Image(systemName: viewModel.isPlayAnimating ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
-                            .font(.system(size: 18, weight: .semibold))
-                            .symbolEffect(.variableColor.iterative, isActive: viewModel.isPlayAnimating)
-                            .contentTransition(.symbolEffect(.replace))
-                        
-                        Text(viewModel.isPlayAnimating ? "Playing…" : "Play Pronunciation")
-                            .font(.system(size: 16, weight: .semibold))
-                            .contentTransition(.numericText())
-                        
-                        Image(systemName: viewModel.isPlayAnimating ? "pause.fill" : "play.fill")
-                            .font(.system(size: 14))
-                            .contentTransition(.symbolEffect(.replace))
-                    }
-                    .foregroundColor(.white)
-                    .frame(height: 22)
-                    .padding(.horizontal, 28)
-                    .padding(.vertical, 16)
-                    .fixedSize(horizontal: true, vertical: false)
-                    .background(
-                        Capsule()
-                            .fill(
-                                LinearGradient(
-                                    colors: viewModel.isPlayAnimating
-                                        ? [Color.webPrimary.opacity(0.9), Color.webPrimary.opacity(0.6)]
-                                        : [Color.webPrimary, Color.webPrimary.opacity(0.8)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                            .shadow(
-                                color: .webPrimary.opacity(viewModel.isPlayAnimating ? 0.5 : 0.35),
-                                radius: viewModel.isPlayAnimating ? 20 : 16,
-                                y: 8
-                            )
-                    )
-                    .overlay(
-                        Capsule()
-                            .stroke(Color.white.opacity(0.2), lineWidth: 1)
-                    )
-                    .animation(.easeInOut(duration: 0.3), value: viewModel.isPlayAnimating)
-                }
-                .buttonStyle(PlayButtonStyle())
+                PlayPronunciationView(
+                    isPlayAnimating: viewModel.isPlayAnimating,
+                    onPlayPause: { viewModel.togglePlayPause() },
+                    lightHaptic: lightHaptic
+                )
                 .padding(.bottom, Spacing.xl)
             }
         }
@@ -922,3 +810,164 @@ private struct CardBackFace: View {
     }
 }
 
+// MARK: - Learn Progress View
+
+struct LearnProgressView: View {
+    let currentIndex: Int
+    let totalWords: Int
+    
+    var body: some View {
+        VStack(spacing: 6) {
+            GeometryReader { geo in
+                ZStack(alignment: .leading) {
+                    Capsule()
+                        .fill(Color.webPrimary.opacity(0.15))
+                        .frame(height: 6)
+                    
+                    Capsule()
+                        .fill(Color.webPrimary)
+                        .frame(width: max(0, geo.size.width * CGFloat(currentIndex + 1) / CGFloat(max(totalWords, 1))), height: 6)
+                }
+            }
+            .frame(height: 6)
+            
+            HStack {
+                Text("STUDY PROGRESS")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .tracking(0.8)
+                
+                Spacer()
+                
+                Text("\(currentIndex + 1) / \(totalWords) WORDS")
+                    .font(.system(size: 10, weight: .bold))
+                    .foregroundColor(.secondary)
+                    .tracking(0.8)
+            }
+        }
+    }
+}
+
+// MARK: - Play Pronunciation View
+
+struct PlayPronunciationView: View {
+    let isPlayAnimating: Bool
+    let onPlayPause: () -> Void
+    let lightHaptic: UIImpactFeedbackGenerator
+    
+    var body: some View {
+        Button {
+            lightHaptic.impactOccurred()
+            onPlayPause()
+        } label: {
+            HStack(spacing: 12) {
+                // Animated speaker icon
+                Image(systemName: isPlayAnimating ? "speaker.wave.3.fill" : "speaker.wave.2.fill")
+                    .font(.system(size: 18, weight: .semibold))
+                    .symbolEffect(.variableColor.iterative, isActive: isPlayAnimating)
+                    .contentTransition(.symbolEffect(.replace))
+                
+                Text(isPlayAnimating ? "Playing…" : "Play Pronunciation")
+                    .font(.system(size: 16, weight: .semibold))
+                    .contentTransition(.numericText())
+                
+                Image(systemName: isPlayAnimating ? "pause.fill" : "play.fill")
+                    .font(.system(size: 14))
+                    .contentTransition(.symbolEffect(.replace))
+            }
+            .foregroundColor(.white)
+            .frame(height: 22)
+            .padding(.horizontal, 28)
+            .padding(.vertical, 16)
+            .fixedSize(horizontal: true, vertical: false)
+            .background(
+                Capsule()
+                    .fill(
+                        LinearGradient(
+                            colors: isPlayAnimating
+                                ? [Color.webPrimary.opacity(0.9), Color.webPrimary.opacity(0.6)]
+                                : [Color.webPrimary, Color.webPrimary.opacity(0.8)],
+                            startPoint: .topLeading,
+                            endPoint: .bottomTrailing
+                        )
+                    )
+                    .shadow(
+                        color: .webPrimary.opacity(isPlayAnimating ? 0.5 : 0.35),
+                        radius: isPlayAnimating ? 20 : 16,
+                        y: 8
+                    )
+            )
+            .overlay(
+                Capsule()
+                    .stroke(Color.white.opacity(0.2), lineWidth: 1)
+            )
+            .animation(.easeInOut(duration: 0.3), value: isPlayAnimating)
+        }
+        .buttonStyle(PlayButtonStyle())
+    }
+}
+
+// MARK: - Learn Header View
+
+struct LearnHeaderView: View {
+    let selectedLevel: String
+    @Binding var selectedWordType: String?
+    let availableWordTypes: [String]
+    let onAccountTapped: () -> Void
+    let lightHaptic: UIImpactFeedbackGenerator
+    
+    var body: some View {
+        HStack {
+            Text(selectedLevel)
+                .font(.title2.bold())
+                .foregroundColor(.webPrimary)
+            
+            if let type = selectedWordType {
+                Text(type.capitalized)
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundColor(.webPrimary)
+                    .padding(.horizontal, Spacing.sm + 2)
+                    .padding(.vertical, Spacing.xs + 1)
+                    .background(Color.webPrimary.opacity(0.12))
+                    .clipShape(Capsule())
+            }
+            
+            Spacer()
+            
+            // ── Options Menu (Word Type Filter) ─────
+            Menu {
+                Button {
+                    selectedWordType = nil
+                } label: {
+                    Label("All Types", systemImage: selectedWordType == nil ? "checkmark" : "")
+                }
+                
+                Divider()
+                
+                ForEach(availableWordTypes, id: \.self) { type in
+                    Button {
+                        selectedWordType = type
+                    } label: {
+                        Label(type.capitalized, systemImage: selectedWordType == type ? "checkmark" : "")
+                    }
+                }
+            } label: {
+                Image(systemName: selectedWordType == nil ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
+                    .font(.system(size: 22))
+                    .foregroundColor(.webPrimary)
+            }
+            
+            Button {
+                lightHaptic.impactOccurred()
+                onAccountTapped()
+            } label: {
+                Image(systemName: "person.crop.circle.fill")
+                    .font(.system(size: 28))
+                    .symbolRenderingMode(.hierarchical)
+                    .foregroundColor(.webPrimary)
+            }
+            .accessibilityLabel("Account")
+            .accessibilityHint("Opens your account panel")
+        }
+    }
+}

@@ -49,10 +49,18 @@ class ProgressService: ObservableObject {
     }
     
     private func saveLearned() {
-        UserDefaults.standard.set(Array(learnedWords), forKey: learnedKey)
+        let array = Array(learnedWords)
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            UserDefaults.standard.set(array, forKey: self.learnedKey)
+        }
     }
     
     private func saveBookmarks() {
-        UserDefaults.standard.set(Array(bookmarkedWords), forKey: bookmarkedKey)
+        let array = Array(bookmarkedWords)
+        DispatchQueue.global(qos: .background).async { [weak self] in
+            guard let self = self else { return }
+            UserDefaults.standard.set(array, forKey: self.bookmarkedKey)
+        }
     }
 }

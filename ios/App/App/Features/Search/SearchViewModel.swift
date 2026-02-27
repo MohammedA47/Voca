@@ -50,21 +50,34 @@ class SearchViewModel: ObservableObject {
     }
     
     private func filterWords() {
-        // Start from type-filtered subset if a type is selected (faster)
-        var results: [Word]
-        if let type = selectedWordType {
-            results = vocabularyService.wordsByType[type] ?? []
-        } else {
-            results = vocabularyService.words
-        }
+        let currentSearchText = searchText
+        let currentType = selectedWordType
+        let wordsByType = vocabularyService.wordsByType
+        let allWords = vocabularyService.words
         
-        if !searchText.isEmpty {
-            results = results.filter {
-                $0.word.localizedCaseInsensitiveContains(searchText)
+        Task.detached(priority: .userInitiated) { [weak self] in
+            var results: [Word]
+            if let type = currentType {
+                results = wordsByType[type] ?? []
+            } else {
+                results = allWords
+            }
+            
+            if !currentSearchText.isEmpty {
+                results = results.filter {
+                    $0.word.localizedCaseInsensitiveContains(currentSearchText)
+                }
+            }
+            
+            let finalResults = results
+            Task { @MainActor [weak self] in
+                guard let self = self else { return }
+                // Only update if search text hasn't changed while we were filtering
+                if self.searchText == currentSearchText && self.selectedWordType == currentType {
+                    self.filteredWords = finalResults
+                }
             }
         }
-        
-        self.filteredWords = results
     }
 }
 

@@ -59,7 +59,7 @@ struct BookmarksView: View {
     private let vocabService = VocabularyService.shared
     
     var bookmarkedWords: [Word] {
-        vocabService.words.filter { progressService.isBookmarked($0.id) }
+        progressService.bookmarkedWords.compactMap { vocabService.wordsById[$0] }.sorted { $0.word < $1.word }
     }
     
     var body: some View {
