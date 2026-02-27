@@ -20,6 +20,7 @@
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
 		5C8D5426F6BC9C2488375941 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC8AB358C5CA2BF6044AC3C /* Typography.swift */; };
+		77AD13C7DC64A35F9AFED57C /* LoginSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E0EAE327C950362B3014D5 /* LoginSheetView.swift */; };
 		7D4197BF2265B2399230F674 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92303A00F92BED6BE63141A5 /* Word.swift */; };
 		84F77901D51B6D11E407ED82 /* oxford_vocabulary.json in Resources */ = {isa = PBXBuildFile; fileRef = 86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */; };
 		942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3BEAC261493509191CBB67 /* LearnView.swift */; };
@@ -33,6 +34,7 @@
 		CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */; };
 		D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE10E077EB19A349A5775D7 /* FloatingTabBar.swift */; };
 		F1A2B3C4D5E6F7081234ABCD /* WordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */; };
+		FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4535146DD2BF10DB9C739F30 /* AuthService.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -42,9 +44,11 @@
 		29B7905B12D97B7782DF61D2 /* LearnView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = LearnView.swift; path = Learn/LearnView.swift; sourceTree = "<group>"; };
 		2C1911E28486ADF1DD637173 /* OtherTabs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OtherTabs.swift; sourceTree = "<group>"; };
 		2FAD9762203C412B000D30F8 /* config.xml */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = config.xml; sourceTree = "<group>"; };
+		34E0EAE327C950362B3014D5 /* LoginSheetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginSheetView.swift; sourceTree = "<group>"; };
 		3CF51A9CCAACF1ADDB6A008B /* GlassCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GlassCard.swift; path = Components/GlassCard.swift; sourceTree = "<group>"; };
 		3DD397E4664B1F5DA9FD1398 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = Search/SearchViewModel.swift; sourceTree = "<group>"; };
+		4535146DD2BF10DB9C739F30 /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -113,6 +117,7 @@
 				7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */,
 				C905450FAC03FAF7132FF510 /* ProgressService.swift */,
 				86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */,
+				4535146DD2BF10DB9C739F30 /* AuthService.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -135,6 +140,7 @@
 				2C1911E28486ADF1DD637173 /* OtherTabs.swift */,
 				A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */,
 				12AB34CD56EF78AB90CD12EF /* AccountSheetView.swift */,
+				34E0EAE327C950362B3014D5 /* LoginSheetView.swift */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -373,6 +379,8 @@
 				5C8D5426F6BC9C2488375941 /* Typography.swift in Sources */,
 				CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */,
 				D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */,
+				FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */,
+				77AD13C7DC64A35F9AFED57C /* LoginSheetView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

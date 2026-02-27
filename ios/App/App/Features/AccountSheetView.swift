@@ -16,6 +16,10 @@ struct AccountSheetView: View {
     @AppStorage("randomSpeedEnabled") private var randomSpeedEnabled: Bool = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     
+    // Auth State
+    @StateObject private var authService = AuthService.shared
+    @State private var showingLoginSheet = false
+    
     var body: some View {
         NavigationStack {
             List {
@@ -45,6 +49,9 @@ struct AccountSheetView: View {
             appearanceMode == "dark" ? .dark :
             appearanceMode == "light" ? .light : nil
         )
+        .sheet(isPresented: $showingLoginSheet) {
+            LoginSheetView()
+        }
     }
     
     // MARK: - Profile Header
@@ -59,33 +66,60 @@ struct AccountSheetView: View {
                     .foregroundColor(.webPrimary)
                     .accessibilityLabel("Profile avatar")
                 
-                // Name
-                Text("User Name")
-                    .font(.title3.bold())
-                    .foregroundColor(.primary)
-                
-                // Email
-                Text("user@example.com")
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-                
-                // Edit Profile Button
-                Button(action: {
-                    // TODO: Navigate to edit profile
-                }) {
-                    Text("Edit Profile")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundColor(.webPrimary)
-                        .padding(.horizontal, Spacing.md + Spacing.xs)
-                        .padding(.vertical, Spacing.sm)
-                        .background(
-                            Capsule()
-                                .fill(Color.webPrimary.opacity(0.12))
-                        )
+                if authService.isAuthenticated {
+                    // Name
+                    Text(authService.currentUser?.email?.components(separatedBy: "@").first?.capitalized ?? "User")
+                        .font(.title3.bold())
+                        .foregroundColor(.primary)
+                    
+                    // Email
+                    Text(authService.currentUser?.email ?? "")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    // Edit Profile Button
+                    Button(action: {
+                        // TODO: Navigate to edit profile
+                    }) {
+                        Text("Edit Profile")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundColor(.webPrimary)
+                            .padding(.horizontal, Spacing.md + Spacing.xs)
+                            .padding(.vertical, Spacing.sm)
+                            .background(
+                                Capsule()
+                                    .fill(Color.webPrimary.opacity(0.12))
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel("Edit profile")
+                    .accessibilityHint("Opens profile editing screen")
+                } else {
+                    Text("Guest User")
+                        .font(.title3.bold())
+                        .foregroundColor(.primary)
+                    
+                    Text("Sign in to sync your progress")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                    
+                    // Log In Button
+                    Button(action: {
+                        showingLoginSheet = true
+                    }) {
+                        Text("Log In / Sign Up")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundColor(.white)
+                            .padding(.horizontal, Spacing.lg)
+                            .padding(.vertical, Spacing.sm)
+                            .background(
+                                Capsule()
+                                    .fill(Color.webPrimary)
+                            )
+                    }
+                    .buttonStyle(.plain)
+                    .padding(.top, Spacing.xs)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("Edit profile")
-                .accessibilityHint("Opens profile editing screen")
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, Spacing.sm + Spacing.xs)
@@ -259,21 +293,24 @@ struct AccountSheetView: View {
     
     // MARK: - Sign Out Section
     
+    @ViewBuilder
     private var signOutSection: some View {
-        Section {
-            Button(action: {
-                // TODO: Handle sign out
-            }) {
-                HStack {
-                    Spacer()
-                    Text("Sign Out")
-                        .font(.body.weight(.medium))
-                        .foregroundColor(.red)
-                    Spacer()
+        if authService.isAuthenticated {
+            Section {
+                Button(action: {
+                    authService.logout()
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Sign Out")
+                            .font(.body.weight(.medium))
+                            .foregroundColor(.red)
+                        Spacer()
+                    }
                 }
+                .accessibilityLabel("Sign out")
+                .accessibilityHint("Signs you out of your account")
             }
-            .accessibilityLabel("Sign out")
-            .accessibilityHint("Signs you out of your account")
         }
     }
 }

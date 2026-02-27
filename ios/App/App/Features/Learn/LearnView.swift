@@ -324,6 +324,11 @@ class LearnViewModel: ObservableObject {
     @Published var phoneticsMode: PhoneticsMode = PhoneticsMode(rawValue: UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us") ?? .us {
         didSet { UserDefaults.standard.set(phoneticsMode.rawValue, forKey: "phoneticsMode") }
     }
+    
+    // Playback Speed Settings
+    @Published var playbackSpeed: Double = UserDefaults.standard.double(forKey: "playbackSpeed") == 0 ? 1.0 : UserDefaults.standard.double(forKey: "playbackSpeed")
+    @Published var randomSpeedEnabled: Bool = UserDefaults.standard.bool(forKey: "randomSpeedEnabled")
+    
     @Published var isSpeaking: Bool = false
     @Published var isPlayAnimating: Bool = false
     
@@ -361,12 +366,20 @@ class LearnViewModel: ObservableObject {
                 guard let self = self else { return }
                 let newLooping = UserDefaults.standard.object(forKey: "isLooping") as? Bool ?? true
                 let newPhonetics = PhoneticsMode(rawValue: UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us") ?? .us
+                let newSpeed = UserDefaults.standard.double(forKey: "playbackSpeed") == 0 ? 1.0 : UserDefaults.standard.double(forKey: "playbackSpeed")
+                let newRandomSpeed = UserDefaults.standard.bool(forKey: "randomSpeedEnabled")
                 
                 if self.isLooping != newLooping {
                     self.isLooping = newLooping
                 }
                 if self.phoneticsMode != newPhonetics {
                     self.phoneticsMode = newPhonetics
+                }
+                if self.playbackSpeed != newSpeed {
+                    self.playbackSpeed = newSpeed
+                }
+                if self.randomSpeedEnabled != newRandomSpeed {
+                    self.randomSpeedEnabled = newRandomSpeed
                 }
             }
             .store(in: &cancellables)
@@ -419,7 +432,18 @@ class LearnViewModel: ObservableObject {
     
     func playAudio() {
         guard let word = currentWord else { return }
-        AudioService.shared.speak(text: word.word)
+        
+        // Calculate effective speed
+        var finalSpeed = playbackSpeed
+        if randomSpeedEnabled {
+            finalSpeed = 0.7 + Double.random(in: 0...0.5) // Ranges from 0.7 to 1.2
+        }
+        
+        AudioService.shared.speak(
+            text: word.word,
+            accent: phoneticsMode.rawValue,
+            speed: finalSpeed
+        )
     }
     
     func togglePlayPause() {
@@ -435,18 +459,11 @@ class LearnViewModel: ObservableObject {
             // Loop mode: animation follows real speech
             playAudio()
         } else {
-            // Non-loop mode: guaranteed 1-second animation pulse
+            // Non-loop mode: animation follows real speech state instead of 1 second timer,
+            // because network delays can make a fixed 1-second pulse inaccurate.
             playAudio()
             withAnimation(.easeInOut(duration: 0.25)) {
                 isPlayAnimating = true
-            }
-            animationTimer?.invalidate()
-            animationTimer = Timer.scheduledTimer(withTimeInterval: 1.0, repeats: false) { [weak self] _ in
-                DispatchQueue.main.async {
-                    withAnimation(.easeOut(duration: 0.3)) {
-                        self?.isPlayAnimating = false
-                    }
-                }
             }
         }
     }
