@@ -178,6 +178,7 @@ serve(async (req) => {
       }
     }
 
+    /*
     // Apply rate limiting based on auth status
     const identifier = userId || getClientIp(req);
     const identifierType: 'user' | 'ip' = userId ? 'user' : 'ip';
@@ -204,6 +205,9 @@ serve(async (req) => {
         }
       );
     }
+    */
+
+    let remaining = "unlimited (testing)";
 
     // Validate voiceId
     const allowedVoiceIds = [
@@ -277,7 +281,7 @@ serve(async (req) => {
   } catch (error) {
     console.error("TTS error:", error);
     return new Response(
-      JSON.stringify({ error: "An unexpected error occurred" }),
+      JSON.stringify({ error: error instanceof Error ? error.message : "An unexpected error occurred" }),
       {
         status: 500,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
