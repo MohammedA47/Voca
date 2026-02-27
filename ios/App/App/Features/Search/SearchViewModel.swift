@@ -6,11 +6,12 @@ class SearchViewModel: ObservableObject {
     @Published var selectedWordType: String? = nil
     @Published var filteredWords: [Word] = []
     
-    private let vocabularyService = VocabularyService()
+    private let vocabularyService = VocabularyService.shared
     private var cancellables = Set<AnyCancellable>()
     
     var allWordTypes: [String] {
-        let counts = Dictionary(grouping: vocabularyService.words, by: { $0.type }).mapValues { $0.count }
+        // Use pre-built wordsByType for O(1) access
+        let counts = vocabularyService.wordsByType.mapValues { $0.count }
         return counts.keys.sorted { counts[$0, default: 0] > counts[$1, default: 0] }
     }
     
@@ -31,13 +32,31 @@ class SearchViewModel: ObservableObject {
                 self?.filterWords()
             }
             .store(in: &cancellables)
+        
+        // Reload when vocabulary finishes async loading
+        vocabularyService.$isLoaded
+            .receive(on: DispatchQueue.main)
+            .filter { $0 }
+            .first()
+            .sink { [weak self] _ in
+                self?.filterWords()
+            }
+            .store(in: &cancellables)
             
-        // Initial load
-        filterWords()
+        // Initial load (if already loaded)
+        if vocabularyService.isLoaded {
+            filterWords()
+        }
     }
     
     private func filterWords() {
-        var results = vocabularyService.words
+        // Start from type-filtered subset if a type is selected (faster)
+        var results: [Word]
+        if let type = selectedWordType {
+            results = vocabularyService.wordsByType[type] ?? []
+        } else {
+            results = vocabularyService.words
+        }
         
         if !searchText.isEmpty {
             results = results.filter {
@@ -45,10 +64,7 @@ class SearchViewModel: ObservableObject {
             }
         }
         
-        if let type = selectedWordType {
-            results = results.filter { $0.type == type }
-        }
-        
         self.filteredWords = results
     }
 }
+

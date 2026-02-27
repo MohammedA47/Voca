@@ -10,6 +10,11 @@ struct LearnView: View {
     @State private var cardOpacity: Double = 1.0
     @State private var isTransitioning = false
     
+    // Reusable haptic generators (Apple recommends pre-creating these)
+    private let lightHaptic = UIImpactFeedbackGenerator(style: .light)
+    private let mediumHaptic = UIImpactFeedbackGenerator(style: .medium)
+    private let softHaptic = UIImpactFeedbackGenerator(style: .soft)
+    
     var body: some View {
         ZStack {
             // Background Gradient
@@ -66,7 +71,7 @@ struct LearnView: View {
                     }
                     
                     Button {
-                        UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                        lightHaptic.impactOccurred()
                         showAccountSheet = true
                     } label: {
                         Image(systemName: "person.crop.circle.fill")
@@ -190,7 +195,7 @@ struct LearnView: View {
                 
                 // ── Play / Pause Button ─────────────────────
                 Button {
-                    UIImpactFeedbackGenerator(style: .light).impactOccurred()
+                    lightHaptic.impactOccurred()
                     viewModel.togglePlayPause()
                 } label: {
                     HStack(spacing: 12) {
@@ -264,7 +269,7 @@ struct LearnView: View {
         // Phase 2: Swap the data while card is invisible
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
             action()
-            UIImpactFeedbackGenerator(style: .medium).impactOccurred()
+            mediumHaptic.impactOccurred()
             
             // Reset position, shrink for pop-in
             dragOffset = 0
@@ -279,7 +284,7 @@ struct LearnView: View {
             
             // Light secondary haptic for the "land"
             DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
-                UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                softHaptic.impactOccurred()
                 isTransitioning = false
             }
         }
@@ -318,16 +323,16 @@ class LearnViewModel: ObservableObject {
         }
     }
     @Published var currentWord: Word?
-    @Published var isLooping: Bool = UserDefaults.standard.object(forKey: "isLooping") as? Bool ?? true {
-        didSet { UserDefaults.standard.set(isLooping, forKey: "isLooping") }
-    }
-    @Published var phoneticsMode: PhoneticsMode = PhoneticsMode(rawValue: UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us") ?? .us {
-        didSet { UserDefaults.standard.set(phoneticsMode.rawValue, forKey: "phoneticsMode") }
-    }
     
-    // Playback Speed Settings
-    @Published var playbackSpeed: Double = UserDefaults.standard.double(forKey: "playbackSpeed") == 0 ? 1.0 : UserDefaults.standard.double(forKey: "playbackSpeed")
-    @Published var randomSpeedEnabled: Bool = UserDefaults.standard.bool(forKey: "randomSpeedEnabled")
+    // Settings — synced via @AppStorage (no broad NotificationCenter listener needed)
+    @AppStorage("isLooping") var isLooping: Bool = true
+    @AppStorage("phoneticsMode") private var phoneticsModeRaw: String = "us"
+    @AppStorage("playbackSpeed") var playbackSpeed: Double = 1.0
+    @AppStorage("randomSpeedEnabled") var randomSpeedEnabled: Bool = false
+    
+    var phoneticsMode: PhoneticsMode {
+        PhoneticsMode(rawValue: phoneticsModeRaw) ?? .us
+    }
     
     @Published var isSpeaking: Bool = false
     @Published var isPlayAnimating: Bool = false
@@ -338,12 +343,26 @@ class LearnViewModel: ObservableObject {
     
     private var words: [Word] = []
     var currentIndex: Int = 0
-    private let vocabularyService = VocabularyService()
+    private let vocabularyService = VocabularyService.shared
     private var progressService: ProgressService?
     
     init(progressService: ProgressService? = nil) {
         self.progressService = progressService
-        loadWordsForLevel()
+        
+        // If vocabulary is already loaded, populate immediately
+        if vocabularyService.isLoaded {
+            loadWordsForLevel()
+        }
+        
+        // Observe when vocabulary finishes loading (async)
+        vocabularyService.$isLoaded
+            .receive(on: DispatchQueue.main)
+            .filter { $0 }
+            .first()
+            .sink { [weak self] _ in
+                self?.loadWordsForLevel()
+            }
+            .store(in: &cancellables)
         
         // Observe AudioService speaking state
         speakingObserver = AudioService.shared.$isSpeaking
@@ -358,31 +377,6 @@ class LearnViewModel: ObservableObject {
                 }
                 // Non-loop mode: animation is handled by timer in togglePlayPause
             }
-            
-        // Observe changes from UserDefaults
-        NotificationCenter.default.publisher(for: UserDefaults.didChangeNotification)
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] _ in
-                guard let self = self else { return }
-                let newLooping = UserDefaults.standard.object(forKey: "isLooping") as? Bool ?? true
-                let newPhonetics = PhoneticsMode(rawValue: UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us") ?? .us
-                let newSpeed = UserDefaults.standard.double(forKey: "playbackSpeed") == 0 ? 1.0 : UserDefaults.standard.double(forKey: "playbackSpeed")
-                let newRandomSpeed = UserDefaults.standard.bool(forKey: "randomSpeedEnabled")
-                
-                if self.isLooping != newLooping {
-                    self.isLooping = newLooping
-                }
-                if self.phoneticsMode != newPhonetics {
-                    self.phoneticsMode = newPhonetics
-                }
-                if self.playbackSpeed != newSpeed {
-                    self.playbackSpeed = newSpeed
-                }
-                if self.randomSpeedEnabled != newRandomSpeed {
-                    self.randomSpeedEnabled = newRandomSpeed
-                }
-            }
-            .store(in: &cancellables)
     }
     
     func setProgressService(_ service: ProgressService) {
@@ -493,8 +487,6 @@ class LearnViewModel: ObservableObject {
             self.currentWord = words[currentIndex]
         }
     }
-    
-    // Settings toggle removed — replaced by AccountSheetView
 }
 
 // MARK: - Level Selector

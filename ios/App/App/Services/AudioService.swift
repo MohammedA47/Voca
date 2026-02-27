@@ -11,6 +11,9 @@ class AudioService: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private var currentTask: Task<Void, Never>?
     private var cancellables = Set<AnyCancellable>()
     
+    // TTS audio cache — avoids re-fetching identical pronunciations
+    private let audioCache = NSCache<NSString, NSData>()
+    
     // Hardcoded config matching AuthService
     private let supabaseUrl = "https://brknoeqgpejhxsqsjnan.supabase.co"
     private let supabaseAnonKey = "sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT"
@@ -24,6 +27,7 @@ class AudioService: NSObject, ObservableObject, AVAudioPlayerDelegate {
     private override init() {
         super.init()
         setupAudioSession()
+        audioCache.countLimit = 100
     }
     
     private func setupAudioSession() {
@@ -43,6 +47,18 @@ class AudioService: NSObject, ObservableObject, AVAudioPlayerDelegate {
             self.isSpeaking = true
             
             do {
+                let voiceId = voiceIds[accent] ?? voiceIds["us"]!
+                let cacheKey = NSString(string: "\(text)_\(accent)_\(speed)")
+                
+                // Check cache first
+                if let cachedData = audioCache.object(forKey: cacheKey) {
+                    self.audioPlayer = try AVAudioPlayer(data: cachedData as Data)
+                    self.audioPlayer?.delegate = self
+                    self.audioPlayer?.prepareToPlay()
+                    self.audioPlayer?.play()
+                    return
+                }
+                
                 guard let url = URL(string: "\(supabaseUrl)/functions/v1/elevenlabs-tts") else {
                     throw URLError(.badURL)
                 }
@@ -56,8 +72,6 @@ class AudioService: NSObject, ObservableObject, AVAudioPlayerDelegate {
                 if let token = AuthService.shared.sessionToken {
                     request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
                 }
-                
-                let voiceId = voiceIds[accent] ?? voiceIds["us"]!
                 
                 let body: [String: Any] = [
                     "text": text,
@@ -82,6 +96,9 @@ class AudioService: NSObject, ObservableObject, AVAudioPlayerDelegate {
                     print("TTS API failed with status \(httpResponse.statusCode): \(String(data: data, encoding: .utf8) ?? "")")
                     throw URLError(.badServerResponse)
                 }
+                
+                // Cache the audio data for future use
+                self.audioCache.setObject(data as NSData, forKey: cacheKey)
                 
                 self.audioPlayer = try AVAudioPlayer(data: data)
                 self.audioPlayer?.delegate = self
@@ -121,3 +138,4 @@ class AudioService: NSObject, ObservableObject, AVAudioPlayerDelegate {
         }
     }
 }
+

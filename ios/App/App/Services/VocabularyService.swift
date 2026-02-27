@@ -1,13 +1,20 @@
 import Foundation
 
 class VocabularyService: ObservableObject {
+    static let shared = VocabularyService()
+    
     @Published var words: [Word] = []
+    @Published var isLoaded: Bool = false
     
     // Grouped by level for easy access
     var wordsByLevel: [Level: [Word]] = [:]
+    // Grouped by type for fast search filtering
+    var wordsByType: [String: [Word]] = [:]
     
-    init() {
-        loadWords()
+    private init() {
+        Task.detached(priority: .userInitiated) { [weak self] in
+            self?.loadWords()
+        }
     }
     
     private func loadWords() {
@@ -19,15 +26,19 @@ class VocabularyService: ObservableObject {
         do {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
-            self.words = try decoder.decode([Word].self, from: data)
-            self.groupWords()
-            print("Successfully loaded \(words.count) words.")
+            let decoded = try decoder.decode([Word].self, from: data)
+            let byLevel = Dictionary(grouping: decoded, by: { $0.level })
+            let byType = Dictionary(grouping: decoded, by: { $0.type })
+            
+            DispatchQueue.main.async { [weak self] in
+                self?.words = decoded
+                self?.wordsByLevel = byLevel
+                self?.wordsByType = byType
+                self?.isLoaded = true
+                print("Successfully loaded \(decoded.count) words.")
+            }
         } catch {
             print("ERROR: Failed to decode vocabulary: \(error)")
         }
-    }
-    
-    private func groupWords() {
-        self.wordsByLevel = Dictionary(grouping: words, by: { $0.level })
     }
 }

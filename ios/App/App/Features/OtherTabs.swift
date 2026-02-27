@@ -14,26 +14,34 @@ struct SearchView: View {
                 .padding(.horizontal, Spacing.md)
                 .padding(.vertical, Spacing.sm + 2)
                 
-                List(viewModel.filteredWords) { word in
-                    NavigationLink(value: word) {
-                        HStack {
-                            VStack(alignment: .leading) {
-                                Text(word.word)
-                                    .font(.headline)
-                                Text(word.type)
+                if viewModel.searchText.isEmpty && viewModel.selectedWordType == nil {
+                    ContentUnavailableView(
+                        "Search Words",
+                        systemImage: "magnifyingglass",
+                        description: Text("Type to search through vocabulary")
+                    )
+                } else {
+                    List(viewModel.filteredWords) { word in
+                        NavigationLink(value: word) {
+                            HStack {
+                                VStack(alignment: .leading) {
+                                    Text(word.word)
+                                        .font(.headline)
+                                    Text(word.type)
+                                        .font(.caption)
+                                        .foregroundColor(.secondary)
+                                }
+                                Spacer()
+                                Text(word.level)
                                     .font(.caption)
-                                    .foregroundColor(.secondary)
+                                    .padding(4)
+                                    .background(Color.secondary.opacity(0.1))
+                                    .clipShape(RoundedRectangle(cornerRadius: 4))
                             }
-                            Spacer()
-                            Text(word.level)
-                                .font(.caption)
-                                .padding(4)
-                                .background(Color.secondary.opacity(0.1))
-                                .clipShape(RoundedRectangle(cornerRadius: 4))
                         }
                     }
+                    .listStyle(.plain)
                 }
-                .listStyle(.plain)
             }
             .navigationTitle("Search")
             .navigationDestination(for: Word.self) { word in
@@ -48,7 +56,7 @@ struct BookmarksView: View {
     // We need access to VocabularyService to resolve IDs to Words.
     // In a real app, use Dependency Injection or Singleton for VocabService.
     // For now, instantiate locally as it's cheap (mock data).
-    @StateObject private var vocabService = VocabularyService()
+    private let vocabService = VocabularyService.shared
     
     var bookmarkedWords: [Word] {
         vocabService.words.filter { progressService.isBookmarked($0.id) }
