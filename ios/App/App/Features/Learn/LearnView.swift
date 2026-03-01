@@ -62,7 +62,8 @@ struct LearnView: View {
                                 isBookmarked: viewModel.isBookmarked,
                                 isLearned: viewModel.isLearned,
                                 phoneticsMode: viewModel.phoneticsMode,
-                                onPlay: viewModel.playAudio,
+                                onPlay: { viewModel.playAudio() },
+                                onPlayExample: { text in viewModel.playAudio(text: text) },
                                 onBookmark: viewModel.toggleBookmark,
                                 onToggleLearned: viewModel.toggleLearned
                             )
@@ -312,7 +313,7 @@ class LearnViewModel: ObservableObject {
         objectWillChange.send()
     }
     
-    func playAudio() {
+    func playAudio(text: String? = nil) {
         guard let word = currentWord else { return }
         
         // Calculate effective speed
@@ -322,7 +323,7 @@ class LearnViewModel: ObservableObject {
         }
         
         AudioService.shared.speak(
-            text: word.word,
+            text: text ?? word.word,
             accent: phoneticsMode.rawValue,
             speed: finalSpeed
         )
@@ -466,6 +467,7 @@ struct WordCardView: View {
     var isLearned: Bool
     var phoneticsMode: PhoneticsMode
     var onPlay: () -> Void
+    var onPlayExample: (String) -> Void
     var onBookmark: () -> Void
     var onToggleLearned: () -> Void
     
@@ -484,6 +486,7 @@ struct WordCardView: View {
                 phoneticsMode: phoneticsMode,
                 cardHeight: cardHeight,
                 onPlay: onPlay,
+                onPlayExample: onPlayExample,
                 onBookmark: onBookmark,
                 onToggleLearned: onToggleLearned
             )
@@ -529,6 +532,7 @@ private struct CardFrontFace: View {
     var phoneticsMode: PhoneticsMode
     let cardHeight: CGFloat
     var onPlay: () -> Void
+    var onPlayExample: (String) -> Void
     var onBookmark: () -> Void
     var onToggleLearned: () -> Void
     
@@ -621,7 +625,7 @@ private struct CardFrontFace: View {
                                 .id("front-ex-\(word.id)-\(currentExampleIndex)")
                             
                             HStack(spacing: 6) {
-                                Button(action: onPlay) {
+                                Button(action: { onPlayExample(examples[currentExampleIndex]) }) {
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 11))
                                         .foregroundColor(.webPrimary)
