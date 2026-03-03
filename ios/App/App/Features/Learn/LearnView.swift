@@ -394,7 +394,7 @@ struct LevelSelector: View {
                         .font(.system(size: 14, weight: .bold))
                         .frame(width: 48, height: 34)
                         .background(selectedLevel == level ? Color.webPrimary : Color.adaptivePillBackground)
-                        .foregroundColor(selectedLevel == level ? .white : .webForeground)
+                        .foregroundStyle(selectedLevel == level ? .white : .webForeground)
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
@@ -425,7 +425,7 @@ struct WordTypeSelector: View {
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
                         .background(selectedType == nil ? Color.webPrimary : Color.adaptivePillBackground)
-                        .foregroundColor(selectedType == nil ? .white : .webForeground)
+                        .foregroundStyle(selectedType == nil ? .white : .webForeground)
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
@@ -443,7 +443,7 @@ struct WordTypeSelector: View {
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
                             .background(selectedType == type ? Color.webPrimary : Color.adaptivePillBackground)
-                            .foregroundColor(selectedType == type ? .white : .webForeground)
+                            .foregroundStyle(selectedType == type ? .white : .webForeground)
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule()
@@ -510,12 +510,15 @@ struct WordCardView: View {
             )
         }
         .frame(height: cardHeight)
+        .contentShape(Rectangle())
+        .accessibilityAddTraits(.isButton)
+        .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
         .onTapGesture {
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 isFlipped.toggle()
             }
         }
-        .onChange(of: word.id) { _ in
+        .onChange(of: word.id) {
             // Reset to front when word changes
             isFlipped = false
             currentExampleIndex = 0
@@ -545,7 +548,7 @@ private struct CardFrontFace: View {
                 HStack(alignment: .top) {
                     Text(word.word.capitalized)
                         .font(.oxfordDisplay(size: 36))
-                        .foregroundColor(.oxfordNavy)
+                        .foregroundStyle(Color.oxfordNavy)
                     
                     Spacer()
                     
@@ -560,7 +563,7 @@ private struct CardFrontFace: View {
                                 isLearned
                                     ? Image(systemName: "checkmark")
                                         .font(.caption.bold())
-                                        .foregroundColor(.white)
+                                        .foregroundStyle(.white)
                                     : nil
                             )
                     }
@@ -574,31 +577,31 @@ private struct CardFrontFace: View {
                     
                     Text(phoneticsMode == .uk ? "UK" : "US")
                         .font(.system(size: 11, weight: .bold))
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
                         .background(Color.webPrimary.opacity(0.8))
-                        .cornerRadius(4)
+                        .clipShape(.rect(cornerRadius: 4))
                     
                     Text(phonetic)
                         .font(.system(size: 17, weight: .medium, design: .monospaced))
-                        .foregroundColor(.webPrimary)
+                        .foregroundStyle(Color.webPrimary)
                     
                     Button(action: onPlay) {
                         Image(systemName: "speaker.wave.3.fill")
                             .font(.callout)
-                            .foregroundColor(.webPrimary)
+                            .foregroundStyle(Color.webPrimary)
                     }
                 }
                 
                 // ── Part of Speech Pill ─────────────────────
                 Text(word.type.uppercased())
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .padding(.horizontal, 10)
                     .padding(.vertical, 5)
                     .background(Color.secondary.opacity(0.08))
-                    .cornerRadius(6)
+                    .clipShape(.rect(cornerRadius: 6))
                 
                 // ── Usage Examples ──────────────────────────
                 if let examples = word.examples, !examples.isEmpty {
@@ -606,20 +609,20 @@ private struct CardFrontFace: View {
                         HStack {
                             Text("USAGE EXAMPLES")
                                 .font(.system(size: 11, weight: .bold))
-                                .foregroundColor(.webPrimary)
+                                .foregroundStyle(Color.webPrimary)
                                 .tracking(1)
                             
                             Spacer()
                             
                             Text("\(currentExampleIndex + 1) of \(examples.count)")
                                 .font(.system(size: 12))
-                                .foregroundColor(.secondary)
+                                .foregroundStyle(.secondary)
                         }
                         
                         VStack(alignment: .leading, spacing: 12) {
                             Text("\"" + examples[currentExampleIndex] + "\"")
                                 .font(.oxfordBody(size: 16))
-                                .foregroundColor(.webForeground)
+                                .foregroundStyle(Color.webForeground)
                                 .lineSpacing(5)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .id("front-ex-\(word.id)-\(currentExampleIndex)")
@@ -628,7 +631,7 @@ private struct CardFrontFace: View {
                                 Button(action: { onPlayExample(examples[currentExampleIndex]) }) {
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 11))
-                                        .foregroundColor(.webPrimary)
+                                        .foregroundStyle(Color.webPrimary)
                                 }
                                 
                                 Spacer()
@@ -678,7 +681,7 @@ private struct CardFrontFace: View {
                                 .font(.system(size: 13, weight: .medium))
                         }
                     }
-                    .foregroundColor(.secondary.opacity(0.5))
+                    .foregroundStyle(.secondary.opacity(0.5))
                     Spacer()
                 }
                 .padding(.bottom, 24)
@@ -689,7 +692,7 @@ private struct CardFrontFace: View {
             Button(action: onBookmark) {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                     .font(.title3)
-                    .foregroundColor(isBookmarked ? .webPrimary : .secondary.opacity(0.4))
+                    .foregroundStyle(isBookmarked ? Color.webPrimary : Color.secondary.opacity(0.4))
             }
             .padding(.leading, 22)
             .padding(.bottom, 22)
@@ -715,18 +718,18 @@ private struct CardBackFace: View {
             HStack {
                 Text(word.word.capitalized)
                     .font(.oxfordDisplay(size: 24))
-                    .foregroundColor(.oxfordNavy)
+                    .foregroundStyle(Color.oxfordNavy)
                 
                 Spacer()
                 
                 // Part of Speech Pill
                 Text(word.type.uppercased())
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
                     .background(Color.webPrimary)
-                    .cornerRadius(6)
+                    .clipShape(.rect(cornerRadius: 6))
             }
             
             Divider()
@@ -736,12 +739,12 @@ private struct CardBackFace: View {
             VStack(alignment: .leading, spacing: 6) {
                 Text("DEFINITION")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
                     .tracking(1)
                 
                 Text(word.definition ?? "No definition available.")
                     .font(.oxfordBody(size: 17))
-                    .foregroundColor(.webForeground)
+                    .foregroundStyle(Color.webForeground)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
                 
@@ -749,7 +752,7 @@ private struct CardBackFace: View {
                 if let example = word.example, !example.isEmpty {
                     Text("“\(example)”")
                         .font(.oxfordBody(size: 16))
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                         .italic()
                         .padding(.top, 4)
                         .fixedSize(horizontal: false, vertical: true)
@@ -760,14 +763,14 @@ private struct CardBackFace: View {
                     VStack(alignment: .leading, spacing: 10) {
                         Text("Synonyms:")
                             .font(.system(size: 14, weight: .regular))
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                         
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: 8) {
                                 ForEach(synonyms, id: \.self) { syn in
                                     Text(syn)
                                         .font(.system(size: 14))
-                                        .foregroundColor(.webForeground)
+                                        .foregroundStyle(Color.webForeground)
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 8)
                                         .overlay(
@@ -794,7 +797,7 @@ private struct CardBackFace: View {
                     Text("Tap to flip back")
                         .font(.system(size: 13, weight: .medium))
                 }
-                .foregroundColor(.secondary.opacity(0.5))
+                .foregroundStyle(.secondary.opacity(0.5))
                 Spacer()
             }
         }
@@ -838,14 +841,14 @@ struct LearnProgressView: View {
             HStack {
                 Text("STUDY PROGRESS")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .tracking(0.8)
                 
                 Spacer()
                 
                 Text("\(currentIndex + 1) / \(totalWords) WORDS")
                     .font(.system(size: 10, weight: .bold))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .tracking(0.8)
             }
         }
@@ -879,7 +882,7 @@ struct PlayPronunciationView: View {
                     .font(.system(size: 14))
                     .contentTransition(.symbolEffect(.replace))
             }
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .frame(height: 22)
             .padding(.horizontal, 28)
             .padding(.vertical, 16)
@@ -924,12 +927,12 @@ struct LearnHeaderView: View {
         HStack {
             Text(selectedLevel)
                 .font(.title2.bold())
-                .foregroundColor(.webPrimary)
+                .foregroundStyle(Color.webPrimary)
             
             if let type = selectedWordType {
                 Text(type.capitalized)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
                     .padding(.horizontal, Spacing.sm + 2)
                     .padding(.vertical, Spacing.xs + 1)
                     .background(Color.webPrimary.opacity(0.12))
@@ -958,7 +961,7 @@ struct LearnHeaderView: View {
             } label: {
                 Image(systemName: selectedWordType == nil ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
                     .font(.system(size: 22))
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
             }
             
             Button {
@@ -968,7 +971,7 @@ struct LearnHeaderView: View {
                 Image(systemName: "person.crop.circle.fill")
                     .font(.system(size: 28))
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
             }
             .accessibilityLabel("Account")
             .accessibilityHint("Opens your account panel")

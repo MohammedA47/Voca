@@ -29,7 +29,7 @@ struct SearchView: View {
                                         .font(.headline)
                                     Text(word.type)
                                         .font(.caption)
-                                        .foregroundColor(.secondary)
+                                        .foregroundStyle(.secondary)
                                 }
                                 Spacer()
                                 Text(word.level)
@@ -73,14 +73,14 @@ struct BookmarksView: View {
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(word.word).font(.headline)
-                                Text(word.type).font(.caption).foregroundColor(.secondary)
+                                Text(word.type).font(.caption).foregroundStyle(.secondary)
                             }
                             Spacer()
                             Button(action: {
                                 progressService.toggleBookmark(word.id)
                             }) {
                                 Image(systemName: "bookmark.fill")
-                                    .foregroundColor(.accentColor)
+                                    .foregroundStyle(.tint)
                             }
                             .buttonStyle(.plain)
                         }
@@ -106,19 +106,19 @@ struct ProfileView: View {
                         Text("Words Learned")
                         Spacer()
                         Text("\(progressService.learnedWords.count)")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                     HStack {
                         Text("Bookmarks")
                         Spacer()
                         Text("\(progressService.bookmarkedWords.count)")
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 Section("Settings") {
                     // Placeholder for future settings
                     Text("Version 1.0.0")
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
             }
             .navigationTitle("Profile")

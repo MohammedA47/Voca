@@ -35,11 +35,7 @@ extension View {
 }
 
 struct GlassCard<Content: View>: View {
-    var content: Content
-
-    init(@ViewBuilder content: () -> Content) {
-        self.content = content()
-    }
+    @ViewBuilder let content: Content
 
     var body: some View {
         content

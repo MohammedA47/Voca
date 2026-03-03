@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LoginSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    @StateObject private var authService = AuthService.shared
+    @ObservedObject private var authService = AuthService.shared
     
     @State private var isSignUp = false
     @State private var email = ""
@@ -19,7 +19,7 @@ struct LoginSheetView: View {
                     VStack(spacing: Spacing.sm) {
                         Image(systemName: "person.badge.key.fill")
                             .font(.system(size: 64))
-                            .foregroundColor(.webPrimary)
+                            .foregroundStyle(Color.webPrimary)
                             .padding(.bottom, Spacing.xs)
                         
                         Text(isSignUp ? "Create Account" : "Welcome Back")
@@ -27,7 +27,7 @@ struct LoginSheetView: View {
                         
                         Text(isSignUp ? "Sign up to track your learning progress." : "Log in to continue your learning journey.")
                             .font(.subheadline)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                             .multilineTextAlignment(.center)
                     }
                     .padding(.top, Spacing.xl)
@@ -37,7 +37,7 @@ struct LoginSheetView: View {
                         if let error = errorMessage {
                             Text(error)
                                 .font(.caption)
-                                .foregroundColor(.red)
+                                .foregroundStyle(.red)
                                 .padding(.horizontal)
                                 .multilineTextAlignment(.center)
                         }
@@ -45,7 +45,7 @@ struct LoginSheetView: View {
                         VStack(spacing: 0) {
                             TextField("Email Address", text: $email)
                                 .keyboardType(.emailAddress)
-                                .autocapitalization(.none)
+                                .textInputAutocapitalization(.never)
                                 .padding()
                                 .background(Color(UIColor.secondarySystemBackground))
                             
@@ -63,7 +63,7 @@ struct LoginSheetView: View {
                                     .background(Color(UIColor.secondarySystemBackground))
                             }
                         }
-                        .cornerRadius(12)
+                        .clipShape(.rect(cornerRadius: 12))
                         
                         // Action Button
                         Button(action: {
@@ -82,10 +82,10 @@ struct LoginSheetView: View {
                                 }
                                 Spacer()
                             }
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                             .padding()
                             .background(Color.webPrimary)
-                            .cornerRadius(12)
+                            .clipShape(.rect(cornerRadius: 12))
                         }
                         .disabled(isLoading || email.isEmpty || password.isEmpty || (isSignUp && confirmPassword.isEmpty))
                         .opacity((isLoading || email.isEmpty || password.isEmpty || (isSignUp && confirmPassword.isEmpty)) ? 0.6 : 1.0)
@@ -99,7 +99,7 @@ struct LoginSheetView: View {
                         }) {
                             Text(isSignUp ? "Already have an account? Log In" : "Don't have an account? Sign Up")
                                 .font(.footnote)
-                                .foregroundColor(.webPrimary)
+                                .foregroundStyle(Color.webPrimary)
                         }
                         .padding(.top, Spacing.xs)
                     }
@@ -114,8 +114,8 @@ struct LoginSheetView: View {
                     }
                 }
             }
-            .onChange(of: authService.isAuthenticated) { isAuthenticated in
-                if isAuthenticated {
+            .onChange(of: authService.isAuthenticated) {
+                if authService.isAuthenticated {
                     dismiss()
                 }
             }

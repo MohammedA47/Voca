@@ -5,12 +5,30 @@ struct WordDetailView: View {
     @EnvironmentObject var progressService: ProgressService
 
     var body: some View {
+        wordContent
+            .background(
+                LinearGradient(
+                    colors: [
+                        Color.adaptiveBackground,
+                        Color.adaptiveBackgroundEnd
+                    ],
+                    startPoint: .top,
+                    endPoint: .bottom
+                )
+                .ignoresSafeArea()
+            )
+            .navigationTitle(word.word.capitalized)
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar { wordToolbar }
+    }
+    
+    private var wordContent: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 // ── Word Title ──────────────────────────────
                 Text(word.word.capitalized)
                     .font(.oxfordDisplay(size: 40))
-                    .foregroundColor(.oxfordNavy)
+                    .foregroundStyle(Color.oxfordNavy)
 
                 // ── Phonetics ───────────────────────────────
                 HStack(spacing: Spacing.md) {
@@ -29,20 +47,20 @@ struct WordDetailView: View {
                 // ── Part of Speech ──────────────────────────
                 Text(word.type.uppercased())
                     .font(.system(size: 12, weight: .bold))
-                    .foregroundColor(.secondary)
+                    .foregroundStyle(.secondary)
                     .padding(.horizontal, Spacing.sm + Spacing.xs)
                     .padding(.vertical, Spacing.xs + 2)
                     .background(Color.secondary.opacity(0.08))
-                    .cornerRadius(8)
+                    .clipShape(.rect(cornerRadius: 8))
 
                 // ── Level Badge ─────────────────────────────
                 HStack(spacing: 6) {
                     Text("Level")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     Text(word.level)
                         .font(.subheadline.bold())
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .padding(.horizontal, Spacing.sm + 2)
                         .padding(.vertical, Spacing.xs)
                         .background(Color.webPrimary)
@@ -54,19 +72,19 @@ struct WordDetailView: View {
                     VStack(alignment: .leading, spacing: Spacing.sm + Spacing.xs) {
                         Text("USAGE EXAMPLES")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundColor(.webPrimary)
+                            .foregroundStyle(Color.webPrimary)
                             .tracking(1)
 
                         ForEach(Array(examples.enumerated()), id: \.offset) { index, example in
                             HStack(alignment: .top, spacing: Spacing.sm + 2) {
                                 Text("\(index + 1).")
                                     .font(.oxfordBody(size: 15))
-                                    .foregroundColor(.secondary)
+                                    .foregroundStyle(.secondary)
                                     .frame(width: 24, alignment: .trailing)
 
                                 Text("\"\(example)\"")
                                     .font(.oxfordBody(size: 16))
-                                    .foregroundColor(.webForeground)
+                                    .foregroundStyle(Color.webForeground)
                                     .lineSpacing(5)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -83,45 +101,34 @@ struct WordDetailView: View {
             }
             .padding(Spacing.lg)
         }
-        .background(
-            LinearGradient(
-                colors: [
-                    Color.adaptiveBackground,
-                    Color.adaptiveBackgroundEnd
-                ],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
-        )
-        .navigationTitle(word.word.capitalized)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItemGroup(placement: .topBarTrailing) {
-                Button {
-                    AudioService.shared.speak(text: word.word)
-                } label: {
-                    Image(systemName: "speaker.wave.3.fill")
-                        .foregroundColor(.webPrimary)
-                }
+    }
+    
+    @ToolbarContentBuilder
+    private var wordToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .topBarTrailing) {
+            Button {
+                AudioService.shared.speak(text: word.word)
+            } label: {
+                Image(systemName: "speaker.wave.3.fill")
+                    .foregroundStyle(Color.webPrimary)
+            }
 
-                Button {
-                    progressService.toggleBookmark(word.id)
-                } label: {
-                    Image(systemName: progressService.isBookmarked(word.id) ? "bookmark.fill" : "bookmark")
-                        .foregroundColor(progressService.isBookmarked(word.id) ? .webPrimary : .secondary)
-                }
+            Button {
+                progressService.toggleBookmark(word.id)
+            } label: {
+                Image(systemName: progressService.isBookmarked(word.id) ? "bookmark.fill" : "bookmark")
+                    .foregroundStyle(progressService.isBookmarked(word.id) ? Color.webPrimary : Color.secondary)
+            }
 
-                Button {
-                    if progressService.isLearned(word.id) {
-                        progressService.unmarkLearned(word.id)
-                    } else {
-                        progressService.markAsLearned(word.id)
-                    }
-                } label: {
-                    Image(systemName: progressService.isLearned(word.id) ? "checkmark.circle.fill" : "checkmark.circle")
-                        .foregroundColor(progressService.isLearned(word.id) ? .green : .secondary)
+            Button {
+                if progressService.isLearned(word.id) {
+                    progressService.unmarkLearned(word.id)
+                } else {
+                    progressService.markAsLearned(word.id)
                 }
+            } label: {
+                Image(systemName: progressService.isLearned(word.id) ? "checkmark.circle.fill" : "checkmark.circle")
+                    .foregroundStyle(progressService.isLearned(word.id) ? Color.green : Color.secondary)
             }
         }
     }
@@ -138,25 +145,25 @@ private struct PhoneticChip: View {
         HStack(spacing: 6) {
             Text(label)
                 .font(.system(size: 11, weight: .bold))
-                .foregroundColor(.white)
+                .foregroundStyle(.white)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
                 .background(Color.webPrimary.opacity(0.8))
-                .cornerRadius(4)
+                .clipShape(.rect(cornerRadius: 4))
 
             Text(phonetic)
                 .font(.system(size: 16, weight: .medium, design: .monospaced))
-                .foregroundColor(.webPrimary)
+                .foregroundStyle(Color.webPrimary)
 
             Button(action: onPlay) {
                 Image(systemName: "speaker.wave.2.fill")
                     .font(.system(size: 13))
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
         .background(Color.webPrimary.opacity(0.06))
-        .cornerRadius(10)
+        .clipShape(.rect(cornerRadius: 10))
     }
 }

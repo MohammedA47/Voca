@@ -17,7 +17,7 @@ struct AccountSheetView: View {
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     
     // Auth State
-    @StateObject private var authService = AuthService.shared
+    @ObservedObject private var authService = AuthService.shared
     @State private var showingLoginSheet = false
     
     var body: some View {
@@ -41,7 +41,7 @@ struct AccountSheetView: View {
                         dismiss()
                     }
                     .fontWeight(.semibold)
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
                 }
             }
         }
@@ -63,19 +63,19 @@ struct AccountSheetView: View {
                 Image(systemName: "person.crop.circle.fill")
                     .font(.system(size: 72))
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundColor(.webPrimary)
+                    .foregroundStyle(Color.webPrimary)
                     .accessibilityLabel("Profile avatar")
                 
                 if authService.isAuthenticated {
                     // Name
                     Text(authService.currentUser?.email?.components(separatedBy: "@").first?.capitalized ?? "User")
                         .font(.title3.bold())
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                     
                     // Email
                     Text(authService.currentUser?.email ?? "")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     
                     // Edit Profile Button
                     Button(action: {
@@ -83,7 +83,7 @@ struct AccountSheetView: View {
                     }) {
                         Text("Edit Profile")
                             .font(.subheadline.weight(.medium))
-                            .foregroundColor(.webPrimary)
+                            .foregroundStyle(Color.webPrimary)
                             .padding(.horizontal, Spacing.md + Spacing.xs)
                             .padding(.vertical, Spacing.sm)
                             .background(
@@ -97,11 +97,11 @@ struct AccountSheetView: View {
                 } else {
                     Text("Guest User")
                         .font(.title3.bold())
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                     
                     Text("Sign in to sync your progress")
                         .font(.subheadline)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                     
                     // Log In Button
                     Button(action: {
@@ -109,7 +109,7 @@ struct AccountSheetView: View {
                     }) {
                         Text("Log In / Sign Up")
                             .font(.subheadline.weight(.medium))
-                            .foregroundColor(.white)
+                            .foregroundStyle(.white)
                             .padding(.horizontal, Spacing.lg)
                             .padding(.vertical, Spacing.sm)
                             .background(
@@ -157,10 +157,10 @@ struct AccountSheetView: View {
                     VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                         Text("Loop Words")
                             .font(.body)
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
                         Text("Repeat list when finished")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .tint(.webPrimary)
@@ -180,7 +180,7 @@ struct AccountSheetView: View {
                 } label: {
                     Text("Phonetics")
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                 }
                 .pickerStyle(.menu)
                 .tint(.webPrimary)
@@ -194,10 +194,10 @@ struct AccountSheetView: View {
                 VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                     Text("Loop Gap")
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                     Text("\(loopGapSeconds, specifier: "%.1f")s between repeats")
                         .font(.caption)
-                        .foregroundColor(.secondary)
+                        .foregroundStyle(.secondary)
                 }
                 
                 Spacer()
@@ -215,13 +215,13 @@ struct AccountSheetView: View {
                     
                     Text("Playback Speed")
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                     
                     Spacer()
                     
                     Text("\(playbackSpeed, specifier: "%.1f")×")
                         .font(.subheadline.monospacedDigit().bold())
-                        .foregroundColor(.webPrimary)
+                        .foregroundStyle(Color.webPrimary)
                 }
                 
                 Slider(value: $playbackSpeed, in: 0.5...2.0, step: 0.1)
@@ -239,10 +239,10 @@ struct AccountSheetView: View {
                     VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                         Text("Random Speed")
                             .font(.body)
-                            .foregroundColor(.primary)
+                            .foregroundStyle(.primary)
                         Text("Vary playback speed randomly")
                             .font(.caption)
-                            .foregroundColor(.secondary)
+                            .foregroundStyle(.secondary)
                     }
                 }
                 .tint(.webPrimary)
@@ -263,7 +263,7 @@ struct AccountSheetView: View {
                 } label: {
                     Text("Appearance")
                         .font(.body)
-                        .foregroundColor(.primary)
+                        .foregroundStyle(.primary)
                 }
                 .pickerStyle(.menu)
                 .tint(.webPrimary)
@@ -304,7 +304,7 @@ struct AccountSheetView: View {
                         Spacer()
                         Text("Sign Out")
                             .font(.body.weight(.medium))
-                            .foregroundColor(.red)
+                            .foregroundStyle(.red)
                         Spacer()
                     }
                 }
@@ -331,7 +331,7 @@ struct AccountMenuItem: View {
                 // Icon with rounded-rect background (Apple Settings style)
                 Image(systemName: icon)
                     .font(.system(size: 15, weight: .medium))
-                    .foregroundColor(.white)
+                    .foregroundStyle(.white)
                     .frame(width: 30, height: 30)
                     .background(
                         RoundedRectangle(cornerRadius: 7, style: .continuous)
@@ -340,13 +340,13 @@ struct AccountMenuItem: View {
                 
                 Text(title)
                     .font(.body)
-                    .foregroundColor(.primary)
+                    .foregroundStyle(.primary)
                 
                 Spacer()
                 
                 Image(systemName: "chevron.right")
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundColor(.secondary.opacity(0.5))
+                    .foregroundStyle(.secondary.opacity(0.5))
             }
             .contentShape(Rectangle()) // Full-row tap target (44pt+)
         }
@@ -366,7 +366,7 @@ struct SettingsIcon: View {
     var body: some View {
         Image(systemName: systemName)
             .font(.system(size: 15, weight: .medium))
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .frame(width: 30, height: 30)
             .background(
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
