@@ -478,45 +478,36 @@ struct WordCardView: View {
     
     var body: some View {
         ZStack {
-            // ── FRONT FACE ──────────────────────────────
-            CardFrontFace(
-                word: word,
-                isBookmarked: isBookmarked,
-                isLearned: isLearned,
-                phoneticsMode: phoneticsMode,
-                cardHeight: cardHeight,
-                onPlay: onPlay,
-                onPlayExample: onPlayExample,
-                onBookmark: onBookmark,
-                onToggleLearned: onToggleLearned
-            )
-            .opacity(isFlipped ? 0 : 1)
-            .rotation3DEffect(
-                .degrees(isFlipped ? 180 : 0),
-                axis: (x: 0, y: 1, z: 0),
-                perspective: 0.5
-            )
-            
-            // ── BACK FACE ───────────────────────────────
-            CardBackFace(
-                word: word,
-                cardHeight: cardHeight
-            )
-            .opacity(isFlipped ? 1 : 0)
-            .rotation3DEffect(
-                .degrees(isFlipped ? 0 : -180),
-                axis: (x: 0, y: 1, z: 0),
-                perspective: 0.5
-            )
+            if !isFlipped {
+                // ── FRONT FACE ──────────────────────────────
+                CardFrontFace(
+                    word: word,
+                    isBookmarked: isBookmarked,
+                    isLearned: isLearned,
+                    phoneticsMode: phoneticsMode,
+                    cardHeight: cardHeight,
+                    onPlay: onPlay,
+                    onPlayExample: onPlayExample,
+                    onBookmark: onBookmark,
+                    onToggleLearned: onToggleLearned
+                )
+                .transition(.coverFlip())
+            } else {
+                // ── BACK FACE ───────────────────────────────
+                CardBackFace(
+                    word: word,
+                    cardHeight: cardHeight
+                )
+                .transition(.coverFlip())
+            }
         }
+        .animation(.easeInOut(duration: 0.5), value: isFlipped)
         .frame(height: cardHeight)
         .contentShape(Rectangle())
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
         .onTapGesture {
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                isFlipped.toggle()
-            }
+            isFlipped.toggle()
         }
         .onChange(of: word.id) {
             // Reset to front when word changes
@@ -976,5 +967,53 @@ struct LearnHeaderView: View {
             .accessibilityLabel("Account")
             .accessibilityHint("Opens your account panel")
         }
+    }
+}
+
+// MARK: - Cover Flip Transition
+
+struct CoverFlipTransition: AnimatableModifier {
+    var progress: Double
+    var isInsertion: Bool
+    var blurStrength: CGFloat = 3.5
+    
+    var animatableData: Double {
+        get { progress }
+        set { progress = newValue }
+    }
+
+    func body(content: Content) -> some View {
+        let angle = isInsertion ? (180 - 180 * progress) : (0 - 180 * progress)
+
+        let blurAmount = blurForAngle(angle)
+
+        return content
+            .rotation3DEffect(
+                .degrees(angle),
+                axis: (x: 0, y: 1, z: 0),
+                perspective: 0.7
+            )
+            .blur(radius: blurAmount)
+            .opacity(abs(angle) > 90 ? 0 : 1)
+    }
+
+    private func blurForAngle(_ angle: Double) -> CGFloat {
+        let normalized = min(abs(angle) / 90, 1)
+        return CGFloat(normalized * blurStrength)
+    }
+}
+
+extension AnyTransition {
+    static func coverFlip(blurStrength: CGFloat = 3.5) -> AnyTransition {
+        .asymmetric(
+            insertion: .modifier(
+                active: CoverFlipTransition(progress: 0, isInsertion: true, blurStrength: blurStrength),
+                identity: CoverFlipTransition(progress: 1, isInsertion: true, blurStrength: blurStrength)
+            ),
+            removal: .modifier(
+                active: CoverFlipTransition(progress: 1, isInsertion: false, blurStrength: blurStrength),
+                identity: CoverFlipTransition(progress: 0, isInsertion: false, blurStrength: blurStrength)
+            )
+        )
     }
 }
