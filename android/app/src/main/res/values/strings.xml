@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">Oxford Pronunciation</string>
-    <string name="title_activity_main">Oxford Pronunciation</string>
-    <string name="package_name">com.oxford.pronunciation</string>
-    <string name="custom_url_scheme">com.oxford.pronunciation</string>
-</resources>
