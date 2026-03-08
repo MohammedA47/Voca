@@ -1,0 +1,30 @@
+{
+  "version": 1,
+  "skills": {
+    "analytics-tracking": {
+      "source": "coreyhaines31/marketingskills",
+      "sourceType": "github",
+      "computedHash": "1ad3893d31e5df78cb4b4e16801f49acbdf82daed5f775748859ca7dc638d6d0"
+    },
+    "axiom-app-discoverability": {
+      "source": "charleswiltgen/axiom",
+      "sourceType": "github",
+      "computedHash": "d8b5ba53e2555e180951c4f667de31e8d4ef47c2cc23566c334b50f5e6a44d26"
+    },
+    "qa-testing-ios": {
+      "source": "vasilyu1983/ai-agents-public",
+      "sourceType": "github",
+      "computedHash": "8c80db9133f1c3f367f52ae249073201fb89bcc19335f121f7882758ee5105ac"
+    },
+    "swift-expert": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "computedHash": "12da57e9a9c515a5602f842624e694cf922ec395990e8f92c0a3093e165e5c8c"
+    },
+    "swiftui-patterns": {
+      "source": "affaan-m/everything-claude-code",
+      "sourceType": "github",
+      "computedHash": "86aa244015049fd70bbc4359d8e6aff6b901a38c09ebfc08cee02cbc46d407e5"
+    }
+  }
+}
