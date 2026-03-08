@@ -2,7 +2,7 @@ import SwiftUI
 
 struct WordDetailView: View {
     let word: Word
-    @EnvironmentObject var progressService: ProgressService
+    @Environment(ProgressService.self) private var progressService
 
     var body: some View {
         wordContent
@@ -20,6 +20,12 @@ struct WordDetailView: View {
             .navigationTitle(word.word.capitalized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { wordToolbar }
+            .userActivity("com.oxford.pronunciation.viewWord") { activity in
+                activity.title = word.word.capitalized
+                activity.isEligibleForSearch = true
+                activity.isEligibleForPrediction = true
+                activity.userInfo = ["wordId": word.id]
+            }
     }
     
     private var wordContent: some View {
@@ -112,6 +118,7 @@ struct WordDetailView: View {
                 Image(systemName: "speaker.wave.3.fill")
                     .foregroundStyle(Color.webPrimary)
             }
+            .accessibilityLabel("Play pronunciation")
 
             Button {
                 progressService.toggleBookmark(word.id)
@@ -119,6 +126,7 @@ struct WordDetailView: View {
                 Image(systemName: progressService.isBookmarked(word.id) ? "bookmark.fill" : "bookmark")
                     .foregroundStyle(progressService.isBookmarked(word.id) ? Color.webPrimary : Color.secondary)
             }
+            .accessibilityLabel(progressService.isBookmarked(word.id) ? "Remove bookmark" : "Add bookmark")
 
             Button {
                 if progressService.isLearned(word.id) {
@@ -130,6 +138,7 @@ struct WordDetailView: View {
                 Image(systemName: progressService.isLearned(word.id) ? "checkmark.circle.fill" : "checkmark.circle")
                     .foregroundStyle(progressService.isLearned(word.id) ? Color.green : Color.secondary)
             }
+            .accessibilityLabel(progressService.isLearned(word.id) ? "Mark as not learned" : "Mark as learned")
         }
     }
 }
@@ -165,5 +174,12 @@ private struct PhoneticChip: View {
         .padding(.vertical, 8)
         .background(Color.webPrimary.opacity(0.06))
         .clipShape(.rect(cornerRadius: 10))
+    }
+}
+
+#Preview("Word Detail") {
+    NavigationStack {
+        WordDetailView(word: .preview)
+            .environment(ProgressService())
     }
 }

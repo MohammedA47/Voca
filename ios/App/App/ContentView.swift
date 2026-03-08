@@ -4,7 +4,7 @@ enum Tabs {
 }
 struct ContentView: View {
     @State private var selectedTab: Tabs = .home
-    @StateObject private var searchViewModel = SearchViewModel()
+    @State private var searchViewModel = SearchViewModel()
 
     var body: some View {
         TabView(selection: $selectedTab) {
@@ -27,4 +27,9 @@ struct ContentView: View {
         }
         .tint(.webPrimary)
     }
+}
+
+#Preview("Content View") {
+    ContentView()
+        .environment(ProgressService())
 }

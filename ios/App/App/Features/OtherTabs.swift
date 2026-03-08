@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct SearchView: View {
-    @ObservedObject var viewModel: SearchViewModel
+    @Bindable var viewModel: SearchViewModel
 
     var body: some View {
         NavigationStack {
@@ -22,7 +22,7 @@ struct SearchView: View {
                     )
                 } else {
                     List(viewModel.filteredWords) { word in
-                        NavigationLink(value: word) {
+                        NavigationLink(value: AppRoute.wordDetail(word)) {
                             HStack {
                                 VStack(alignment: .leading) {
                                     Text(word.word)
@@ -44,18 +44,13 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("Search")
-            .navigationDestination(for: Word.self) { word in
-                WordDetailView(word: word)
-            }
+            .withAppRoutes()
         }
     }
 }
 
 struct BookmarksView: View {
-    @EnvironmentObject var progressService: ProgressService
-    // We need access to VocabularyService to resolve IDs to Words.
-    // In a real app, use Dependency Injection or Singleton for VocabService.
-    // For now, instantiate locally as it's cheap (mock data).
+    @Environment(ProgressService.self) private var progressService
     private let vocabService = VocabularyService.shared
     
     var bookmarkedWords: [Word] {
@@ -69,7 +64,7 @@ struct BookmarksView: View {
                     .navigationTitle("Bookmarks")
             } else {
                 List(bookmarkedWords) { word in
-                    NavigationLink(value: word) {
+                    NavigationLink(value: AppRoute.wordDetail(word)) {
                         HStack {
                             VStack(alignment: .leading) {
                                 Text(word.word).font(.headline)
@@ -87,16 +82,14 @@ struct BookmarksView: View {
                     }
                 }
                 .navigationTitle("Bookmarks")
-                .navigationDestination(for: Word.self) { word in
-                    WordDetailView(word: word)
-                }
+                .withAppRoutes()
             }
         }
     }
 }
 
 struct ProfileView: View {
-    @EnvironmentObject var progressService: ProgressService
+    @Environment(ProgressService.self) private var progressService
     
     var body: some View {
         NavigationStack {
@@ -124,4 +117,14 @@ struct ProfileView: View {
             .navigationTitle("Profile")
         }
     }
+}
+
+#Preview("Bookmarks") {
+    BookmarksView()
+        .environment(ProgressService())
+}
+
+#Preview("Profile") {
+    ProfileView()
+        .environment(ProgressService())
 }

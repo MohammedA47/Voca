@@ -1,30 +1,35 @@
 import Foundation
 
-class VocabularyService: ObservableObject {
+/// Loads and indexes the Oxford vocabulary JSON from the app bundle.
+///
+/// Provides O(1) lookups by ID and pre-grouped dictionaries by level and type.
+@Observable
+@MainActor
+final class VocabularyService {
     static let shared = VocabularyService()
-    
-    @Published var words: [Word] = []
-    @Published var isLoaded: Bool = false
-    
-    // Grouped by level for easy access
+
+    var words: [Word] = []
+    var isLoaded: Bool = false
+
+    /// Words grouped by CEFR level for quick level-based filtering.
     var wordsByLevel: [Level: [Word]] = [:]
-    // Grouped by type for fast search filtering
+    /// Words grouped by part-of-speech type for search filtering.
     var wordsByType: [String: [Word]] = [:]
-    // Dictionary for O(1) ID lookups
+    /// Dictionary for O(1) ID lookups.
     var wordsById: [String: Word] = [:]
-    
+
     private init() {
-        Task.detached(priority: .userInitiated) { [weak self] in
-            self?.loadWords()
+        Task {
+            await loadWords()
         }
     }
-    
-    private func loadWords() {
+
+    private func loadWords() async {
         guard let url = Bundle.main.url(forResource: "oxford_vocabulary", withExtension: "json") else {
             print("ERROR: oxford_vocabulary.json not found in bundle.")
             return
         }
-        
+
         do {
             let data = try Data(contentsOf: url)
             let decoder = JSONDecoder()
@@ -32,15 +37,13 @@ class VocabularyService: ObservableObject {
             let byLevel = Dictionary(grouping: decoded, by: { $0.level })
             let byType = Dictionary(grouping: decoded, by: { $0.type })
             let byId = decoded.reduce(into: [String: Word]()) { result, word in result[word.id] = word }
-            
-            DispatchQueue.main.async { [weak self] in
-                self?.words = decoded
-                self?.wordsByLevel = byLevel
-                self?.wordsByType = byType
-                self?.wordsById = byId
-                self?.isLoaded = true
-                print("Successfully loaded \(decoded.count) words.")
-            }
+
+            self.words = decoded
+            self.wordsByLevel = byLevel
+            self.wordsByType = byType
+            self.wordsById = byId
+            self.isLoaded = true
+            print("Successfully loaded \(decoded.count) words.")
         } catch {
             print("ERROR: Failed to decode vocabulary: \(error)")
         }

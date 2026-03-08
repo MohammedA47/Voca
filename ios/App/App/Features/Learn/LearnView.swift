@@ -1,9 +1,8 @@
 import SwiftUI
-import Combine
 
 struct LearnView: View {
-    @StateObject private var viewModel = LearnViewModel()
-    @EnvironmentObject var progressService: ProgressService
+    @State private var viewModel = LearnViewModel()
+    @Environment(ProgressService.self) private var progressService
     @State private var showAccountSheet = false
     @State private var dragOffset: CGFloat = 0
     @State private var cardScale: CGFloat = 1.0
@@ -199,36 +198,37 @@ enum PhoneticsMode: String {
 
 // MARK: - ViewModel
 
-class LearnViewModel: ObservableObject {
-    @Published var selectedLevel: String = "A1" {
+@Observable
+@MainActor
+final class LearnViewModel {
+    var selectedLevel: String = "A1" {
         didSet {
             selectedWordType = nil
             loadWordsForLevel()
         }
     }
-    @Published var selectedWordType: String? = nil {
+    var selectedWordType: String? = nil {
         didSet {
             loadWordsForLevel()
         }
     }
-    @Published var currentWord: Word?
+    var currentWord: Word?
     
-    // Settings — synced via @AppStorage (no broad NotificationCenter listener needed)
-    @AppStorage("isLooping") var isLooping: Bool = true
-    @AppStorage("phoneticsMode") private var phoneticsModeRaw: String = "us"
-    @AppStorage("playbackSpeed") var playbackSpeed: Double = 1.0
-    @AppStorage("randomSpeedEnabled") var randomSpeedEnabled: Bool = false
+    // Settings — synced via @AppStorage (excluded from @Observable tracking)
+    @ObservationIgnored @AppStorage("isLooping") var isLooping: Bool = true
+    @ObservationIgnored @AppStorage("phoneticsMode") private var phoneticsModeRaw: String = "us"
+    @ObservationIgnored @AppStorage("playbackSpeed") var playbackSpeed: Double = 1.0
+    @ObservationIgnored @AppStorage("randomSpeedEnabled") var randomSpeedEnabled: Bool = false
     
     var phoneticsMode: PhoneticsMode {
         PhoneticsMode(rawValue: phoneticsModeRaw) ?? .us
     }
     
-    @Published var isSpeaking: Bool = false
-    @Published var isPlayAnimating: Bool = false
+    var isSpeaking: Bool = false
+    var isPlayAnimating: Bool = false
     
-    private var speakingObserver: Any?
-    private var animationTimer: Timer?
-    private var cancellables = Set<AnyCancellable>()
+    nonisolated(unsafe) private var speakingObserverTask: Task<Void, Never>?
+    nonisolated(unsafe) private var vocabLoadTask: Task<Void, Never>?
     
     private var words: [Word] = []
     var currentIndex: Int = 0
@@ -241,31 +241,37 @@ class LearnViewModel: ObservableObject {
         // If vocabulary is already loaded, populate immediately
         if vocabularyService.isLoaded {
             loadWordsForLevel()
-        }
-        
-        // Observe when vocabulary finishes loading (async)
-        vocabularyService.$isLoaded
-            .receive(on: DispatchQueue.main)
-            .filter { $0 }
-            .first()
-            .sink { [weak self] _ in
+        } else {
+            // Observe when vocabulary finishes loading (async)
+            vocabLoadTask = Task { [weak self] in
+                // Poll until loaded — lightweight since it only runs once
+                while !(self?.vocabularyService.isLoaded ?? true) {
+                    try? await Task.sleep(for: .milliseconds(100))
+                }
                 self?.loadWordsForLevel()
             }
-            .store(in: &cancellables)
+        }
         
         // Observe AudioService speaking state
-        speakingObserver = AudioService.shared.$isSpeaking
-            .receive(on: DispatchQueue.main)
-            .sink { [weak self] speaking in
-                guard let self = self else { return }
-                self.isSpeaking = speaking
-                
-                if self.isLooping {
-                    // Loop mode: follow real speaking state
-                    self.isPlayAnimating = speaking
+        speakingObserverTask = Task { [weak self] in
+            var previousSpeaking = false
+            while !Task.isCancelled {
+                let speaking = AudioService.shared.isSpeaking
+                if speaking != previousSpeaking {
+                    previousSpeaking = speaking
+                    self?.isSpeaking = speaking
+                    if self?.isLooping == true {
+                        self?.isPlayAnimating = speaking
+                    }
                 }
-                // Non-loop mode: animation is handled by timer in togglePlayPause
+                try? await Task.sleep(for: .milliseconds(50))
             }
+        }
+    }
+    
+    deinit {
+        speakingObserverTask?.cancel()
+        vocabLoadTask?.cancel()
     }
     
     func setProgressService(_ service: ProgressService) {
@@ -303,14 +309,12 @@ class LearnViewModel: ObservableObject {
     func toggleBookmark() {
         guard let id = currentWord?.id, let service = progressService else { return }
         service.toggleBookmark(id)
-        objectWillChange.send()
     }
     
     func toggleLearned() {
         guard let id = currentWord?.id, let service = progressService else { return }
         if service.isLearned(id) { service.unmarkLearned(id) }
         else { service.markAsLearned(id) }
-        objectWillChange.send()
     }
     
     func playAudio(text: String? = nil) {
@@ -333,8 +337,6 @@ class LearnViewModel: ObservableObject {
         if isPlayAnimating {
             // Stop everything
             AudioService.shared.stop()
-            animationTimer?.invalidate()
-            animationTimer = nil
             withAnimation(.easeOut(duration: 0.2)) {
                 isPlayAnimating = false
             }
@@ -342,8 +344,7 @@ class LearnViewModel: ObservableObject {
             // Loop mode: animation follows real speech
             playAudio()
         } else {
-            // Non-loop mode: animation follows real speech state instead of 1 second timer,
-            // because network delays can make a fixed 1-second pulse inaccurate.
+            // Non-loop mode: animation follows real speech state
             playAudio()
             withAnimation(.easeInOut(duration: 0.25)) {
                 isPlayAnimating = true
@@ -474,41 +475,42 @@ struct WordCardView: View {
     @State private var isFlipped = false
     @State private var currentExampleIndex = 0
     
-    private let cardHeight: CGFloat = 420
+    @ScaledMetric(relativeTo: .body) private var cardHeight: CGFloat = 420
     
     var body: some View {
-        ZStack {
-            if !isFlipped {
-                // ── FRONT FACE ──────────────────────────────
-                CardFrontFace(
-                    word: word,
-                    isBookmarked: isBookmarked,
-                    isLearned: isLearned,
-                    phoneticsMode: phoneticsMode,
-                    cardHeight: cardHeight,
-                    onPlay: onPlay,
-                    onPlayExample: onPlayExample,
-                    onBookmark: onBookmark,
-                    onToggleLearned: onToggleLearned
-                )
-                .transition(.coverFlip())
-            } else {
-                // ── BACK FACE ───────────────────────────────
-                CardBackFace(
-                    word: word,
-                    cardHeight: cardHeight
-                )
-                .transition(.coverFlip())
-            }
-        }
-        .animation(.easeInOut(duration: 0.5), value: isFlipped)
-        .frame(height: cardHeight)
-        .contentShape(Rectangle())
-        .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
-        .onTapGesture {
+        Button {
             isFlipped.toggle()
+        } label: {
+            ZStack {
+                if !isFlipped {
+                    // ── FRONT FACE ──────────────────────────────
+                    CardFrontFace(
+                        word: word,
+                        isBookmarked: isBookmarked,
+                        isLearned: isLearned,
+                        phoneticsMode: phoneticsMode,
+                        cardHeight: cardHeight,
+                        onPlay: onPlay,
+                        onPlayExample: onPlayExample,
+                        onBookmark: onBookmark,
+                        onToggleLearned: onToggleLearned
+                    )
+                    .transition(.coverFlip())
+                } else {
+                    // ── BACK FACE ───────────────────────────────
+                    CardBackFace(
+                        word: word,
+                        cardHeight: cardHeight
+                    )
+                    .transition(.coverFlip())
+                }
+            }
+            .animation(.easeInOut(duration: 0.5), value: isFlipped)
+            .frame(height: cardHeight)
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
         .onChange(of: word.id) {
             // Reset to front when word changes
             isFlipped = false
@@ -583,6 +585,7 @@ private struct CardFrontFace: View {
                             .font(.callout)
                             .foregroundStyle(Color.webPrimary)
                     }
+                    .accessibilityLabel("Play pronunciation")
                 }
                 
                 // ── Part of Speech Pill ─────────────────────
@@ -624,6 +627,7 @@ private struct CardFrontFace: View {
                                         .font(.system(size: 11))
                                         .foregroundStyle(Color.webPrimary)
                                 }
+                                .accessibilityLabel("Play example")
                                 
                                 Spacer()
                                 
@@ -676,6 +680,8 @@ private struct CardFrontFace: View {
                     Spacer()
                 }
                 .padding(.bottom, 24)
+                .accessibilityElement(children: .combine)
+                .accessibilityLabel("Tap to see definition, swipe to navigate")
             }
             .padding(22)
             
@@ -687,13 +693,10 @@ private struct CardFrontFace: View {
             }
             .padding(.leading, 22)
             .padding(.bottom, 22)
+            .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Add bookmark")
         }
         .frame(height: cardHeight)
-        .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(Color.adaptiveCardBackground)
-                .shadow(color: Color.adaptiveCardShadow, radius: 16, x: 0, y: 8)
-        )
+        .cardBackground()
     }
 }
 
@@ -794,17 +797,7 @@ private struct CardBackFace: View {
         }
         .padding(22)
         .frame(height: cardHeight, alignment: .top)
-        .background(
-            RoundedRectangle(cornerRadius: 28)
-                .fill(
-                    LinearGradient(
-                        colors: [Color.adaptiveCardBackground, Color.adaptiveCardBackEnd],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
-                .shadow(color: Color.adaptiveCardShadow, radius: 16, x: 0, y: 8)
-        )
+        .cardBackground(style: .gradient)
     }
 }
 

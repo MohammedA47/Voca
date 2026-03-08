@@ -2,7 +2,7 @@ import SwiftUI
 
 struct LoginSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    @ObservedObject private var authService = AuthService.shared
+    private var authService = AuthService.shared
     
     @State private var isSignUp = false
     @State private var email = ""

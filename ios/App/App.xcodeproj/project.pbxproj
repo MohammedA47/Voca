@@ -35,6 +35,9 @@
 		D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE10E077EB19A349A5775D7 /* FloatingTabBar.swift */; };
 		F1A2B3C4D5E6F7081234ABCD /* WordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */; };
 		FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4535146DD2BF10DB9C739F30 /* AuthService.swift */; };
+		FED1CBA098765432E5F60718 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */; };
+		E2D1CBA0F8765432E5F60729 /* CardBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */; };
+		F3E1CBA1A876543AE5F6073A /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -80,6 +83,9 @@
 		EF4531F85D1BA4DCC08F0F73 /* ProgressService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
 		F9DF97E6EE3616C06E7CF119 /* OxfordPronunciationApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OxfordPronunciationApp.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
+		B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CardBackgroundModifier.swift; path = Components/CardBackgroundModifier.swift; sourceTree = "<group>"; };
+		C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRoute.swift; path = Navigation/AppRoute.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -178,6 +184,8 @@
 			children = (
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
+				C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */,
+				A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */,
 				504EC30B1FED79650016851F /* Main.storyboard */,
 				504EC30E1FED79650016851F /* Assets.xcassets */,
 				504EC3101FED79650016851F /* LaunchScreen.storyboard */,
@@ -221,6 +229,7 @@
 				ACC8AB358C5CA2BF6044AC3C /* Typography.swift */,
 				A5715A0F40EF4DED207C5812 /* Buttons.swift */,
 				3CF51A9CCAACF1ADDB6A008B /* GlassCard.swift */,
+				B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */,
 				84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */,
 				E47D2B2636DAA7890742D094 /* Colors.swift */,
 			);
@@ -362,6 +371,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				504EC3081FED79650016851F /* AppDelegate.swift in Sources */,
+				F3E1CBA1A876543AE5F6073A /* AppRoute.swift in Sources */,
+				E2D1CBA0F8765432E5F60729 /* CardBackgroundModifier.swift in Sources */,
+				FED1CBA098765432E5F60718 /* AppIntents.swift in Sources */,
 				7D4197BF2265B2399230F674 /* Word.swift in Sources */,
 				0101242A8C80CBA9D1DC6C33 /* AudioService.swift in Sources */,
 				4E037E90A1656ED7FF4517F0 /* VocabularyService.swift in Sources */,

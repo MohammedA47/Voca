@@ -50,16 +50,14 @@ struct GlassCard<Content: View>: View {
     }
 }
 
-struct GlassCard_Previews: PreviewProvider {
-    static var previews: some View {
-        ZStack {
-            Color.blue.ignoresSafeArea()
-            GlassCard {
-                Text("Hello World")
-                    .font(.title)
-                    .padding()
-            }
-            .padding()
+#Preview("GlassCard") {
+    ZStack {
+        Color.blue.ignoresSafeArea()
+        GlassCard {
+            Text("Hello World")
+                .font(.title)
+                .padding()
         }
+        .padding()
     }
 }

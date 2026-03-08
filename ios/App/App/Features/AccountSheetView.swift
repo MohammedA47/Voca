@@ -17,7 +17,7 @@ struct AccountSheetView: View {
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     
     // Auth State
-    @ObservedObject private var authService = AuthService.shared
+    private var authService = AuthService.shared
     @State private var showingLoginSheet = false
     
     var body: some View {
