@@ -116,6 +116,15 @@ struct LearnView: View {
                 
                 Spacer(minLength: 8)
                 
+                // ── Swipe Directions ────────────────────────
+                // HStack(spacing: 6) {
+                //     Image(systemName: "arrow.left.and.right")
+                //     Text("Swipe to swap cards")
+                // }
+                // .font(.system(size: 13, weight: .medium))
+                // .foregroundColor(.secondary.opacity(0.6))
+                // .padding(.bottom, 4)
+                
                 // ── Progress Bar ────────────────────────────
                 LearnProgressView(
                     currentIndex: viewModel.currentIndex,
@@ -473,48 +482,45 @@ struct WordCardView: View {
     var onToggleLearned: () -> Void
     
     @State private var isFlipped = false
-    @State private var currentExampleIndex = 0
     
     @ScaledMetric(relativeTo: .body) private var cardHeight: CGFloat = 420
     
     var body: some View {
-        Button {
-            isFlipped.toggle()
-        } label: {
-            ZStack {
-                if !isFlipped {
-                    // ── FRONT FACE ──────────────────────────────
-                    CardFrontFace(
-                        word: word,
-                        isBookmarked: isBookmarked,
-                        isLearned: isLearned,
-                        phoneticsMode: phoneticsMode,
-                        cardHeight: cardHeight,
-                        onPlay: onPlay,
-                        onPlayExample: onPlayExample,
-                        onBookmark: onBookmark,
-                        onToggleLearned: onToggleLearned
-                    )
-                    .transition(.coverFlip())
-                } else {
-                    // ── BACK FACE ───────────────────────────────
-                    CardBackFace(
-                        word: word,
-                        cardHeight: cardHeight
-                    )
-                    .transition(.coverFlip())
-                }
+        ZStack {
+            if !isFlipped {
+                // ── FRONT FACE ──────────────────────────────
+                CardFrontFace(
+                    word: word,
+                    isBookmarked: isBookmarked,
+                    isLearned: isLearned,
+                    phoneticsMode: phoneticsMode,
+                    cardHeight: cardHeight,
+                    onPlay: onPlay,
+                    onPlayExample: onPlayExample,
+                    onBookmark: onBookmark,
+                    onToggleLearned: onToggleLearned
+                )
+                .transition(.coverFlip())
+            } else {
+                // ── BACK FACE ───────────────────────────────
+                CardBackFace(
+                    word: word,
+                    cardHeight: cardHeight
+                )
+                .transition(.coverFlip())
             }
-            .animation(.easeInOut(duration: 0.5), value: isFlipped)
-            .frame(height: cardHeight)
-            .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        .animation(.easeInOut(duration: 0.5), value: isFlipped)
+        .frame(height: cardHeight)
+        .contentShape(Rectangle())
+        .onTapGesture {
+            isFlipped.toggle()
+        }
+        .accessibilityAddTraits(.isButton)
         .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
         .onChange(of: word.id) {
             // Reset to front when word changes
             isFlipped = false
-            currentExampleIndex = 0
         }
     }
 }
@@ -614,15 +620,16 @@ private struct CardFrontFace: View {
                         }
                         
                         VStack(alignment: .leading, spacing: 12) {
-                            Text("\"" + examples[currentExampleIndex] + "\"")
+                            let safeIndex = examples.indices.contains(currentExampleIndex) ? currentExampleIndex : 0
+                            Text("\"" + examples[safeIndex] + "\"")
                                 .font(.oxfordBody(size: 16))
                                 .foregroundStyle(Color.webForeground)
                                 .lineSpacing(5)
                                 .fixedSize(horizontal: false, vertical: true)
-                                .id("front-ex-\(word.id)-\(currentExampleIndex)")
+                                .id("front-ex-\(word.id)-\(safeIndex)")
                             
                             HStack(spacing: 6) {
-                                Button(action: { onPlayExample(examples[currentExampleIndex]) }) {
+                                Button(action: { onPlayExample(examples[safeIndex]) }) {
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 11))
                                         .foregroundStyle(Color.webPrimary)
@@ -633,7 +640,7 @@ private struct CardFrontFace: View {
                                 
                                 ForEach(0..<min(examples.count, 5), id: \.self) { i in
                                     Circle()
-                                        .fill(i == currentExampleIndex ? Color.webPrimary : Color.secondary.opacity(0.25))
+                                        .fill(i == safeIndex ? Color.webPrimary : Color.secondary.opacity(0.25))
                                         .frame(width: 7, height: 7)
                                 }
                             }
@@ -697,6 +704,9 @@ private struct CardFrontFace: View {
         }
         .frame(height: cardHeight)
         .cardBackground()
+        .onChange(of: word.id) {
+            currentExampleIndex = 0
+        }
     }
 }
 
