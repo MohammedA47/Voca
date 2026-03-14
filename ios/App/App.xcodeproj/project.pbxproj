@@ -37,6 +37,8 @@
 		FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4535146DD2BF10DB9C739F30 /* AuthService.swift */; };
 		FED1CBA098765432E5F60718 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */; };
 		E2D1CBA0F8765432E5F60729 /* CardBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */; };
+		E5F607182AB3CDEF04425535 /* StackedCardDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */; };
+		B3C4D5E6F7081AABCDEF2345 /* WordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */; };
 		F3E1CBA1A876543AE5F6073A /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */; };
 /* End PBXBuildFile section */
 
@@ -86,6 +88,8 @@
 		A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CardBackgroundModifier.swift; path = Components/CardBackgroundModifier.swift; sourceTree = "<group>"; };
 		C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRoute.swift; path = Navigation/AppRoute.swift; sourceTree = "<group>"; };
+		D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StackedCardDeck.swift; path = Components/StackedCardDeck.swift; sourceTree = "<group>"; };
+		A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WordCardView.swift; path = Learn/WordCardView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -142,6 +146,7 @@
 			isa = PBXGroup;
 			children = (
 				0C3BEAC261493509191CBB67 /* LearnView.swift */,
+				A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */,
 				42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */,
 				2C1911E28486ADF1DD637173 /* OtherTabs.swift */,
 				A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */,
@@ -230,6 +235,7 @@
 				A5715A0F40EF4DED207C5812 /* Buttons.swift */,
 				3CF51A9CCAACF1ADDB6A008B /* GlassCard.swift */,
 				B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */,
+				D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */,
 				84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */,
 				E47D2B2636DAA7890742D094 /* Colors.swift */,
 			);
@@ -393,6 +399,8 @@
 				D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */,
 				FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */,
 				77AD13C7DC64A35F9AFED57C /* LoginSheetView.swift in Sources */,
+				E5F607182AB3CDEF04425535 /* StackedCardDeck.swift in Sources */,
+				B3C4D5E6F7081AABCDEF2345 /* WordCardView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

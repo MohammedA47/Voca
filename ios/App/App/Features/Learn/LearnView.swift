@@ -4,16 +4,10 @@ struct LearnView: View {
     @State private var viewModel = LearnViewModel()
     @Environment(ProgressService.self) private var progressService
     @State private var showAccountSheet = false
-    @State private var dragOffset: CGFloat = 0
-    @State private var cardScale: CGFloat = 1.0
-    @State private var cardOpacity: Double = 1.0
-    @State private var isTransitioning = false
-    
-    // Reusable haptic generators (Apple recommends pre-creating these)
+
+    // Reusable haptic generator for non-deck interactions
     private let lightHaptic = UIImpactFeedbackGenerator(style: .light)
-    private let mediumHaptic = UIImpactFeedbackGenerator(style: .medium)
-    private let softHaptic = UIImpactFeedbackGenerator(style: .soft)
-    
+
     var body: some View {
         ZStack {
             // Background Gradient
@@ -26,7 +20,7 @@ struct LearnView: View {
                 endPoint: .bottom
             )
             .ignoresSafeArea()
-            
+
             VStack(spacing: 0) {
                 // ── Header ──────────────────────────────────
                 LearnHeaderView(
@@ -39,118 +33,46 @@ struct LearnView: View {
                 .padding(.horizontal, Spacing.md)
                 .padding(.top, Spacing.sm)
                 .padding(.bottom, Spacing.sm + Spacing.xs)
-                
+
                 // ── Level Selector Pills ────────────────────
                 LevelSelector(selectedLevel: $viewModel.selectedLevel)
                     .padding(.horizontal, Spacing.md)
                     .padding(.bottom, Spacing.md)
-                    
+
                 Spacer(minLength: 0)
-                
-                // ── Main Card (Swipeable) ───────────────────
-                if let currentWord = viewModel.currentWord {
-                    GeometryReader { geometry in
-                        let screenW = geometry.size.width
-                        let dragPct = dragOffset / screenW  // -1…0…1
-                        // How much the top card has moved (0…1), drives the next card scaling up
-                        let swipeProgress = min(abs(dragPct), 1.0)
-                        
-                        ZStack(alignment: .center) {
-                            // ── Next card (stationary, peeking behind) ──
-                            if let peekWord = viewModel.nextWord {
-                                WordCardView(
-                                    word: peekWord,
-                                    index: (viewModel.currentIndex + 1) % max(viewModel.totalWords, 1),
-                                    total: viewModel.totalWords,
-                                    isBookmarked: false,
-                                    isLearned: false,
-                                    phoneticsMode: viewModel.phoneticsMode,
-                                    onPlay: {},
-                                    onPlayExample: { _ in },
-                                    onBookmark: {},
-                                    onToggleLearned: {}
-                                )
-                                .padding(.horizontal, Spacing.md)
-                                .padding(.top, Spacing.sm)
-                                .padding(.bottom, Spacing.sm)
-                                // Starts slightly scaled down, scales up as top card is dragged away
-                                .scaleEffect(0.95 + 0.05 * swipeProgress)
-                                .opacity(0.6 + 0.4 * swipeProgress)
-                                .allowsHitTesting(false)
-                            }
-                            
-                            // ── Top card (interactive) ──
-                            WordCardView(
-                                word: currentWord,
-                                index: viewModel.currentIndex,
-                                total: viewModel.totalWords,
-                                isBookmarked: viewModel.isBookmarked,
-                                isLearned: viewModel.isLearned,
-                                phoneticsMode: viewModel.phoneticsMode,
-                                onPlay: { viewModel.playAudio() },
-                                onPlayExample: { text in viewModel.playAudio(text: text) },
-                                onBookmark: viewModel.toggleBookmark,
-                                onToggleLearned: viewModel.toggleLearned
-                            )
-                            .padding(.horizontal, Spacing.md)
-                            .padding(.top, Spacing.sm)
-                            .padding(.bottom, Spacing.sm)
-                            // ── Card transforms (only on top card) ──
-                            .offset(x: dragOffset)
-                            .rotationEffect(
-                                .degrees(Double(dragPct) * 12),
-                                anchor: .bottom
-                            )
-                            .scaleEffect(cardScale)
-                            .opacity(cardOpacity)
-                        }
-                        // ── Gesture ──
-                        .allowsHitTesting(!isTransitioning)
-                        .gesture(
-                            DragGesture(minimumDistance: 25)
-                                .onChanged { value in
-                                    guard !isTransitioning else { return }
-                                    if abs(value.translation.width) > abs(value.translation.height) {
-                                        withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.7)) {
-                                            dragOffset = value.translation.width
-                                        }
-                                    }
-                                }
-                                .onEnded { value in
-                                    guard !isTransitioning else { return }
-                                    let threshold: CGFloat = screenW * 0.2
-                                    let velocity = value.predictedEndTranslation.width
-                                    
-                                    if value.translation.width < -threshold || velocity < -250 {
-                                        performSwipe(direction: -1, screenWidth: screenW, action: viewModel.advanceToNext)
-                                    } else if value.translation.width > threshold || velocity > 250 {
-                                        performSwipe(direction: 1, screenWidth: screenW, action: viewModel.goToPrevious)
-                                    } else {
-                                        // Snap back with bounce
-                                        withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) {
-                                            dragOffset = 0
-                                        }
-                                    }
-                                }
+
+                // ── Stacked Card Deck ───────────────────────
+                if viewModel.totalWords > 0 {
+                    StackedCardDeck(
+                        itemCount: viewModel.totalWords,
+                        currentIndex: $viewModel.currentIndex,
+                        isLooping: viewModel.isLooping,
+                        itemId: { index in viewModel.wordId(at: index) }
+                    ) { index in
+                        WordCardView(
+                            word: viewModel.word(at: index),
+                            index: index,
+                            total: viewModel.totalWords,
+                            isBookmarked: viewModel.isBookmarked(for: index),
+                            isLearned: viewModel.isLearned(for: index),
+                            phoneticsMode: viewModel.phoneticsMode,
+                            onPlay: { viewModel.playAudio() },
+                            onPlayExample: { text in viewModel.playAudio(text: text) },
+                            onBookmark: { viewModel.toggleBookmark(for: index) },
+                            onToggleLearned: { viewModel.toggleLearned(for: index) }
                         )
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.top, Spacing.sm)
+                        .padding(.bottom, Spacing.sm)
                     }
                 } else {
                     Spacer()
                     ContentUnavailableView("No words found", systemImage: "text.book.closed")
                     Spacer()
                 }
-                
+
                 Spacer(minLength: 8)
-                
-                // ── Swipe Directions ────────────────────────
-                // HStack(spacing: 6) {
-                //     Image(systemName: "arrow.left.and.right")
-                //     Text("Swipe to swap cards")
-                // }
-                // .font(.system(size: 13, weight: .medium))
-                // .foregroundColor(.secondary.opacity(0.6))
-                // .padding(.bottom, 4)
-                
+
                 // ── Progress Bar ────────────────────────────
                 LearnProgressView(
                     currentIndex: viewModel.currentIndex,
@@ -158,7 +80,7 @@ struct LearnView: View {
                 )
                 .padding(.horizontal, Spacing.md)
                 .padding(.bottom, Spacing.md)
-                
+
                 // ── Play / Pause Button ─────────────────────
                 PlayPronunciationView(
                     isPlayAnimating: viewModel.isPlayAnimating,
@@ -175,40 +97,6 @@ struct LearnView: View {
             AccountSheetView()
                 .presentationDetents([.large])
                 .presentationDragIndicator(.visible)
-        }
-    }
-    
-    // MARK: - Swipe Animation
-    
-    private func performSwipe(direction: CGFloat, screenWidth: CGFloat, action: @escaping () -> Void) {
-        isTransitioning = true
-        
-        // Phase 1: Fly the top card off-screen (the next card is already visible behind)
-        withAnimation(.easeIn(duration: 0.25)) {
-            dragOffset = direction * screenWidth * 1.4
-            cardOpacity = 0
-        }
-        
-        // Phase 2: Swap the data while top card is off-screen
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
-            // Disable animations for the data swap so the new card doesn't
-            // visually glitch from "next word" → "current word" position
-            var transaction = Transaction()
-            transaction.disablesAnimations = true
-            withTransaction(transaction) {
-                action()
-                // Instantly reset the top card position (it's still invisible)
-                dragOffset = 0
-                cardScale = 1.0
-                cardOpacity = 1.0
-            }
-            
-            mediumHaptic.impactOccurred()
-            
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
-                softHaptic.impactOccurred()
-                isTransitioning = false
-            }
         }
     }
 }
@@ -246,32 +134,31 @@ final class LearnViewModel {
             loadWordsForLevel()
         }
     }
-    var currentWord: Word?
-    
+
     // Settings — synced via @AppStorage (excluded from @Observable tracking)
-    @ObservationIgnored @AppStorage("isLooping") var isLooping: Bool = true
+    @ObservationIgnored @AppStorage("isLooping") var isLooping: Bool = false
     @ObservationIgnored @AppStorage("phoneticsMode") private var phoneticsModeRaw: String = "us"
     @ObservationIgnored @AppStorage("playbackSpeed") var playbackSpeed: Double = 1.0
     @ObservationIgnored @AppStorage("randomSpeedEnabled") var randomSpeedEnabled: Bool = false
-    
+
     var phoneticsMode: PhoneticsMode {
         PhoneticsMode(rawValue: phoneticsModeRaw) ?? .us
     }
-    
+
     var isSpeaking: Bool = false
     var isPlayAnimating: Bool = false
-    
+
     nonisolated(unsafe) private var speakingObserverTask: Task<Void, Never>?
     nonisolated(unsafe) private var vocabLoadTask: Task<Void, Never>?
-    
+
     private var words: [Word] = []
     var currentIndex: Int = 0
     private let vocabularyService = VocabularyService.shared
     private var progressService: ProgressService?
-    
+
     init(progressService: ProgressService? = nil) {
         self.progressService = progressService
-        
+
         // If vocabulary is already loaded, populate immediately
         if vocabularyService.isLoaded {
             loadWordsForLevel()
@@ -285,7 +172,7 @@ final class LearnViewModel {
                 self?.loadWordsForLevel()
             }
         }
-        
+
         // Observe AudioService speaking state
         speakingObserverTask = Task { [weak self] in
             var previousSpeaking = false
@@ -302,78 +189,117 @@ final class LearnViewModel {
             }
         }
     }
-    
+
     deinit {
         speakingObserverTask?.cancel()
         vocabLoadTask?.cancel()
     }
-    
+
     func setProgressService(_ service: ProgressService) {
         self.progressService = service
     }
-    
+
     var availableWordTypes: [String] {
         let levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
         let counts = Dictionary(grouping: levelWords, by: { $0.type }).mapValues { $0.count }
         return counts.keys.sorted { counts[$0, default: 0] > counts[$1, default: 0] }
     }
-    
+
     private func loadWordsForLevel() {
         var levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
         if let type = selectedWordType {
             levelWords = levelWords.filter { $0.type == type }
         }
         self.words = levelWords
-        self.currentIndex = 0
-        self.currentWord = words.first
+        // Clamp currentIndex to valid bounds after filtering
+        self.currentIndex = words.isEmpty ? 0 : min(currentIndex, words.count - 1)
     }
-    
+
+    // MARK: - Current Word (computed, boundary-safe)
+
+    var currentWord: Word? {
+        guard !words.isEmpty else { return nil }
+        let safeIndex = min(max(currentIndex, 0), words.count - 1)
+        return words[safeIndex]
+    }
+
+    // MARK: - Index-Based Access (boundary-safe)
+
+    /// Returns the word at the given index, with bounds clamping.
+    func word(at index: Int) -> Word {
+        guard !words.isEmpty else { return Word.preview }
+        let safeIndex = min(max(index, 0), words.count - 1)
+        return words[safeIndex]
+    }
+
+    /// Returns a stable identity (word.id) for the given index.
+    func wordId(at index: Int) -> String {
+        word(at: index).id
+    }
+
+    func isBookmarked(for index: Int) -> Bool {
+        let w = word(at: index)
+        return progressService?.isBookmarked(w.id) ?? false
+    }
+
+    func isLearned(for index: Int) -> Bool {
+        let w = word(at: index)
+        return progressService?.isLearned(w.id) ?? false
+    }
+
+    func toggleBookmark(for index: Int) {
+        let w = word(at: index)
+        progressService?.toggleBookmark(w.id)
+    }
+
+    func toggleLearned(for index: Int) {
+        let w = word(at: index)
+        guard let service = progressService else { return }
+        if service.isLearned(w.id) { service.unmarkLearned(w.id) }
+        else { service.markAsLearned(w.id) }
+    }
+
+    // MARK: - Legacy single-card accessors (used by non-deck UI)
+
     var isBookmarked: Bool {
         guard let id = currentWord?.id, let service = progressService else { return false }
         return service.isBookmarked(id)
     }
-    
+
     var isLearned: Bool {
         guard let id = currentWord?.id, let service = progressService else { return false }
         return service.isLearned(id)
     }
-    
+
     var totalWords: Int { words.count }
-    
-    /// The next word in the list (for the stack peek-behind card)
-    var nextWord: Word? {
-        guard words.count > 1 else { return nil }
-        let nextIndex = (currentIndex + 1) % words.count
-        return words[nextIndex]
-    }
-    
+
     func toggleBookmark() {
         guard let id = currentWord?.id, let service = progressService else { return }
         service.toggleBookmark(id)
     }
-    
+
     func toggleLearned() {
         guard let id = currentWord?.id, let service = progressService else { return }
         if service.isLearned(id) { service.unmarkLearned(id) }
         else { service.markAsLearned(id) }
     }
-    
+
     func playAudio(text: String? = nil) {
         guard let word = currentWord else { return }
-        
+
         // Calculate effective speed
         var finalSpeed = playbackSpeed
         if randomSpeedEnabled {
             finalSpeed = 0.7 + Double.random(in: 0...0.5) // Ranges from 0.7 to 1.2
         }
-        
+
         AudioService.shared.speak(
             text: text ?? word.word,
             accent: phoneticsMode.rawValue,
             speed: finalSpeed
         )
     }
-    
+
     func togglePlayPause() {
         if isPlayAnimating {
             // Stop everything
@@ -392,29 +318,23 @@ final class LearnViewModel {
             }
         }
     }
-    
-    func advanceToNext() {
+
+    func nextWord() {
         guard !words.isEmpty else { return }
         if isLooping {
             currentIndex = (currentIndex + 1) % words.count
         } else {
             currentIndex = min(currentIndex + 1, words.count - 1)
         }
-        updateCurrentWord()
     }
-    
-    func goToPrevious() {
+
+    func previousWord() {
         guard !words.isEmpty else { return }
         if isLooping {
             currentIndex = (currentIndex - 1 + words.count) % words.count
         } else {
             currentIndex = max(currentIndex - 1, 0)
         }
-        updateCurrentWord()
-    }
-    
-    private func updateCurrentWord() {
-        self.currentWord = words[currentIndex]
     }
 }
 
@@ -423,7 +343,7 @@ final class LearnViewModel {
 struct LevelSelector: View {
     @Binding var selectedLevel: String
     let levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
-    
+
     var body: some View {
         HStack(spacing: 10) {
             ForEach(levels, id: \.self) { level in
@@ -452,7 +372,7 @@ struct LevelSelector: View {
 struct WordTypeSelector: View {
     @Binding var selectedType: String?
     let availableTypes: [String]
-    
+
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 8) {
@@ -473,7 +393,7 @@ struct WordTypeSelector: View {
                         )
                 }
                 .buttonStyle(.plain)
-                
+
                 ForEach(availableTypes, id: \.self) { type in
                     Button(action: {
                         withAnimation(.easeInOut(duration: 0.2)) { selectedType = type }
@@ -497,356 +417,12 @@ struct WordTypeSelector: View {
     }
 }
 
-// MARK: - Word Card (Flippable)
-
-struct WordCardView: View {
-    let word: Word
-    let index: Int
-    let total: Int
-    var isBookmarked: Bool
-    var isLearned: Bool
-    var phoneticsMode: PhoneticsMode
-    var onPlay: () -> Void
-    var onPlayExample: (String) -> Void
-    var onBookmark: () -> Void
-    var onToggleLearned: () -> Void
-    
-    @State private var isFlipped = false
-    
-    @ScaledMetric(relativeTo: .body) private var cardHeight: CGFloat = 420
-    
-    var body: some View {
-        ZStack {
-            if !isFlipped {
-                // ── FRONT FACE ──────────────────────────────
-                CardFrontFace(
-                    word: word,
-                    isBookmarked: isBookmarked,
-                    isLearned: isLearned,
-                    phoneticsMode: phoneticsMode,
-                    cardHeight: cardHeight,
-                    onPlay: onPlay,
-                    onPlayExample: onPlayExample,
-                    onBookmark: onBookmark,
-                    onToggleLearned: onToggleLearned
-                )
-                .transition(.coverFlip())
-            } else {
-                // ── BACK FACE ───────────────────────────────
-                CardBackFace(
-                    word: word,
-                    cardHeight: cardHeight
-                )
-                .transition(.coverFlip())
-            }
-        }
-        .animation(.easeInOut(duration: 0.5), value: isFlipped)
-        .frame(height: cardHeight)
-        .contentShape(Rectangle())
-        .onTapGesture {
-            isFlipped.toggle()
-        }
-        .accessibilityAddTraits(.isButton)
-        .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
-        .onChange(of: word.id) {
-            // Reset to front when word changes
-            isFlipped = false
-        }
-    }
-}
-
-// MARK: - Card Front Face
-
-private struct CardFrontFace: View {
-    let word: Word
-    var isBookmarked: Bool
-    var isLearned: Bool
-    var phoneticsMode: PhoneticsMode
-    let cardHeight: CGFloat
-    var onPlay: () -> Void
-    var onPlayExample: (String) -> Void
-    var onBookmark: () -> Void
-    var onToggleLearned: () -> Void
-    
-    @State private var currentExampleIndex = 0
-    
-    var body: some View {
-        ZStack(alignment: .bottomLeading) {
-            VStack(alignment: .leading, spacing: 16) {
-                // ── Word Title + Learned Circle ─────────────
-                HStack(alignment: .top) {
-                    Text(word.word.capitalized)
-                        .font(.oxfordDisplay(size: 36))
-                        .foregroundStyle(Color.oxfordNavy)
-                    
-                    Spacer()
-                    
-                    Button(action: onToggleLearned) {
-                        Circle()
-                            .strokeBorder(isLearned ? Color.webPrimary : Color.secondary.opacity(0.3), lineWidth: 2)
-                            .background(
-                                Circle().fill(isLearned ? Color.webPrimary : Color.clear)
-                            )
-                            .frame(width: 28, height: 28)
-                            .overlay(
-                                isLearned
-                                    ? Image(systemName: "checkmark")
-                                        .font(.caption.bold())
-                                        .foregroundStyle(.white)
-                                    : nil
-                            )
-                    }
-                }
-                
-                // ── Phonetics ───────────────────────────────
-                HStack(spacing: 8) {
-                    let phonetic = phoneticsMode == .uk
-                        ? (word.phonetics.uk ?? word.phonetics.us ?? "/.../")
-                        : (word.phonetics.us ?? word.phonetics.uk ?? "/.../")
-                    
-                    Text(phoneticsMode == .uk ? "UK" : "US")
-                        .font(.system(size: 11, weight: .bold))
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 6)
-                        .padding(.vertical, 2)
-                        .background(Color.webPrimary.opacity(0.8))
-                        .clipShape(.rect(cornerRadius: 4))
-                    
-                    Text(phonetic)
-                        .font(.system(size: 17, weight: .medium, design: .monospaced))
-                        .foregroundStyle(Color.webPrimary)
-                    
-                    Button(action: onPlay) {
-                        Image(systemName: "speaker.wave.3.fill")
-                            .font(.callout)
-                            .foregroundStyle(Color.webPrimary)
-                    }
-                    .accessibilityLabel("Play pronunciation")
-                }
-                
-                // ── Part of Speech Pill ─────────────────────
-                Text(word.type.uppercased())
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(.secondary)
-                    .padding(.horizontal, 10)
-                    .padding(.vertical, 5)
-                    .background(Color.secondary.opacity(0.08))
-                    .clipShape(.rect(cornerRadius: 6))
-                
-                // ── Usage Examples ──────────────────────────
-                if let examples = word.examples, !examples.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        HStack {
-                            Text("USAGE EXAMPLES")
-                                .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(Color.webPrimary)
-                                .tracking(1)
-                            
-                            Spacer()
-                            
-                            Text("\(currentExampleIndex + 1) of \(examples.count)")
-                                .font(.system(size: 12))
-                                .foregroundStyle(.secondary)
-                        }
-                        
-                        VStack(alignment: .leading, spacing: 12) {
-                            let safeIndex = examples.indices.contains(currentExampleIndex) ? currentExampleIndex : 0
-                            Text("\"" + examples[safeIndex] + "\"")
-                                .font(.oxfordBody(size: 16))
-                                .foregroundStyle(Color.webForeground)
-                                .lineSpacing(5)
-                                .fixedSize(horizontal: false, vertical: true)
-                                .id("front-ex-\(word.id)-\(safeIndex)")
-                            
-                            HStack(spacing: 6) {
-                                Button(action: { onPlayExample(examples[safeIndex]) }) {
-                                    Image(systemName: "play.fill")
-                                        .font(.system(size: 11))
-                                        .foregroundStyle(Color.webPrimary)
-                                }
-                                .accessibilityLabel("Play example")
-                                
-                                Spacer()
-                                
-                                ForEach(0..<min(examples.count, 5), id: \.self) { i in
-                                    Circle()
-                                        .fill(i == safeIndex ? Color.webPrimary : Color.secondary.opacity(0.25))
-                                        .frame(width: 7, height: 7)
-                                }
-                            }
-                        }
-                        .padding(16)
-                        .background(
-                            RoundedRectangle(cornerRadius: 14)
-                                .fill(Color.adaptiveCardBackgroundSecondary)
-                        )
-                        .gesture(
-                            DragGesture(minimumDistance: 30).onEnded { value in
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    if value.translation.width < -30 {
-                                        currentExampleIndex = (currentExampleIndex + 1) % examples.count
-                                    } else if value.translation.width > 30 {
-                                        currentExampleIndex = (currentExampleIndex - 1 + examples.count) % examples.count
-                                    }
-                                }
-                            }
-                        )
-                    }
-                }
-                
-                Spacer(minLength: 0)
-                
-                // ── Hint ──────────────────────────────
-                HStack {
-                    Spacer()
-                    VStack(spacing: 4) {
-                        HStack(spacing: 6) {
-                            Image(systemName: "hand.tap.fill")
-                                .font(.system(size: 13))
-                            Text("Tap to see definition")
-                                .font(.system(size: 13, weight: .medium))
-                        }
-                        HStack(spacing: 6) {
-                            Image(systemName: "hand.draw.fill")
-                                .font(.system(size: 13))
-                            Text("Swipe to navigate")
-                                .font(.system(size: 13, weight: .medium))
-                        }
-                    }
-                    .foregroundStyle(.secondary.opacity(0.5))
-                    Spacer()
-                }
-                .padding(.bottom, 24)
-                .accessibilityElement(children: .combine)
-                .accessibilityLabel("Tap to see definition, swipe to navigate")
-            }
-            .padding(22)
-            
-            // ── Bookmark Button (pinned bottom-left) ────
-            Button(action: onBookmark) {
-                Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
-                    .font(.title3)
-                    .foregroundStyle(isBookmarked ? Color.webPrimary : Color.secondary.opacity(0.4))
-            }
-            .padding(.leading, 22)
-            .padding(.bottom, 22)
-            .accessibilityLabel(isBookmarked ? "Remove bookmark" : "Add bookmark")
-        }
-        .frame(height: cardHeight)
-        .cardBackground()
-        .onChange(of: word.id) {
-            currentExampleIndex = 0
-        }
-    }
-}
-
-// MARK: - Card Back Face
-
-private struct CardBackFace: View {
-    let word: Word
-    let cardHeight: CGFloat
-    
-    var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            // ── Header ──────────────────────────────────
-            HStack {
-                Text(word.word.capitalized)
-                    .font(.oxfordDisplay(size: 24))
-                    .foregroundStyle(Color.oxfordNavy)
-                
-                Spacer()
-                
-                // Part of Speech Pill
-                Text(word.type.uppercased())
-                    .font(.system(size: 10, weight: .bold))
-                    .foregroundStyle(.white)
-                    .padding(.horizontal, 8)
-                    .padding(.vertical, 4)
-                    .background(Color.webPrimary)
-                    .clipShape(.rect(cornerRadius: 6))
-            }
-            
-            Divider()
-                .background(Color.webPrimary.opacity(0.2))
-            
-            // ── Definition ──────────────────────────────
-            VStack(alignment: .leading, spacing: 6) {
-                Text("DEFINITION")
-                    .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.webPrimary)
-                    .tracking(1)
-                
-                Text(word.definition ?? "No definition available.")
-                    .font(.oxfordBody(size: 17))
-                    .foregroundStyle(Color.webForeground)
-                    .lineSpacing(5)
-                    .fixedSize(horizontal: false, vertical: true)
-                
-                // ── Example ──────────────────────────────────
-                if let example = word.example, !example.isEmpty {
-                    Text("“\(example)”")
-                        .font(.oxfordBody(size: 16))
-                        .foregroundStyle(.secondary)
-                        .italic()
-                        .padding(.top, 4)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                
-                // ── Synonyms ─────────────────────────────────
-                if let synonyms = word.synonyms, !synonyms.isEmpty {
-                    VStack(alignment: .leading, spacing: 10) {
-                        Text("Synonyms:")
-                            .font(.system(size: 14, weight: .regular))
-                            .foregroundStyle(.secondary)
-                        
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: 8) {
-                                ForEach(synonyms, id: \.self) { syn in
-                                    Text(syn)
-                                        .font(.system(size: 14))
-                                        .foregroundStyle(Color.webForeground)
-                                        .padding(.horizontal, 14)
-                                        .padding(.vertical, 8)
-                                        .overlay(
-                                            Capsule()
-                                                .stroke(Color.secondary.opacity(0.3), lineWidth: 1)
-                                        )
-                                }
-                            }
-                        }
-                    }
-                    .padding(.top, 12)
-                }
-            }
-            .padding(.top, 4)
-            
-            Spacer(minLength: 8)
-            
-            // ── Tap Hint ────────────────────────────────
-            HStack {
-                Spacer()
-                HStack(spacing: 6) {
-                    Image(systemName: "arrow.uturn.backward")
-                        .font(.system(size: 13))
-                    Text("Tap to flip back")
-                        .font(.system(size: 13, weight: .medium))
-                }
-                .foregroundStyle(.secondary.opacity(0.5))
-                Spacer()
-            }
-        }
-        .padding(22)
-        .frame(height: cardHeight, alignment: .top)
-        .cardBackground(style: .gradient)
-    }
-}
-
 // MARK: - Learn Progress View
 
 struct LearnProgressView: View {
     let currentIndex: Int
     let totalWords: Int
-    
+
     var body: some View {
         VStack(spacing: 6) {
             GeometryReader { geo in
@@ -854,22 +430,22 @@ struct LearnProgressView: View {
                     Capsule()
                         .fill(Color.webPrimary.opacity(0.15))
                         .frame(height: 6)
-                    
+
                     Capsule()
                         .fill(Color.webPrimary)
                         .frame(width: max(0, geo.size.width * CGFloat(currentIndex + 1) / CGFloat(max(totalWords, 1))), height: 6)
                 }
             }
             .frame(height: 6)
-            
+
             HStack {
                 Text("STUDY PROGRESS")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.secondary)
                     .tracking(0.8)
-                
+
                 Spacer()
-                
+
                 Text("\(currentIndex + 1) / \(totalWords) WORDS")
                     .font(.system(size: 10, weight: .bold))
                     .foregroundStyle(.secondary)
@@ -885,7 +461,7 @@ struct PlayPronunciationView: View {
     let isPlayAnimating: Bool
     let onPlayPause: () -> Void
     let lightHaptic: UIImpactFeedbackGenerator
-    
+
     var body: some View {
         Button {
             lightHaptic.impactOccurred()
@@ -897,11 +473,11 @@ struct PlayPronunciationView: View {
                     .font(.system(size: 18, weight: .semibold))
                     .symbolEffect(.variableColor.iterative, isActive: isPlayAnimating)
                     .contentTransition(.symbolEffect(.replace))
-                
+
                 Text(isPlayAnimating ? "Playing…" : "Play Pronunciation")
                     .font(.system(size: 16, weight: .semibold))
                     .contentTransition(.numericText())
-                
+
                 Image(systemName: isPlayAnimating ? "pause.fill" : "play.fill")
                     .font(.system(size: 14))
                     .contentTransition(.symbolEffect(.replace))
@@ -946,13 +522,13 @@ struct LearnHeaderView: View {
     let availableWordTypes: [String]
     let onAccountTapped: () -> Void
     let lightHaptic: UIImpactFeedbackGenerator
-    
+
     var body: some View {
         HStack {
             Text(selectedLevel)
                 .font(.title2.bold())
                 .foregroundStyle(Color.webPrimary)
-            
+
             if let type = selectedWordType {
                 Text(type.capitalized)
                     .font(.system(size: 13, weight: .semibold))
@@ -962,9 +538,9 @@ struct LearnHeaderView: View {
                     .background(Color.webPrimary.opacity(0.12))
                     .clipShape(Capsule())
             }
-            
+
             Spacer()
-            
+
             // ── Options Menu (Word Type Filter) ─────
             Menu {
                 Button {
@@ -972,9 +548,9 @@ struct LearnHeaderView: View {
                 } label: {
                     Label("All Types", systemImage: selectedWordType == nil ? "checkmark" : "")
                 }
-                
+
                 Divider()
-                
+
                 ForEach(availableWordTypes, id: \.self) { type in
                     Button {
                         selectedWordType = type
@@ -987,7 +563,7 @@ struct LearnHeaderView: View {
                     .font(.system(size: 22))
                     .foregroundStyle(Color.webPrimary)
             }
-            
+
             Button {
                 lightHaptic.impactOccurred()
                 onAccountTapped()
@@ -1000,53 +576,5 @@ struct LearnHeaderView: View {
             .accessibilityLabel("Account")
             .accessibilityHint("Opens your account panel")
         }
-    }
-}
-
-// MARK: - Cover Flip Transition
-
-struct CoverFlipTransition: AnimatableModifier {
-    var progress: Double
-    var isInsertion: Bool
-    var blurStrength: CGFloat = 3.5
-    
-    var animatableData: Double {
-        get { progress }
-        set { progress = newValue }
-    }
-
-    func body(content: Content) -> some View {
-        let angle = isInsertion ? (180 - 180 * progress) : (0 - 180 * progress)
-
-        let blurAmount = blurForAngle(angle)
-
-        return content
-            .rotation3DEffect(
-                .degrees(angle),
-                axis: (x: 0, y: 1, z: 0),
-                perspective: 0.7
-            )
-            .blur(radius: blurAmount)
-            .opacity(abs(angle) > 90 ? 0 : 1)
-    }
-
-    private func blurForAngle(_ angle: Double) -> CGFloat {
-        let normalized = min(abs(angle) / 90, 1)
-        return CGFloat(normalized * blurStrength)
-    }
-}
-
-extension AnyTransition {
-    static func coverFlip(blurStrength: CGFloat = 3.5) -> AnyTransition {
-        .asymmetric(
-            insertion: .modifier(
-                active: CoverFlipTransition(progress: 0, isInsertion: true, blurStrength: blurStrength),
-                identity: CoverFlipTransition(progress: 1, isInsertion: true, blurStrength: blurStrength)
-            ),
-            removal: .modifier(
-                active: CoverFlipTransition(progress: 1, isInsertion: false, blurStrength: blurStrength),
-                identity: CoverFlipTransition(progress: 0, isInsertion: false, blurStrength: blurStrength)
-            )
-        )
     }
 }
