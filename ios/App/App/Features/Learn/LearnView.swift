@@ -52,8 +52,34 @@ struct LearnView: View {
                     GeometryReader { geometry in
                         let screenW = geometry.size.width
                         let dragPct = dragOffset / screenW  // -1…0…1
+                        // How much the top card has moved (0…1), drives the next card scaling up
+                        let swipeProgress = min(abs(dragPct), 1.0)
                         
                         ZStack(alignment: .center) {
+                            // ── Next card (stationary, peeking behind) ──
+                            if let peekWord = viewModel.nextWord {
+                                WordCardView(
+                                    word: peekWord,
+                                    index: (viewModel.currentIndex + 1) % max(viewModel.totalWords, 1),
+                                    total: viewModel.totalWords,
+                                    isBookmarked: false,
+                                    isLearned: false,
+                                    phoneticsMode: viewModel.phoneticsMode,
+                                    onPlay: {},
+                                    onPlayExample: { _ in },
+                                    onBookmark: {},
+                                    onToggleLearned: {}
+                                )
+                                .padding(.horizontal, Spacing.md)
+                                .padding(.top, Spacing.sm)
+                                .padding(.bottom, Spacing.sm)
+                                // Starts slightly scaled down, scales up as top card is dragged away
+                                .scaleEffect(0.95 + 0.05 * swipeProgress)
+                                .opacity(0.6 + 0.4 * swipeProgress)
+                                .allowsHitTesting(false)
+                            }
+                            
+                            // ── Top card (interactive) ──
                             WordCardView(
                                 word: currentWord,
                                 index: viewModel.currentIndex,
@@ -67,17 +93,17 @@ struct LearnView: View {
                                 onToggleLearned: viewModel.toggleLearned
                             )
                             .padding(.horizontal, Spacing.md)
-                            .padding(.top, Spacing.sm) // Reduced top padding slightly since it's centered now
+                            .padding(.top, Spacing.sm)
                             .padding(.bottom, Spacing.sm)
+                            // ── Card transforms (only on top card) ──
+                            .offset(x: dragOffset)
+                            .rotationEffect(
+                                .degrees(Double(dragPct) * 12),
+                                anchor: .bottom
+                            )
+                            .scaleEffect(cardScale)
+                            .opacity(cardOpacity)
                         }
-                        // ── Card transforms ──
-                        .offset(x: dragOffset)
-                        .rotationEffect(
-                            .degrees(Double(dragPct) * 12),
-                            anchor: .bottom
-                        )
-                        .scaleEffect(cardScale)
-                        .opacity(cardOpacity)
                         // ── Gesture ──
                         .allowsHitTesting(!isTransitioning)
                         .gesture(
@@ -96,9 +122,9 @@ struct LearnView: View {
                                     let velocity = value.predictedEndTranslation.width
                                     
                                     if value.translation.width < -threshold || velocity < -250 {
-                                        performSwipe(direction: -1, screenWidth: screenW, action: viewModel.nextWord)
+                                        performSwipe(direction: -1, screenWidth: screenW, action: viewModel.advanceToNext)
                                     } else if value.translation.width > threshold || velocity > 250 {
-                                        performSwipe(direction: 1, screenWidth: screenW, action: viewModel.previousWord)
+                                        performSwipe(direction: 1, screenWidth: screenW, action: viewModel.goToPrevious)
                                     } else {
                                         // Snap back with bounce
                                         withAnimation(.spring(response: 0.45, dampingFraction: 0.6)) {
@@ -157,30 +183,29 @@ struct LearnView: View {
     private func performSwipe(direction: CGFloat, screenWidth: CGFloat, action: @escaping () -> Void) {
         isTransitioning = true
         
-        // Phase 1: Toss the card off-screen with rotation
-        withAnimation(.easeIn(duration: 0.28)) {
+        // Phase 1: Fly the top card off-screen (the next card is already visible behind)
+        withAnimation(.easeIn(duration: 0.25)) {
             dragOffset = direction * screenWidth * 1.4
             cardOpacity = 0
         }
         
-        // Phase 2: Swap the data while card is invisible
-        DispatchQueue.main.asyncAfter(deadline: .now() + 0.28) {
-            action()
-            mediumHaptic.impactOccurred()
-            
-            // Reset position, shrink for pop-in
-            dragOffset = 0
-            cardScale = 0.85
-            cardOpacity = 0
-            
-            // Phase 3: Pop the new card in with scale + fade
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.7)) {
+        // Phase 2: Swap the data while top card is off-screen
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+            // Disable animations for the data swap so the new card doesn't
+            // visually glitch from "next word" → "current word" position
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            withTransaction(transaction) {
+                action()
+                // Instantly reset the top card position (it's still invisible)
+                dragOffset = 0
                 cardScale = 1.0
                 cardOpacity = 1.0
             }
             
-            // Light secondary haptic for the "land"
-            DispatchQueue.main.asyncAfter(deadline: .now() + 0.15) {
+            mediumHaptic.impactOccurred()
+            
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.05) {
                 softHaptic.impactOccurred()
                 isTransitioning = false
             }
@@ -315,6 +340,13 @@ final class LearnViewModel {
     
     var totalWords: Int { words.count }
     
+    /// The next word in the list (for the stack peek-behind card)
+    var nextWord: Word? {
+        guard words.count > 1 else { return nil }
+        let nextIndex = (currentIndex + 1) % words.count
+        return words[nextIndex]
+    }
+    
     func toggleBookmark() {
         guard let id = currentWord?.id, let service = progressService else { return }
         service.toggleBookmark(id)
@@ -361,7 +393,7 @@ final class LearnViewModel {
         }
     }
     
-    func nextWord() {
+    func advanceToNext() {
         guard !words.isEmpty else { return }
         if isLooping {
             currentIndex = (currentIndex + 1) % words.count
@@ -371,7 +403,7 @@ final class LearnViewModel {
         updateCurrentWord()
     }
     
-    func previousWord() {
+    func goToPrevious() {
         guard !words.isEmpty else { return }
         if isLooping {
             currentIndex = (currentIndex - 1 + words.count) % words.count
@@ -382,9 +414,7 @@ final class LearnViewModel {
     }
     
     private func updateCurrentWord() {
-        withAnimation(.easeInOut(duration: 0.25)) {
-            self.currentWord = words[currentIndex]
-        }
+        self.currentWord = words[currentIndex]
     }
 }
 
