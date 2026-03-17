@@ -10,6 +10,7 @@ final class VocabularyService {
 
     var words: [Word] = []
     var isLoaded: Bool = false
+    var loadError: String? = nil
 
     /// Words grouped by CEFR level for quick level-based filtering.
     var wordsByLevel: [Level: [Word]] = [:]
@@ -18,15 +19,36 @@ final class VocabularyService {
     /// Dictionary for O(1) ID lookups.
     var wordsById: [String: Word] = [:]
 
+    private var loadContinuation: CheckedContinuation<Void, Never>?
+
     private init() {
         Task {
             await loadWords()
         }
     }
 
+    func reloadWords() async {
+        await loadWords()
+    }
+
+    /// Waits until vocabulary is loaded using continuation-based async/await.
+    ///
+    /// If already loaded, returns immediately. Otherwise, suspends until loadWords() completes.
+    func waitUntilLoaded() async {
+        if isLoaded {
+            return
+        }
+
+        await withCheckedContinuation { continuation in
+            self.loadContinuation = continuation
+        }
+    }
+
     private func loadWords() async {
         guard let url = Bundle.main.url(forResource: "oxford_vocabulary", withExtension: "json") else {
-            print("ERROR: oxford_vocabulary.json not found in bundle.")
+            let errorMsg = "oxford_vocabulary.json not found in bundle."
+            print("ERROR: \(errorMsg)")
+            self.loadError = errorMsg
             return
         }
 
@@ -43,9 +65,20 @@ final class VocabularyService {
             self.wordsByType = byType
             self.wordsById = byId
             self.isLoaded = true
+            self.loadError = nil
             print("Successfully loaded \(decoded.count) words.")
+
+            // Resume any waiters
+            self.loadContinuation?.resume()
+            self.loadContinuation = nil
         } catch {
-            print("ERROR: Failed to decode vocabulary: \(error)")
+            let errorMsg = "Failed to decode vocabulary: \(error)"
+            print("ERROR: \(errorMsg)")
+            self.loadError = errorMsg
+
+            // Resume waiters even on error
+            self.loadContinuation?.resume()
+            self.loadContinuation = nil
         }
     }
 }

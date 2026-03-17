@@ -4,6 +4,7 @@ struct LearnView: View {
     @State private var viewModel = LearnViewModel()
     @Environment(ProgressService.self) private var progressService
     @State private var showAccountSheet = false
+    @State private var audioService = AudioService.shared
 
     // Reusable haptic generator for non-deck interactions
     private let lightHaptic = UIImpactFeedbackGenerator(style: .light)
@@ -21,28 +22,64 @@ struct LearnView: View {
             )
             .ignoresSafeArea()
 
-            VStack(spacing: 0) {
-                // ── Header ──────────────────────────────────
-                LearnHeaderView(
-                    selectedLevel: viewModel.selectedLevel,
-                    selectedWordType: $viewModel.selectedWordType,
-                    availableWordTypes: viewModel.availableWordTypes,
-                    onAccountTapped: { showAccountSheet = true },
-                    lightHaptic: lightHaptic
-                )
-                .padding(.horizontal, Spacing.md)
-                .padding(.top, Spacing.sm)
-                .padding(.bottom, Spacing.sm + Spacing.xs)
-
-                // ── Level Selector Pills ────────────────────
-                LevelSelector(selectedLevel: $viewModel.selectedLevel)
+            ZStack(alignment: .top) {
+                VStack(spacing: 0) {
+                    // ── Header ──────────────────────────────────
+                    LearnHeaderView(
+                        selectedLevel: viewModel.selectedLevel,
+                        selectedWordType: $viewModel.selectedWordType,
+                        availableWordTypes: viewModel.availableWordTypes,
+                        onAccountTapped: { showAccountSheet = true },
+                        lightHaptic: lightHaptic
+                    )
                     .padding(.horizontal, Spacing.md)
-                    .padding(.bottom, Spacing.md)
+                    .padding(.top, Spacing.sm)
+                    .padding(.bottom, Spacing.sm + Spacing.xs)
 
-                Spacer(minLength: 0)
+                    // ── Level Selector Pills ────────────────────
+                    LevelSelector(selectedLevel: $viewModel.selectedLevel)
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.bottom, Spacing.md)
 
+                    Spacer(minLength: 0)
+
+                // ── Error State ──────────────────────────────
+                if let errorMessage = viewModel.loadError {
+                    VStack(spacing: 20) {
+                        Spacer()
+
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .font(.system(size: 60))
+                            .foregroundStyle(Color.red.opacity(0.7))
+
+                        VStack(spacing: 12) {
+                            Text("Couldn't Load Words")
+                                .font(.system(size: 18, weight: .bold))
+                                .foregroundStyle(.primary)
+
+                            Text(errorMessage)
+                                .font(.system(size: 14))
+                                .foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center)
+                                .padding(.horizontal, Spacing.md)
+                        }
+
+                        Button(action: { viewModel.retryLoadWords() }) {
+                            Text("Try Again")
+                                .font(.system(size: 16, weight: .semibold))
+                                .foregroundStyle(.white)
+                                .frame(height: 44)
+                                .frame(maxWidth: .infinity)
+                                .background(Color.webPrimary)
+                                .clipShape(Capsule())
+                        }
+                        .padding(.horizontal, Spacing.md)
+
+                        Spacer()
+                    }
+                }
                 // ── Stacked Card Deck ───────────────────────
-                if viewModel.totalWords > 0 {
+                else if viewModel.totalWords > 0 {
                     StackedCardDeck(
                         itemCount: viewModel.totalWords,
                         currentIndex: $viewModel.currentIndex,
@@ -74,24 +111,72 @@ struct LearnView: View {
                 Spacer(minLength: 8)
 
                 // ── Progress Bar ────────────────────────────
-                LearnProgressView(
-                    currentIndex: viewModel.currentIndex,
-                    totalWords: viewModel.totalWords
-                )
-                .padding(.horizontal, Spacing.md)
-                .padding(.bottom, Spacing.md)
+                if viewModel.loadError == nil {
+                    LearnProgressView(
+                        currentIndex: viewModel.currentIndex,
+                        totalWords: viewModel.totalWords
+                    )
+                    .padding(.horizontal, Spacing.md)
+                    .padding(.bottom, Spacing.md)
 
-                // ── Play / Pause Button ─────────────────────
-                PlayPronunciationView(
-                    isPlayAnimating: viewModel.isPlayAnimating,
-                    onPlayPause: { viewModel.togglePlayPause() },
-                    lightHaptic: lightHaptic
-                )
-                .padding(.bottom, Spacing.xl)
+                    // ── Play / Pause Button ─────────────────────
+                    PlayPronunciationView(
+                        isPlayAnimating: viewModel.isPlayAnimating,
+                        onPlayPause: { viewModel.togglePlayPause() },
+                        lightHaptic: lightHaptic
+                    )
+                    .padding(.bottom, Spacing.xl)
+                }
+                }
+
+                // ── Audio Error Toast Overlay ──────────────
+                if let audioError = audioService.lastError {
+                    VStack(spacing: 0) {
+                        HStack(spacing: 12) {
+                            Image(systemName: "exclamationmark.circle.fill")
+                                .foregroundStyle(Color.orange)
+
+                            Text(audioError)
+                                .font(.system(size: 13, weight: .medium))
+                                .foregroundStyle(.white)
+
+                            Spacer()
+                        }
+                        .padding(.horizontal, Spacing.md)
+                        .padding(.vertical, Spacing.sm)
+                        .background(Color.orange.opacity(0.9))
+
+                        Spacer()
+                    }
+                    .frame(maxHeight: .infinity, alignment: .top)
+                    .onAppear {
+                        Task {
+                            try? await Task.sleep(for: .seconds(3))
+                            withAnimation {
+                                audioService.lastError = nil
+                            }
+                        }
+                    }
+                    .transition(.move(edge: .top).combined(with: .opacity))
+                }
             }
         }
         .onAppear {
             viewModel.setProgressService(progressService)
+        }
+        .onChange(of: audioService.isSpeaking) { oldValue, newValue in
+            viewModel.isSpeaking = newValue
+            if viewModel.isLooping {
+                viewModel.isPlayAnimating = newValue
+                // When audio finishes in loop mode, add gap delay then play next word
+                if oldValue && !newValue {
+                    Task {
+                        try? await Task.sleep(for: .seconds(viewModel.loopGapSeconds))
+                        viewModel.nextWord()
+                        viewModel.playAudio()
+                    }
+                }
+            }
         }
         .sheet(isPresented: $showAccountSheet) {
             AccountSheetView()
@@ -140,6 +225,7 @@ final class LearnViewModel {
     @ObservationIgnored @AppStorage("phoneticsMode") private var phoneticsModeRaw: String = "us"
     @ObservationIgnored @AppStorage("playbackSpeed") var playbackSpeed: Double = 1.0
     @ObservationIgnored @AppStorage("randomSpeedEnabled") var randomSpeedEnabled: Bool = false
+    @ObservationIgnored @AppStorage("loopGapSeconds") var loopGapSeconds: Double = 1.0
 
     var phoneticsMode: PhoneticsMode {
         PhoneticsMode(rawValue: phoneticsModeRaw) ?? .us
@@ -147,9 +233,6 @@ final class LearnViewModel {
 
     var isSpeaking: Bool = false
     var isPlayAnimating: Bool = false
-
-    nonisolated(unsafe) private var speakingObserverTask: Task<Void, Never>?
-    nonisolated(unsafe) private var vocabLoadTask: Task<Void, Never>?
 
     private var words: [Word] = []
     var currentIndex: Int = 0
@@ -163,40 +246,29 @@ final class LearnViewModel {
         if vocabularyService.isLoaded {
             loadWordsForLevel()
         } else {
-            // Observe when vocabulary finishes loading (async)
-            vocabLoadTask = Task { [weak self] in
-                // Poll until loaded — lightweight since it only runs once
-                while !(self?.vocabularyService.isLoaded ?? true) {
-                    try? await Task.sleep(for: .milliseconds(100))
-                }
+            // Wait for vocabulary to load using async/await continuation
+            Task { [weak self] in
+                await self?.vocabularyService.waitUntilLoaded()
                 self?.loadWordsForLevel()
             }
         }
-
-        // Observe AudioService speaking state
-        speakingObserverTask = Task { [weak self] in
-            var previousSpeaking = false
-            while !Task.isCancelled {
-                let speaking = AudioService.shared.isSpeaking
-                if speaking != previousSpeaking {
-                    previousSpeaking = speaking
-                    self?.isSpeaking = speaking
-                    if self?.isLooping == true {
-                        self?.isPlayAnimating = speaking
-                    }
-                }
-                try? await Task.sleep(for: .milliseconds(50))
-            }
-        }
-    }
-
-    deinit {
-        speakingObserverTask?.cancel()
-        vocabLoadTask?.cancel()
     }
 
     func setProgressService(_ service: ProgressService) {
         self.progressService = service
+    }
+
+    var loadError: String? {
+        vocabularyService.loadError
+    }
+
+    func retryLoadWords() {
+        // Reset the error and reload
+        vocabularyService.loadError = nil
+        // Trigger the vocabulary service to reload
+        Task {
+            await vocabularyService.reloadWords()
+        }
     }
 
     var availableWordTypes: [String] {

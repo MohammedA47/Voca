@@ -51,7 +51,7 @@ struct WordCardView: View {
         }
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
-        .onChange(of: word.id) {
+        .onChange(of: word.id) { _ in
             // Reset to front when word changes
             isFlipped = false
         }
@@ -237,7 +237,7 @@ struct CardFrontFace: View {
         }
         .frame(height: cardHeight)
         .cardBackground()
-        .onChange(of: word.id) {
+        .onChange(of: word.id) { _ in
             currentExampleIndex = 0
         }
     }

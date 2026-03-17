@@ -10,8 +10,9 @@ import AVFoundation
 actor AudioCacheActor {
     private let cache = NSCache<NSString, NSData>()
 
-    init(countLimit: Int = 100) {
+    init(countLimit: Int = 100, totalCostLimit: Int = 50 * 1024 * 1024) {
         cache.countLimit = countLimit
+        cache.totalCostLimit = totalCostLimit
     }
 
     /// Returns cached audio data for the given key, or `nil` if not cached.
@@ -19,9 +20,9 @@ actor AudioCacheActor {
         cache.object(forKey: NSString(string: key)) as Data?
     }
 
-    /// Stores audio data in the cache.
+    /// Stores audio data in the cache with cost-based eviction.
     func set(_ data: Data, forKey key: String) {
-        cache.setObject(data as NSData, forKey: NSString(string: key))
+        cache.setObject(data as NSData, forKey: NSString(string: key), cost: data.count)
     }
 }
 
@@ -36,16 +37,13 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
     static let shared = AudioService()
 
     var isSpeaking: Bool = false
+    var lastError: String? = nil
 
     private var audioPlayer: AVAudioPlayer?
     private var currentTask: Task<Void, Never>?
 
     /// Actor-isolated TTS audio cache.
     private let audioCache = AudioCacheActor()
-
-    // Hardcoded config matching AuthService
-    private let supabaseUrl = "https://brknoeqgpejhxsqsjnan.supabase.co"
-    private let supabaseAnonKey = "sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT"
 
     /// ElevenLabs voices mapped by phonetics mode ("us" or "uk").
     private let voiceIds: [String: String] = [
@@ -77,6 +75,9 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
         // Cancel any pending download/playback
         stop()
 
+        // Clear previous error
+        lastError = nil
+
         currentTask = Task { [weak self] in
             guard let self else { return }
             self.isSpeaking = true
@@ -94,13 +95,13 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
                     return
                 }
 
-                guard let url = URL(string: "\(self.supabaseUrl)/functions/v1/elevenlabs-tts") else {
+                guard let url = URL(string: "\(Config.supabaseUrl)/functions/v1/elevenlabs-tts") else {
                     throw URLError(.badURL)
                 }
 
                 var request = URLRequest(url: url)
                 request.httpMethod = "POST"
-                request.setValue(self.supabaseAnonKey, forHTTPHeaderField: "apikey")
+                request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
 
                 // Add Authorization header if logged in to get higher rate limits
@@ -124,11 +125,13 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
 
                 if httpResponse.statusCode == 429 {
                     print("TTS Rate limit exceeded")
+                    self.lastError = "Too many requests. Please wait a moment."
                     throw NSError(domain: "Network", code: 429, userInfo: [NSLocalizedDescriptionKey: "Rate limit exceeded."])
                 }
 
                 if !(200...299).contains(httpResponse.statusCode) {
                     print("TTS API failed with status \(httpResponse.statusCode): \(String(data: data, encoding: .utf8) ?? "")")
+                    self.lastError = "Network error. Check your connection."
                     throw URLError(.badServerResponse)
                 }
 
@@ -142,6 +145,10 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
 
             } catch {
                 print("Failed to fetch or play TTS audio: \(error.localizedDescription)")
+                // Set error message if not already set by rate limit/network handlers above
+                if self.lastError == nil {
+                    self.lastError = "Network error. Check your connection."
+                }
                 if !Task.isCancelled {
                     self.isSpeaking = false
                 }

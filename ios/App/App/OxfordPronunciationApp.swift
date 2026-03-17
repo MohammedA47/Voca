@@ -4,19 +4,28 @@ import SwiftUI
 struct OxfordPronunciationApp: App {
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @State private var progressService = ProgressService()
-    
+    @State private var vocabularyService = VocabularyService.shared
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
-                .environment(progressService)
-                .preferredColorScheme(resolvedColorScheme)
-                .task {
-                    // Index vocabulary words in Spotlight once loaded
-                    while !VocabularyService.shared.isLoaded {
-                        try? await Task.sleep(for: .milliseconds(200))
+            if vocabularyService.isLoaded {
+                ContentView()
+                    .environment(progressService)
+                    .preferredColorScheme(resolvedColorScheme)
+                    .task {
+                        // Index vocabulary words in Spotlight
+                        SpotlightIndexer.indexAllWords()
                     }
-                    SpotlightIndexer.indexAllWords()
+            } else {
+                // Show loading state while vocabulary loads
+                VStack(spacing: 12) {
+                    ProgressView()
+                    Text("Loading vocabulary...")
+                        .font(.system(size: 14))
+                        .foregroundStyle(.secondary)
                 }
+                .preferredColorScheme(resolvedColorScheme)
+            }
         }
     }
     

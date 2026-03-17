@@ -55,29 +55,42 @@ struct PronunciationAppShortcuts: AppShortcutsProvider {
 /// Indexes vocabulary words in Core Spotlight for system-wide search.
 @MainActor
 enum SpotlightIndexer {
-    /// Call once after vocabulary loads to index all words.
+    /// Call once after vocabulary loads to index all words in batches.
     static func indexAllWords() {
         let vocabularyService = VocabularyService.shared
         guard vocabularyService.isLoaded else { return }
 
-        let items = vocabularyService.words.prefix(500).map { word -> CSSearchableItem in
-            let attributes = CSSearchableItemAttributeSet(contentType: .text)
-            attributes.title = word.word.capitalized
-            attributes.contentDescription = "\(word.type) (\(word.level)) — \(word.definition ?? "Learn this word")"
-            attributes.keywords = [word.word, word.type, word.level]
+        let batchSize = 500
+        let words = Array(vocabularyService.words)
+        let totalWords = words.count
+        let searchableIndex = CSSearchableIndex.default()
+        var indexedCount = 0
 
-            return CSSearchableItem(
-                uniqueIdentifier: "word-\(word.id)",
-                domainIdentifier: "com.oxford.pronunciation.words",
-                attributeSet: attributes
-            )
-        }
+        // Index words in batches of 500 to avoid memory spikes
+        for batchStart in stride(from: 0, to: words.count, by: batchSize) {
+            let batchEnd = min(batchStart + batchSize, words.count)
+            let batchWords = Array(words[batchStart..<batchEnd])
 
-        CSSearchableIndex.default().indexSearchableItems(items) { error in
-            if let error {
-                print("Spotlight indexing error: \(error.localizedDescription)")
-            } else {
-                print("Indexed \(items.count) words in Spotlight.")
+            let items = batchWords.map { word -> CSSearchableItem in
+                let attributes = CSSearchableItemAttributeSet(contentType: .text)
+                attributes.title = word.word.capitalized
+                attributes.contentDescription = "\(word.type) (\(word.level)) — \(word.definition ?? "Learn this word")"
+                attributes.keywords = [word.word, word.type, word.level]
+
+                return CSSearchableItem(
+                    uniqueIdentifier: "word-\(word.id)",
+                    domainIdentifier: "com.oxford.pronunciation.words",
+                    attributeSet: attributes
+                )
+            }
+
+            searchableIndex.indexSearchableItems(items) { error in
+                if let error {
+                    print("Spotlight indexing error for batch [\(batchStart)-\(batchEnd)]: \(error.localizedDescription)")
+                } else {
+                    indexedCount += items.count
+                    print("Indexed batch [\(batchStart)-\(batchEnd)]: \(items.count) words (\(indexedCount)/\(totalWords) total).")
+                }
             }
         }
     }

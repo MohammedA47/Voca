@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0101242A8C80CBA9D1DC6C33 /* AudioService.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADAFA7606093D890FACB8745 /* AudioService.swift */; };
 		0FDA84B2250BB9EBC9C7624C /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 799AFC8CE50ADE592541958B /* ContentView.swift */; };
+		1ABC2DEF3456789012BCDEF3 /* Config.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5678DEF0GHIJ1234K5L6MNOP /* Config.swift */; };
 		24D2DB24214371F9E49387C8 /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3DD397E4664B1F5DA9FD1398 /* Colors.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		4B21D8A5B27F649810C47685 /* ProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C905450FAC03FAF7132FF510 /* ProgressService.swift */; };
@@ -40,6 +41,10 @@
 		E5F607182AB3CDEF04425535 /* StackedCardDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */; };
 		B3C4D5E6F7081AABCDEF2345 /* WordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */; };
 		F3E1CBA1A876543AE5F6073A /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */; };
+		AA000001B234567890ABCDEF /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001C234567890ABCDEF /* EditProfileView.swift */; };
+		AA000002B234567890ABCDEF /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */; };
+		AA000003B234567890ABCDEF /* AccountSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003C234567890ABCDEF /* AccountSettingsView.swift */; };
+		AA000004B234567890ABCDEF /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004C234567890ABCDEF /* HelpSupportView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -54,6 +59,7 @@
 		3DD397E4664B1F5DA9FD1398 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = Search/SearchViewModel.swift; sourceTree = "<group>"; };
 		4535146DD2BF10DB9C739F30 /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
+		5678DEF0GHIJ1234K5L6MNOP /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -90,6 +96,10 @@
 		C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRoute.swift; path = Navigation/AppRoute.swift; sourceTree = "<group>"; };
 		D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StackedCardDeck.swift; path = Components/StackedCardDeck.swift; sourceTree = "<group>"; };
 		A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WordCardView.swift; path = Learn/WordCardView.swift; sourceTree = "<group>"; };
+		AA000001C234567890ABCDEF /* EditProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
+		AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
+		AA000003C234567890ABCDEF /* AccountSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccountSettingsView.swift; sourceTree = "<group>"; };
+		AA000004C234567890ABCDEF /* HelpSupportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -128,6 +138,7 @@
 				C905450FAC03FAF7132FF510 /* ProgressService.swift */,
 				86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */,
 				4535146DD2BF10DB9C739F30 /* AuthService.swift */,
+				5678DEF0GHIJ1234K5L6MNOP /* Config.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -152,6 +163,10 @@
 				A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */,
 				12AB34CD56EF78AB90CD12EF /* AccountSheetView.swift */,
 				34E0EAE327C950362B3014D5 /* LoginSheetView.swift */,
+				AA000001C234567890ABCDEF /* EditProfileView.swift */,
+				AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */,
+				AA000003C234567890ABCDEF /* AccountSettingsView.swift */,
+				AA000004C234567890ABCDEF /* HelpSupportView.swift */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -398,9 +413,14 @@
 				CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */,
 				D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */,
 				FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */,
+				1ABC2DEF3456789012BCDEF3 /* Config.swift in Sources */,
 				77AD13C7DC64A35F9AFED57C /* LoginSheetView.swift in Sources */,
 				E5F607182AB3CDEF04425535 /* StackedCardDeck.swift in Sources */,
 				B3C4D5E6F7081AABCDEF2345 /* WordCardView.swift in Sources */,
+				AA000001B234567890ABCDEF /* EditProfileView.swift in Sources */,
+				AA000002B234567890ABCDEF /* NotificationsSettingsView.swift in Sources */,
+				AA000003B234567890ABCDEF /* AccountSettingsView.swift in Sources */,
+				AA000004B234567890ABCDEF /* HelpSupportView.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

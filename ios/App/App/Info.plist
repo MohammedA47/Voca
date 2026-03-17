@@ -49,5 +49,9 @@
 		<key>NSAllowsArbitraryLoads</key>
 		<true/>
 	</dict>
+	<key>SUPABASE_URL</key>
+	<string>https://brknoeqgpejhxsqsjnan.supabase.co</string>
+	<key>SUPABASE_ANON_KEY</key>
+	<string>sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT</string>
 </dict>
 </plist>

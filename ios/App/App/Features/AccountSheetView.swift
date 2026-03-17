@@ -19,6 +19,12 @@ struct AccountSheetView: View {
     // Auth State
     private var authService = AuthService.shared
     @State private var showingLoginSheet = false
+    @State private var showingEditProfile = false
+    @State private var showingNotificationsSheet = false
+    @State private var showingSubscriptionView = false
+    @State private var showingAccountSettings = false
+    @State private var showingDeleteAlert = false
+    @State private var isDeleting = false
     
     var body: some View {
         NavigationStack {
@@ -52,6 +58,35 @@ struct AccountSheetView: View {
         .sheet(isPresented: $showingLoginSheet) {
             LoginSheetView()
         }
+        .sheet(isPresented: $showingEditProfile) {
+            EditProfileView()
+        }
+        .sheet(isPresented: $showingNotificationsSheet) {
+            NotificationsSettingsView()
+        }
+        .sheet(isPresented: $showingSubscriptionView) {
+            SubscriptionView()
+        }
+        .sheet(isPresented: $showingAccountSettings) {
+            AccountSettingsView()
+        }
+        .alert("Delete Account?", isPresented: $showingDeleteAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) {
+                isDeleting = true
+                Task {
+                    do {
+                        try await authService.deleteAccount()
+                        dismiss()
+                    } catch {
+                        print("Error deleting account: \(error)")
+                        isDeleting = false
+                    }
+                }
+            }
+        } message: {
+            Text("Are you sure? This will delete your account and all progress. This action cannot be undone.")
+        }
     }
     
     // MARK: - Profile Header
@@ -79,7 +114,7 @@ struct AccountSheetView: View {
                     
                     // Edit Profile Button
                     Button(action: {
-                        // TODO: Navigate to edit profile
+                        showingEditProfile = true
                     }) {
                         Text("Edit Profile")
                             .font(.subheadline.weight(.medium))
@@ -128,20 +163,95 @@ struct AccountSheetView: View {
     }
     
     // MARK: - Account Section
-    
+
     private var accountSection: some View {
         Section {
-            AccountMenuItem(
-                icon: "person.fill",
-                iconColor: .blue,
-                title: "Account"
-            )
-            
-            AccountMenuItem(
-                icon: "creditcard.fill",
-                iconColor: .green,
-                title: "Subscription & Billing"
-            )
+            Button(action: {
+                showingAccountSettings = true
+            }) {
+                HStack(spacing: Spacing.sm + Spacing.xs) {
+                    // Icon with rounded-rect background (Apple Settings style)
+                    Image(systemName: "person.fill")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(Color.blue)
+                        )
+
+                    Text("Account")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.secondary.opacity(0.5))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Account")
+            .accessibilityHint("Opens account settings")
+
+            Button(action: {
+                showingSubscriptionView = true
+            }) {
+                HStack(spacing: Spacing.sm + Spacing.xs) {
+                    // Icon with rounded-rect background (Apple Settings style)
+                    Image(systemName: "creditcard.fill")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(Color.green)
+                        )
+
+                    Text("Subscription & Billing")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.secondary.opacity(0.5))
+                }
+                .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel("Subscription & Billing")
+            .accessibilityHint("Opens subscription and billing settings")
+
+            if authService.isAuthenticated {
+                Button(action: {
+                    showingDeleteAlert = true
+                }) {
+                    HStack(spacing: Spacing.sm + Spacing.xs) {
+                        Image(systemName: "trash.fill")
+                            .font(.system(size: 15, weight: .medium))
+                            .foregroundStyle(.white)
+                            .frame(width: 30, height: 30)
+                            .background(
+                                RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                    .fill(Color.red)
+                            )
+
+                        Text("Delete Account")
+                            .font(.body)
+                            .foregroundStyle(.red)
+
+                        Spacer()
+                    }
+                    .contentShape(Rectangle())
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel("Delete Account")
+                .accessibilityHint("Permanently delete your account and all data")
+            }
         }
     }
     
@@ -270,12 +380,17 @@ struct AccountSheetView: View {
             }
             .accessibilityElement(children: .combine)
             
-            // ── Notifications (existing) ──────────────────
-            AccountMenuItem(
-                icon: "bell.badge.fill",
-                iconColor: .red,
-                title: "Notifications"
-            )
+            // ── Notifications ──────────────────────────────
+            Button(action: {
+                showingNotificationsSheet = true
+            }) {
+                AccountMenuItem(
+                    icon: "bell.badge.fill",
+                    iconColor: .red,
+                    title: "Notifications"
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
     
@@ -283,11 +398,32 @@ struct AccountSheetView: View {
     
     private var supportSection: some View {
         Section {
-            AccountMenuItem(
-                icon: "questionmark.circle.fill",
-                iconColor: .purple,
-                title: "Help & Support"
-            )
+            NavigationLink(destination: HelpSupportView()) {
+                HStack(spacing: Spacing.sm + Spacing.xs) {
+                    // Icon with rounded-rect background (Apple Settings style)
+                    Image(systemName: "questionmark.circle.fill")
+                        .font(.system(size: 15, weight: .medium))
+                        .foregroundStyle(.white)
+                        .frame(width: 30, height: 30)
+                        .background(
+                            RoundedRectangle(cornerRadius: 7, style: .continuous)
+                                .fill(Color.purple)
+                        )
+
+                    Text("Help & Support")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 13, weight: .semibold))
+                        .foregroundStyle(.secondary.opacity(0.5))
+                }
+                .contentShape(Rectangle()) // Full-row tap target (44pt+)
+            }
+            .accessibilityLabel("Help & Support")
+            .accessibilityAddTraits(.isButton)
         }
     }
     
@@ -372,6 +508,33 @@ struct SettingsIcon: View {
                 RoundedRectangle(cornerRadius: 7, style: .continuous)
                     .fill(color)
             )
+    }
+}
+
+// MARK: - Subscription View
+
+private struct SubscriptionView: View {
+    @Environment(\.dismiss) private var dismiss
+
+    var body: some View {
+        NavigationStack {
+            ContentUnavailableView(
+                "Subscriptions",
+                systemImage: "creditcard",
+                description: Text("Subscription management is not available yet.")
+            )
+            .navigationTitle("Subscription")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button("Done") {
+                        dismiss()
+                    }
+                    .fontWeight(.semibold)
+                    .foregroundStyle(Color.webPrimary)
+                }
+            }
+        }
     }
 }
 

@@ -1,42 +1,42 @@
 import SwiftUI
 
 struct Typography {
-    static let displayFontName = "PlayfairDisplay-Regular" // Assuming font will be added later
-    static let bodyFontName = "Inter-Regular"
-    
-    // Fallbacks
+    // Font Strategy:
+    // Custom fonts (PlayfairDisplay and Inter) are not bundled in the app.
+    // Using system fonts as primary (intentional, not fallback).
+    // - Display: system serif (matches Playfair Display style and elegance)
+    // - Body: system default (San Francisco, matches Inter's modern readability)
+
+    // Display font: serif system font with bold weight for visual hierarchy
     static func display(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        // Try custom font, fallback to system serif (New York) to match "Playfair" style
-        return Font.custom(displayFontName, size: size).weight(weight)
-        // Fallback behavior is automatic in SwiftUI if font not found? 
-        // Actually, if not found it falls back to system san-serif usually. 
-        // We explicitely want Serif if custom missing.
+        return .system(size: size, weight: weight, design: .serif)
     }
-    
+
+    // Body font: default system font for standard body text
     static func body(size: CGFloat, weight: Font.Weight = .regular) -> Font {
-        return Font.custom(bodyFontName, size: size).weight(weight)
+        return .system(size: size, weight: weight, design: .default)
     }
-    
+
     // Use this for Headers
     static func header(size: CGFloat) -> Font {
         return .system(size: size, weight: .bold, design: .serif)
     }
-    
+
     // Use this for Body
     static func standard(size: CGFloat) -> Font {
-        return .system(size: size, weight: .regular, design: .default) // Inter is Neo-Grotesque, system is close enough
+        return .system(size: size, weight: .regular, design: .default)
     }
 }
 
 // Extension for easier usage
 extension Font {
     static func oxfordDisplay(size: CGFloat) -> Font {
-        // Fallback to Serif to match Playfair vibe if font file missing
+        // Serif system font with bold weight (matches Playfair style)
         return .system(size: size, weight: .bold, design: .serif)
     }
-    
+
     static func oxfordBody(size: CGFloat) -> Font {
-         // Fallback to Default (San Francisco) to match Inter vibe
+        // System default font (San Francisco - matches Inter style)
         return .system(size: size, design: .default)
     }
 }
