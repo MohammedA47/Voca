@@ -111,6 +111,11 @@
       "sourceType": "github",
       "computedHash": "5a19677046d48f1cca67175ad336308e8e2744d1a4d1ab0a2760338855fa2f1e"
     },
+    "refero-design": {
+      "source": "referodesign/refero_skill",
+      "sourceType": "github",
+      "computedHash": "e65c46ee932c4d4a718f743b1c845b4e6b981ec71239e7ca2119ed7bea3a690a"
+    },
     "swift-expert": {
       "source": "jeffallan/claude-skills",
       "sourceType": "github",
