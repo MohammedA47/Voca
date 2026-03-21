@@ -40,12 +40,12 @@ struct WordDetailView: View {
                 HStack(spacing: Spacing.md) {
                     if let uk = word.phonetics.uk {
                         PhoneticChip(label: "UK", phonetic: uk) {
-                            AudioService.shared.speak(text: word.word)
+                            AudioService.shared.speak(text: word.word, accent: "uk")
                         }
                     }
                     if let us = word.phonetics.us {
                         PhoneticChip(label: "US", phonetic: us) {
-                            AudioService.shared.speak(text: word.word)
+                            AudioService.shared.speak(text: word.word, accent: "us")
                         }
                     }
                 }

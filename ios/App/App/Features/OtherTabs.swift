@@ -164,23 +164,27 @@ struct ProfileView: View {
                                 .padding(.horizontal, Spacing.md)
                         }
 
-                        // MARK: - Learning Streaks Placeholder
+                        // MARK: - Learning Streaks
                         VStack(spacing: Spacing.sm) {
                             HStack(spacing: Spacing.sm) {
                                 Image(systemName: "flame.fill")
                                     .font(.title2)
-                                    .foregroundStyle(Color.webPrimary)
+                                    .foregroundStyle(progressService.calculateStreak() > 0 ? Color.orange : Color.secondary.opacity(0.3))
 
-                                Text("Start learning daily to build your streak!")
-                                    .font(.body)
-                                    .foregroundStyle(Color.oxfordNavy)
+                                VStack(alignment: .leading, spacing: 2) {
+                                    let streak = progressService.calculateStreak()
+                                    Text(streak > 0 ? "\(streak) Day Streak!" : "Start your streak!")
+                                        .font(.body)
+                                        .fontWeight(.bold)
+                                        .foregroundStyle(Color.oxfordNavy)
+                                    
+                                    Text(streak > 0 ? "You're on fire! Keep it up." : "Learn at least one word today.")
+                                        .font(.caption)
+                                        .foregroundStyle(.secondary)
+                                }
 
                                 Spacer()
                             }
-
-                            Text("Coming soon: Track your daily learning habits")
-                                .font(.caption)
-                                .foregroundStyle(.secondary)
                         }
                         .padding(Spacing.md)
                         .background(Color.adaptiveCardBackground)
@@ -294,7 +298,7 @@ struct StatCard: View {
 // MARK: - CEFR Level Progress Row
 struct CEFRLevelProgressRow: View {
     let level: String
-    let learnedWords: Set<String>
+    let learnedWords: [String: Date]
     let vocabService: VocabularyService
 
     var levelWords: [Word] {
@@ -302,7 +306,7 @@ struct CEFRLevelProgressRow: View {
     }
 
     var learnedCount: Int {
-        levelWords.filter { learnedWords.contains($0.id) }.count
+        levelWords.filter { learnedWords.keys.contains($0.id) }.count
     }
 
     var totalCount: Int {

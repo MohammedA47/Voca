@@ -108,8 +108,9 @@ final class AuthService {
     func deleteAccount() async throws {
         // Clear all app-specific UserDefaults
         UserDefaults.standard.removeObject(forKey: "supabase_session")
-        UserDefaults.standard.removeObject(forKey: "bookmarkedWords")
-        UserDefaults.standard.removeObject(forKey: "learnedWords")
+        UserDefaults.standard.removeObject(forKey: "Oxford_BookmarkedWords")
+        UserDefaults.standard.removeObject(forKey: "Oxford_LearnedWords")
+        UserDefaults.standard.removeObject(forKey: "Oxford_LearnedWords_V2")
 
         // Clear all @AppStorage data
         let defaults = UserDefaults.standard

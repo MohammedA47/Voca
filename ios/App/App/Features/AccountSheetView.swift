@@ -460,35 +460,28 @@ struct AccountMenuItem: View {
     let title: String
     
     var body: some View {
-        Button(action: {
-            // TODO: Handle navigation
-        }) {
-            HStack(spacing: Spacing.sm + Spacing.xs) {
-                // Icon with rounded-rect background (Apple Settings style)
-                Image(systemName: icon)
-                    .font(.system(size: 15, weight: .medium))
-                    .foregroundStyle(.white)
-                    .frame(width: 30, height: 30)
-                    .background(
-                        RoundedRectangle(cornerRadius: 7, style: .continuous)
-                            .fill(iconColor)
-                    )
-                
-                Text(title)
-                    .font(.body)
-                    .foregroundStyle(.primary)
-                
-                Spacer()
-                
-                Image(systemName: "chevron.right")
-                    .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(.secondary.opacity(0.5))
-            }
-            .contentShape(Rectangle()) // Full-row tap target (44pt+)
+        HStack(spacing: Spacing.sm + Spacing.xs) {
+            // Icon with rounded-rect background (Apple Settings style)
+            Image(systemName: icon)
+                .font(.system(size: 15, weight: .medium))
+                .foregroundStyle(.white)
+                .frame(width: 30, height: 30)
+                .background(
+                    RoundedRectangle(cornerRadius: 7, style: .continuous)
+                        .fill(iconColor)
+                )
+            
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+            
+            Spacer()
+            
+            Image(systemName: "chevron.right")
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.secondary.opacity(0.5))
         }
-        .buttonStyle(.plain)
-        .accessibilityLabel(title)
-        .accessibilityAddTraits(.isButton)
+        .contentShape(Rectangle()) // Full-row tap target (44pt+)
     }
 }
 
