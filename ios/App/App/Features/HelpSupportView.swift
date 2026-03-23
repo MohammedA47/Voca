@@ -2,42 +2,32 @@ import SwiftUI
 
 // MARK: - Help & Support View
 // A comprehensive help screen featuring FAQ, contact information, and app version details.
+// Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct HelpSupportView: View {
-    @Environment(\.dismiss) private var dismiss
+    @State private var faqExpanded: [Bool] = Array(repeating: false, count: 5)
 
     var body: some View {
-        NavigationStack {
-            List {
-                // ── FAQ Section ────────────────────────────────
-                faqSection
+        List {
+            // ── FAQ Section ────────────────────────────────
+            faqSection
 
-                // ── Contact Section ────────────────────────────
-                contactSection
+            // ── Contact Section ────────────────────────────
+            contactSection
 
-                // ── App Info Section ───────────────────────────
-                appInfoSection
-            }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Help & Support")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.webPrimary)
-                }
-            }
+            // ── App Info Section ───────────────────────────
+            appInfoSection
         }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Help & Support")
+        .navigationBarTitleDisplayMode(.inline)
     }
 
     // MARK: - FAQ Section
 
     private var faqSection: some View {
         Section(header: Text("Frequently Asked Questions")) {
-            DisclosureGroup(isExpanded: .constant(false)) {
+            DisclosureGroup(isExpanded: $faqExpanded[0]) {
                 Text("Browse words by CEFR level (A1–C2) using the card deck on the Home tab. Tap a card to flip it and see the definition, or swipe to move to the next word.")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -46,7 +36,7 @@ struct HelpSupportView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "book.fill")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(.blue)
                         .frame(width: 28, alignment: .center)
 
                     Text("How do I learn new words?")
@@ -55,9 +45,8 @@ struct HelpSupportView: View {
                         .foregroundStyle(.primary)
                 }
             }
-            .tint(.webPrimary)
 
-            DisclosureGroup(isExpanded: .constant(false)) {
+            DisclosureGroup(isExpanded: $faqExpanded[1]) {
                 Text("Tap the speaker icon on any word card to hear it pronounced. You can choose between US and UK pronunciation in Settings.")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -66,7 +55,7 @@ struct HelpSupportView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "speaker.wave.2.fill")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(.blue)
                         .frame(width: 28, alignment: .center)
 
                     Text("How does pronunciation work?")
@@ -75,9 +64,8 @@ struct HelpSupportView: View {
                         .foregroundStyle(.primary)
                 }
             }
-            .tint(.webPrimary)
 
-            DisclosureGroup(isExpanded: .constant(false)) {
+            DisclosureGroup(isExpanded: $faqExpanded[2]) {
                 Text("Words are categorized using the CEFR framework: A1-A2 (beginner), B1-B2 (intermediate), C1-C2 (advanced). Start at your comfort level and work up.")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -86,7 +74,7 @@ struct HelpSupportView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "chart.bar.fill")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(.blue)
                         .frame(width: 28, alignment: .center)
 
                     Text("What do the levels mean?")
@@ -95,9 +83,8 @@ struct HelpSupportView: View {
                         .foregroundStyle(.primary)
                 }
             }
-            .tint(.webPrimary)
 
-            DisclosureGroup(isExpanded: .constant(false)) {
+            DisclosureGroup(isExpanded: $faqExpanded[3]) {
                 Text("Mark words as learned using the checkmark button. Visit the Stats tab to see your overall progress and learning streak.")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -106,7 +93,7 @@ struct HelpSupportView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "chart.line.uptrend.xyaxis")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(.blue)
                         .frame(width: 28, alignment: .center)
 
                     Text("How do I track my progress?")
@@ -115,9 +102,8 @@ struct HelpSupportView: View {
                         .foregroundStyle(.primary)
                 }
             }
-            .tint(.webPrimary)
 
-            DisclosureGroup(isExpanded: .constant(false)) {
+            DisclosureGroup(isExpanded: $faqExpanded[4]) {
                 Text("Yes! Tap the bookmark icon on any word card. All bookmarked words appear in your Saved tab.")
                     .font(.body)
                     .foregroundStyle(.secondary)
@@ -126,7 +112,7 @@ struct HelpSupportView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "bookmark.fill")
                         .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(.blue)
                         .frame(width: 28, alignment: .center)
 
                     Text("Can I save words for later?")
@@ -135,7 +121,6 @@ struct HelpSupportView: View {
                         .foregroundStyle(.primary)
                 }
             }
-            .tint(.webPrimary)
         }
     }
 
@@ -151,7 +136,7 @@ struct HelpSupportView: View {
                         .frame(width: 30, height: 30)
                         .background(
                             RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(Color.webPrimary)
+                                .fill(.blue)
                         )
 
                     VStack(alignment: .leading, spacing: Spacing.xs / 2) {
@@ -181,28 +166,26 @@ struct HelpSupportView: View {
             HStack {
                 Text("Version")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
 
                 Spacer()
 
                 Text(appVersion)
                     .font(.body.monospacedDigit())
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.secondary)
             }
             .padding(.vertical, Spacing.xs / 2)
 
             HStack {
                 Text("Build")
                     .font(.body)
-                    .foregroundStyle(.secondary)
+                    .foregroundStyle(.primary)
 
                 Spacer()
 
                 Text(appBuild)
                     .font(.body.monospacedDigit())
-                    .fontWeight(.medium)
-                    .foregroundStyle(.primary)
+                    .foregroundStyle(.secondary)
             }
             .padding(.vertical, Spacing.xs / 2)
         }
@@ -222,5 +205,7 @@ struct HelpSupportView: View {
 // MARK: - Preview
 
 #Preview {
-    HelpSupportView()
+    NavigationStack {
+        HelpSupportView()
+    }
 }

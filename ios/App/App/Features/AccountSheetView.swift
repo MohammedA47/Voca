@@ -1,13 +1,13 @@
 import SwiftUI
 
 // MARK: - Account Sheet View
-// A native iOS bottom sheet presented when tapping the profile avatar.
-// Designed to match Apple Music / App Store account panel style.
+// Native iOS Settings-style screen presented as a sheet from the profile avatar.
+// Uses push navigation for sub-pages and standard iOS controls throughout.
 
 struct AccountSheetView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.colorScheme) private var colorScheme
-    
+
     // MARK: - Persisted Settings
     @AppStorage("isLooping") private var isLooping: Bool = true
     @AppStorage("phoneticsMode") private var phoneticsMode: String = "us"
@@ -15,39 +15,43 @@ struct AccountSheetView: View {
     @AppStorage("playbackSpeed") private var playbackSpeed: Double = 1.0
     @AppStorage("randomSpeedEnabled") private var randomSpeedEnabled: Bool = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
-    
+
     // Auth State
     private var authService = AuthService.shared
     @State private var showingLoginSheet = false
     @State private var showingEditProfile = false
-    @State private var showingNotificationsSheet = false
     @State private var showingSubscriptionView = false
-    @State private var showingAccountSettings = false
     @State private var showingDeleteAlert = false
     @State private var isDeleting = false
-    
+
     var body: some View {
         NavigationStack {
             List {
-                // ── Profile Header ────────────────────────────
-                profileHeaderSection
-                
-                // ── Menu Items ────────────────────────────────
-                accountSection
+                // ── Profile Row ──────────────────────────────
+                profileSection
+
+                // ── Preferences ──────────────────────────────
                 preferencesSection
-                supportSection
+
+                // ── General ──────────────────────────────────
+                generalSection
+
+                // ── Sign Out & Delete ────────────────────────
                 signOutSection
+                deleteAccountSection
+
+                // ── Footer ───────────────────────────────────
+                footerSection
             }
             .listStyle(.insetGrouped)
-            .navigationTitle("Account")
-            .navigationBarTitleDisplayMode(.inline)
+            .navigationTitle("Settings")
+            .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
                     Button("Done") {
                         dismiss()
                     }
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.webPrimary)
                 }
             }
         }
@@ -61,14 +65,8 @@ struct AccountSheetView: View {
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView()
         }
-        .sheet(isPresented: $showingNotificationsSheet) {
-            NotificationsSettingsView()
-        }
         .sheet(isPresented: $showingSubscriptionView) {
-            SubscriptionView()
-        }
-        .sheet(isPresented: $showingAccountSettings) {
-            AccountSettingsView()
+            AppSubscriptionView()
         }
         .alert("Delete Account?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
@@ -88,181 +86,69 @@ struct AccountSheetView: View {
             Text("Are you sure? This will delete your account and all progress. This action cannot be undone.")
         }
     }
-    
-    // MARK: - Profile Header
-    
-    private var profileHeaderSection: some View {
+
+    // MARK: - Profile Section (Apple ID Style)
+
+    @ViewBuilder
+    private var profileSection: some View {
         Section {
-            VStack(spacing: Spacing.sm + Spacing.xs) {
-                // Avatar
-                Image(systemName: "person.crop.circle.fill")
-                    .font(.system(size: 72))
-                    .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(Color.webPrimary)
-                    .accessibilityLabel("Profile avatar")
-                
-                if authService.isAuthenticated {
-                    // Name
-                    Text(authService.currentUser?.email?.components(separatedBy: "@").first?.capitalized ?? "User")
-                        .font(.title3.bold())
-                        .foregroundStyle(.primary)
-                    
-                    // Email
-                    Text(authService.currentUser?.email ?? "")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    
-                    // Edit Profile Button
-                    Button(action: {
-                        showingEditProfile = true
-                    }) {
-                        Text("Edit Profile")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(Color.webPrimary)
-                            .padding(.horizontal, Spacing.md + Spacing.xs)
-                            .padding(.vertical, Spacing.sm)
-                            .background(
-                                Capsule()
-                                    .fill(Color.webPrimary.opacity(0.12))
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .accessibilityLabel("Edit profile")
-                    .accessibilityHint("Opens profile editing screen")
-                } else {
-                    Text("Guest User")
-                        .font(.title3.bold())
-                        .foregroundStyle(.primary)
-                    
-                    Text("Sign in to sync your progress")
-                        .font(.subheadline)
-                        .foregroundStyle(.secondary)
-                    
-                    // Log In Button
-                    Button(action: {
-                        showingLoginSheet = true
-                    }) {
-                        Text("Log In / Sign Up")
-                            .font(.subheadline.weight(.medium))
-                            .foregroundStyle(.white)
-                            .padding(.horizontal, Spacing.lg)
-                            .padding(.vertical, Spacing.sm)
-                            .background(
-                                Capsule()
-                                    .fill(Color.webPrimary)
-                            )
-                    }
-                    .buttonStyle(.plain)
-                    .padding(.top, Spacing.xs)
-                }
-            }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, Spacing.sm + Spacing.xs)
-            .listRowBackground(Color.clear)
-        }
-    }
-    
-    // MARK: - Account Section
-
-    private var accountSection: some View {
-        Section {
-            Button(action: {
-                showingAccountSettings = true
-            }) {
-                HStack(spacing: Spacing.sm + Spacing.xs) {
-                    // Icon with rounded-rect background (Apple Settings style)
-                    Image(systemName: "person.fill")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white)
-                        .frame(width: 30, height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(Color.blue)
-                        )
-
-                    Text("Account")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary.opacity(0.5))
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Account")
-            .accessibilityHint("Opens account settings")
-
-            Button(action: {
-                showingSubscriptionView = true
-            }) {
-                HStack(spacing: Spacing.sm + Spacing.xs) {
-                    // Icon with rounded-rect background (Apple Settings style)
-                    Image(systemName: "creditcard.fill")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white)
-                        .frame(width: 30, height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(Color.green)
-                        )
-
-                    Text("Subscription & Billing")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary.opacity(0.5))
-                }
-                .contentShape(Rectangle())
-            }
-            .buttonStyle(.plain)
-            .accessibilityLabel("Subscription & Billing")
-            .accessibilityHint("Opens subscription and billing settings")
-
             if authService.isAuthenticated {
+                NavigationLink(destination: AccountSettingsView()) {
+                    HStack(spacing: Spacing.sm + Spacing.xs) {
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 44))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.gray)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(authService.currentUser?.email?.components(separatedBy: "@").first?.capitalized ?? "User")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(.primary)
+
+                            Text(authService.currentUser?.email ?? "")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, Spacing.xs)
+                }
+                .accessibilityLabel("Account settings")
+                .accessibilityHint("Opens account details and security settings")
+            } else {
                 Button(action: {
-                    showingDeleteAlert = true
+                    showingLoginSheet = true
                 }) {
                     HStack(spacing: Spacing.sm + Spacing.xs) {
-                        Image(systemName: "trash.fill")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.white)
-                            .frame(width: 30, height: 30)
-                            .background(
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .fill(Color.red)
-                            )
+                        Image(systemName: "person.crop.circle.fill")
+                            .font(.system(size: 44))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.gray)
 
-                        Text("Delete Account")
-                            .font(.body)
-                            .foregroundStyle(.red)
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Sign In")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(.primary)
 
-                        Spacer()
+                            Text("Sign in to sync your progress")
+                                .font(.subheadline)
+                                .foregroundStyle(.secondary)
+                        }
                     }
-                    .contentShape(Rectangle())
+                    .padding(.vertical, Spacing.xs)
                 }
                 .buttonStyle(.plain)
-                .accessibilityLabel("Delete Account")
-                .accessibilityHint("Permanently delete your account and all data")
             }
         }
     }
-    
+
     // MARK: - Preferences Section
-    
+
     private var preferencesSection: some View {
         Section(header: Text("Settings")) {
             // ── Loop Words ────────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(systemName: "repeat", color: .green)
-                
+
                 Toggle(isOn: $isLooping) {
                     VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                         Text("Loop Words")
@@ -273,17 +159,16 @@ struct AccountSheetView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .tint(.webPrimary)
             }
             .accessibilityElement(children: .combine)
-            
+
             // ── Phonetics Mode ────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(
                     systemName: "character.phonetic",
                     color: .indigo
                 )
-                
+
                 Picker(selection: $phoneticsMode) {
                     Text("US English").tag("us")
                     Text("UK English").tag("uk")
@@ -293,14 +178,13 @@ struct AccountSheetView: View {
                         .foregroundStyle(.primary)
                 }
                 .pickerStyle(.menu)
-                .tint(.webPrimary)
             }
             .accessibilityElement(children: .combine)
-            
+
             // ── Loop Gap ──────────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(systemName: "timer", color: .orange)
-                
+
                 VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                     Text("Loop Gap")
                         .font(.body)
@@ -309,42 +193,41 @@ struct AccountSheetView: View {
                         .font(.caption)
                         .foregroundStyle(.secondary)
                 }
-                
+
                 Spacer()
-                
+
                 Stepper("", value: $loopGapSeconds, in: 0...10, step: 0.5)
                     .labelsHidden()
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("Loop gap \(loopGapSeconds, specifier: "%.1f") seconds")
-            
+
             // ── Playback Speed ────────────────────────────
             VStack(spacing: Spacing.sm) {
                 HStack(spacing: Spacing.sm + Spacing.xs) {
                     SettingsIcon(systemName: "gauge.with.needle", color: .blue)
-                    
+
                     Text("Playback Speed")
                         .font(.body)
                         .foregroundStyle(.primary)
-                    
+
                     Spacer()
-                    
+
                     Text("\(playbackSpeed, specifier: "%.1f")×")
                         .font(.subheadline.monospacedDigit().bold())
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(.secondary)
                 }
-                
+
                 Slider(value: $playbackSpeed, in: 0.5...2.0, step: 0.1)
-                    .tint(.webPrimary)
                     .accessibilityLabel("Playback speed")
                     .accessibilityValue("\(playbackSpeed, specifier: "%.1f") times")
             }
             .padding(.vertical, Spacing.xs)
-            
+
             // ── Random Speed ──────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(systemName: "dice", color: .purple)
-                
+
                 Toggle(isOn: $randomSpeedEnabled) {
                     VStack(alignment: .leading, spacing: Spacing.xs / 2) {
                         Text("Random Speed")
@@ -355,17 +238,16 @@ struct AccountSheetView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .tint(.webPrimary)
             }
             .accessibilityElement(children: .combine)
-            
+
             // ── Appearance ────────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(
                     systemName: appearanceMode == "dark" ? "moon.fill" : "sun.max.fill",
                     color: appearanceMode == "dark" ? .indigo : .yellow
                 )
-                
+
                 Picker(selection: $appearanceMode) {
                     Text("System").tag("system")
                     Text("Light").tag("light")
@@ -376,59 +258,53 @@ struct AccountSheetView: View {
                         .foregroundStyle(.primary)
                 }
                 .pickerStyle(.menu)
-                .tint(.webPrimary)
             }
             .accessibilityElement(children: .combine)
-            
-            // ── Notifications ──────────────────────────────
-            Button(action: {
-                showingNotificationsSheet = true
-            }) {
-                AccountMenuItem(
+        }
+    }
+
+    // MARK: - General Section
+
+    private var generalSection: some View {
+        Section {
+            // ── Notifications (push navigation) ──────────
+            NavigationLink(destination: NotificationsSettingsView()) {
+                SettingsRow(
                     icon: "bell.badge.fill",
                     iconColor: .red,
                     title: "Notifications"
                 )
             }
+
+            // ── Subscription (sheet) ─────────────────────
+            Button(action: {
+                showingSubscriptionView = true
+            }) {
+                SettingsRow(
+                    icon: "creditcard.fill",
+                    iconColor: .green,
+                    title: "Subscription & Billing",
+                    showChevron: true
+                )
+            }
             .buttonStyle(.plain)
-        }
-    }
-    
-    // MARK: - Support Section
-    
-    private var supportSection: some View {
-        Section {
+            .accessibilityLabel("Subscription & Billing")
+            .accessibilityHint("Opens subscription and billing settings")
+
+            // ── Help & Support (push navigation) ─────────
             NavigationLink(destination: HelpSupportView()) {
-                HStack(spacing: Spacing.sm + Spacing.xs) {
-                    // Icon with rounded-rect background (Apple Settings style)
-                    Image(systemName: "questionmark.circle.fill")
-                        .font(.system(size: 15, weight: .medium))
-                        .foregroundStyle(.white)
-                        .frame(width: 30, height: 30)
-                        .background(
-                            RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                .fill(Color.purple)
-                        )
-
-                    Text("Help & Support")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-
-                    Spacer()
-
-                    Image(systemName: "chevron.right")
-                        .font(.system(size: 13, weight: .semibold))
-                        .foregroundStyle(.secondary.opacity(0.5))
-                }
-                .contentShape(Rectangle()) // Full-row tap target (44pt+)
+                SettingsRow(
+                    icon: "questionmark.circle.fill",
+                    iconColor: .purple,
+                    title: "Help & Support"
+                )
             }
             .accessibilityLabel("Help & Support")
-            .accessibilityAddTraits(.isButton)
         }
     }
-    
+
     // MARK: - Sign Out Section
-    
+
     @ViewBuilder
     private var signOutSection: some View {
         if authService.isAuthenticated {
@@ -449,49 +325,104 @@ struct AccountSheetView: View {
             }
         }
     }
+
+    // MARK: - Delete Account Section
+
+    @ViewBuilder
+    private var deleteAccountSection: some View {
+        if authService.isAuthenticated {
+            Section {
+                Button(action: {
+                    showingDeleteAlert = true
+                }) {
+                    HStack {
+                        Spacer()
+                        Text("Delete Account")
+                            .font(.body)
+                            .foregroundStyle(.red)
+                        Spacer()
+                    }
+                }
+                .accessibilityLabel("Delete Account")
+                .accessibilityHint("Permanently delete your account and all data")
+            }
+        }
+    }
+
+    // MARK: - Footer Section
+
+    private var footerSection: some View {
+        Section {
+            EmptyView()
+        } footer: {
+            Text("Oxford Pronunciation v\(appVersion) (\(appBuild))")
+                .frame(maxWidth: .infinity, alignment: .center)
+                .font(.footnote)
+                .foregroundStyle(.secondary)
+        }
+    }
+
+    // MARK: - Helpers
+
+    private var appVersion: String {
+        Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "1.0"
+    }
+
+    private var appBuild: String {
+        Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
 }
 
-// MARK: - Account Menu Item
-// Reusable row component matching Apple's settings-style list items.
+// MARK: - Settings Row
+// Reusable row component for settings list items with colored icon.
+// When used inside NavigationLink, omit showChevron (NavigationLink provides its own).
+// When used inside Button, set showChevron: true for manual chevron.
+
+struct SettingsRow: View {
+    let icon: String
+    let iconColor: Color
+    let title: String
+    var showChevron: Bool = false
+
+    var body: some View {
+        HStack(spacing: Spacing.sm + Spacing.xs) {
+            SettingsIcon(systemName: icon, color: iconColor)
+
+            Text(title)
+                .font(.body)
+                .foregroundStyle(.primary)
+
+            Spacer()
+
+            if showChevron {
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(.secondary.opacity(0.5))
+            }
+        }
+        .contentShape(Rectangle())
+    }
+}
+
+// MARK: - Account Menu Item (Legacy Compatibility)
 
 struct AccountMenuItem: View {
     let icon: String
     let iconColor: Color
     let title: String
-    
+
     var body: some View {
-        HStack(spacing: Spacing.sm + Spacing.xs) {
-            // Icon with rounded-rect background (Apple Settings style)
-            Image(systemName: icon)
-                .font(.system(size: 15, weight: .medium))
-                .foregroundStyle(.white)
-                .frame(width: 30, height: 30)
-                .background(
-                    RoundedRectangle(cornerRadius: 7, style: .continuous)
-                        .fill(iconColor)
-                )
-            
-            Text(title)
-                .font(.body)
-                .foregroundStyle(.primary)
-            
-            Spacer()
-            
-            Image(systemName: "chevron.right")
-                .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.secondary.opacity(0.5))
-        }
-        .contentShape(Rectangle()) // Full-row tap target (44pt+)
+        SettingsRow(icon: icon, iconColor: iconColor, title: title)
     }
 }
 
 // MARK: - Settings Icon
-// Small rounded-rect icon matching Apple Settings style, for use in custom rows.
+// Small rounded-rect icon matching Apple Settings style.
 
 struct SettingsIcon: View {
     let systemName: String
     let color: Color
-    
+
     var body: some View {
         Image(systemName: systemName)
             .font(.system(size: 15, weight: .medium))
@@ -504,9 +435,10 @@ struct SettingsIcon: View {
     }
 }
 
-// MARK: - Subscription View
+// MARK: - App Subscription View
+// Named to avoid conflict with SwiftUI.SubscriptionView.
 
-private struct SubscriptionView: View {
+private struct AppSubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
@@ -524,7 +456,6 @@ private struct SubscriptionView: View {
                         dismiss()
                     }
                     .fontWeight(.semibold)
-                    .foregroundStyle(Color.webPrimary)
                 }
             }
         }

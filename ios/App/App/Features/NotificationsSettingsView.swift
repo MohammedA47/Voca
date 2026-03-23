@@ -3,11 +3,9 @@ import UserNotifications
 
 // MARK: - Notifications Settings View
 // Manages notification preferences and permissions for the Oxford Pronunciation App.
-// Provides toggle for daily reminders, time selection, and permission status.
+// Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct NotificationsSettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-
     // MARK: - Persisted Settings
     @AppStorage("dailyReminderEnabled") private var dailyReminderEnabled: Bool = false
     @AppStorage("dailyReminderTime") private var dailyReminderTimeInterval: Double = 32400 // 9:00 AM
@@ -17,36 +15,25 @@ struct NotificationsSettingsView: View {
     @State private var selectedTime = Date(timeIntervalSince1970: 32400) // 9:00 AM default
 
     var body: some View {
-        NavigationStack {
-            List {
-                // ── Permission Status ─────────────────────────────
-                permissionStatusSection
+        List {
+            // ── Permission Status ─────────────────────────────
+            permissionStatusSection
 
-                // ── Daily Reminder Toggle ─────────────────────────
-                remindersSection
-            }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Notifications")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.webPrimary)
-                }
-            }
-            .onAppear {
-                checkNotificationPermissionStatus()
-                syncTimeFromStorage()
-            }
-            .onChange(of: dailyReminderEnabled) { newValue in
-                handleReminderToggleChange(to: newValue)
-            }
-            .onChange(of: selectedTime) { newValue in
-                updateReminderTime(to: newValue)
-            }
+            // ── Daily Reminder Toggle ─────────────────────────
+            remindersSection
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Notifications")
+        .navigationBarTitleDisplayMode(.inline)
+        .onAppear {
+            checkNotificationPermissionStatus()
+            syncTimeFromStorage()
+        }
+        .onChange(of: dailyReminderEnabled) { newValue in
+            handleReminderToggleChange(to: newValue)
+        }
+        .onChange(of: selectedTime) { newValue in
+            updateReminderTime(to: newValue)
         }
     }
 
@@ -85,7 +72,7 @@ struct NotificationsSettingsView: View {
                         .padding(.vertical, Spacing.sm)
                         .background(
                             RoundedRectangle(cornerRadius: 10, style: .continuous)
-                                .fill(Color.webPrimary)
+                                .fill(.blue)
                         )
                     }
                     .buttonStyle(.plain)
@@ -114,28 +101,18 @@ struct NotificationsSettingsView: View {
                             .foregroundStyle(.secondary)
                     }
                 }
-                .tint(.webPrimary)
             }
             .accessibilityElement(children: .combine)
 
             // ── Time Picker (shown when enabled) ──────────────────
             if dailyReminderEnabled {
-                VStack(alignment: .leading, spacing: Spacing.sm) {
-                    Text("Reminder Time")
-                        .font(.subheadline.weight(.medium))
-                        .foregroundStyle(.secondary)
-
-                    DatePicker(
-                        "Select Time",
-                        selection: $selectedTime,
-                        displayedComponents: .hourAndMinute
-                    )
-                    .datePickerStyle(.wheel)
-                    .labelsHidden()
-                    .frame(maxWidth: .infinity)
-                    .accessibilityLabel("Select reminder time")
-                }
-                .padding(.vertical, Spacing.sm)
+                DatePicker(
+                    "Reminder Time",
+                    selection: $selectedTime,
+                    displayedComponents: .hourAndMinute
+                )
+                .datePickerStyle(.compact)
+                .accessibilityLabel("Select reminder time")
             }
         }
     }
@@ -205,10 +182,8 @@ struct NotificationsSettingsView: View {
                 checkNotificationPermissionStatus()
 
                 if granted {
-                    // Schedule the notification with the current selected time
                     scheduleOrUpdateNotification(for: selectedTime)
                 } else {
-                    // Permission denied, disable the toggle
                     dailyReminderEnabled = false
                 }
             }
@@ -216,17 +191,14 @@ struct NotificationsSettingsView: View {
     }
 
     private func updateReminderTime(to newTime: Date) {
-        // Update the stored time interval
-        dailyReminderTimeInterval = newTime.timeIntervalSince1970.truncatingRemainder(dividingBy: 86400) // Store only time of day
+        dailyReminderTimeInterval = newTime.timeIntervalSince1970.truncatingRemainder(dividingBy: 86400)
 
-        // Reschedule notification with new time
         if dailyReminderEnabled {
             scheduleOrUpdateNotification(for: newTime)
         }
     }
 
     private func scheduleOrUpdateNotification(for time: Date) {
-        // Cancel existing notifications
         UNUserNotificationCenter.current().removePendingNotificationRequests(withIdentifiers: ["dailyReminderNotification"])
 
         let calendar = Calendar.current
@@ -236,27 +208,21 @@ struct NotificationsSettingsView: View {
         dateComponents.hour = components.hour
         dateComponents.minute = components.minute
 
-        // Create notification content
         let content = UNMutableNotificationContent()
         content.title = "Time to Learn"
         content.body = "Time to learn some new words! 📚"
         content.sound = .default
         content.badge = NSNumber(value: 1)
-
-        // Add custom data if needed
         content.userInfo = ["notificationType": "dailyReminder"]
 
-        // Create trigger for daily repetition
         let trigger = UNCalendarNotificationTrigger(dateMatching: dateComponents, repeats: true)
 
-        // Create request
         let request = UNNotificationRequest(
             identifier: "dailyReminderNotification",
             content: content,
             trigger: trigger
         )
 
-        // Schedule notification
         UNUserNotificationCenter.current().add(request) { error in
             if let error = error {
                 print("Error scheduling notification: \(error.localizedDescription)")
@@ -276,7 +242,6 @@ struct NotificationsSettingsView: View {
     }
 
     private func syncTimeFromStorage() {
-        // Convert stored time interval (seconds since midnight) to Date
         let seconds = dailyReminderTimeInterval.truncatingRemainder(dividingBy: 86400)
         selectedTime = Date(timeIntervalSince1970: seconds)
     }
@@ -285,5 +250,7 @@ struct NotificationsSettingsView: View {
 // MARK: - Preview
 
 #Preview {
-    NotificationsSettingsView()
+    NavigationStack {
+        NotificationsSettingsView()
+    }
 }

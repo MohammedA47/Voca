@@ -2,11 +2,9 @@ import SwiftUI
 
 // MARK: - Account Settings View
 // Displays user account information and security settings.
-// Allows users to change their password via inline form.
+// Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct AccountSettingsView: View {
-    @Environment(\.dismiss) private var dismiss
-
     // Auth state
     private var authService = AuthService.shared
 
@@ -19,27 +17,25 @@ struct AccountSettingsView: View {
     @State private var passwordChangeError: String?
     @State private var passwordChangeSuccess = false
 
-    var body: some View {
-        NavigationStack {
-            List {
-                // ── Account Info Section ────────────────────────────
-                accountInfoSection
+    // Edit profile
+    @State private var showingEditProfile = false
 
-                // ── Security Section ────────────────────────────────
-                securitySection
-            }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Account")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
-                        dismiss()
-                    }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.webPrimary)
-                }
-            }
+    var body: some View {
+        List {
+            // ── Account Info Section ────────────────────────────
+            accountInfoSection
+
+            // ── Profile Section ─────────────────────────────────
+            profileSection
+
+            // ── Security Section ────────────────────────────────
+            securitySection
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Account")
+        .navigationBarTitleDisplayMode(.inline)
+        .sheet(isPresented: $showingEditProfile) {
+            EditProfileView()
         }
     }
 
@@ -47,44 +43,50 @@ struct AccountSettingsView: View {
 
     private var accountInfoSection: some View {
         Section(header: Text("Account Info")) {
-            // ── Email Address ────────────────────────────────
-            HStack(spacing: Spacing.sm + Spacing.xs) {
-                VStack(alignment: .leading, spacing: Spacing.xs / 2) {
-                    Text("Email Address")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                    Text(authService.currentUser?.email ?? "—")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            HStack {
+                Text("Email")
+                    .font(.body)
                 Spacer()
+                Text(authService.currentUser?.email ?? "—")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
             }
 
-            // ── Member Since ────────────────────────────────────
-            HStack(spacing: Spacing.sm + Spacing.xs) {
-                VStack(alignment: .leading, spacing: Spacing.xs / 2) {
-                    Text("Member Since")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                    Text("Since you signed up")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            HStack {
+                Text("Member Since")
+                    .font(.body)
                 Spacer()
+                Text("Since you signed up")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
             }
 
-            // ── Account Type ────────────────────────────────────
-            HStack(spacing: Spacing.sm + Spacing.xs) {
-                VStack(alignment: .leading, spacing: Spacing.xs / 2) {
-                    Text("Account Type")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                    Text("Email & Password")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
+            HStack {
+                Text("Account Type")
+                    .font(.body)
                 Spacer()
+                Text("Email & Password")
+                    .font(.body)
+                    .foregroundStyle(.secondary)
             }
+        }
+    }
+
+    // MARK: - Profile Section
+
+    private var profileSection: some View {
+        Section {
+            Button(action: {
+                showingEditProfile = true
+            }) {
+                SettingsRow(
+                    icon: "person.fill",
+                    iconColor: .blue,
+                    title: "Edit Profile",
+                    showChevron: true
+                )
+            }
+            .buttonStyle(.plain)
         }
     }
 
@@ -98,27 +100,12 @@ struct AccountSettingsView: View {
                     passwordChangeError = nil
                     passwordChangeSuccess = false
                 }) {
-                    HStack(spacing: Spacing.sm + Spacing.xs) {
-                        Image(systemName: "lock.fill")
-                            .font(.system(size: 15, weight: .medium))
-                            .foregroundStyle(.white)
-                            .frame(width: 30, height: 30)
-                            .background(
-                                RoundedRectangle(cornerRadius: 7, style: .continuous)
-                                    .fill(Color.blue)
-                            )
-
-                        Text("Change Password")
-                            .font(.body)
-                            .foregroundStyle(.primary)
-
-                        Spacer()
-
-                        Image(systemName: "chevron.right")
-                            .font(.system(size: 13, weight: .semibold))
-                            .foregroundStyle(.secondary.opacity(0.5))
-                    }
-                    .contentShape(Rectangle())
+                    SettingsRow(
+                        icon: "lock.fill",
+                        iconColor: .blue,
+                        title: "Change Password",
+                        showChevron: true
+                    )
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel("Change Password")
@@ -131,127 +118,104 @@ struct AccountSettingsView: View {
 
     // MARK: - Password Change Form
 
+    @ViewBuilder
     private var passwordChangeForm: some View {
-        VStack(spacing: Spacing.md) {
-            // Error Message
-            if let error = passwordChangeError {
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "exclamationmark.circle.fill")
-                        .foregroundStyle(.red)
-                    Text(error)
-                        .font(.caption)
-                        .foregroundStyle(.red)
-                    Spacer()
-                }
-                .padding(Spacing.sm)
-                .background(Color.red.opacity(0.1))
-                .cornerRadius(8)
-            }
-
-            // Success Message
-            if passwordChangeSuccess {
-                HStack(spacing: Spacing.sm) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .foregroundStyle(.green)
-                    Text("Password changed successfully")
-                        .font(.caption)
-                        .foregroundStyle(.green)
-                    Spacer()
-                }
-                .padding(Spacing.sm)
-                .background(Color.green.opacity(0.1))
-                .cornerRadius(8)
-            }
-
-            // Current Password Field
-            SecureField("Current Password", text: $currentPassword)
-                .textContentType(.password)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .padding(Spacing.sm)
-                .background(Color.adaptiveCardBackground)
-                .cornerRadius(8)
-                .border(Color.secondary.opacity(0.3), width: 1)
-
-            // New Password Field
-            SecureField("New Password", text: $newPassword)
-                .textContentType(.newPassword)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .padding(Spacing.sm)
-                .background(Color.adaptiveCardBackground)
-                .cornerRadius(8)
-                .border(Color.secondary.opacity(0.3), width: 1)
-
-            // Confirm Password Field
-            SecureField("Confirm New Password", text: $confirmPassword)
-                .textContentType(.newPassword)
-                .autocorrectionDisabled()
-                .textInputAutocapitalization(.never)
-                .padding(Spacing.sm)
-                .background(Color.adaptiveCardBackground)
-                .cornerRadius(8)
-                .border(Color.secondary.opacity(0.3), width: 1)
-
-            // Validation Info
-            VStack(alignment: .leading, spacing: Spacing.xs) {
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: newPassword.count >= 6 ? "checkmark.circle.fill" : "circle")
-                        .font(.caption)
-                        .foregroundStyle(newPassword.count >= 6 ? .green : .secondary)
-                    Text("At least 6 characters")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-
-                HStack(spacing: Spacing.xs) {
-                    Image(systemName: passwordsMatch ? "checkmark.circle.fill" : "circle")
-                        .font(.caption)
-                        .foregroundStyle(passwordsMatch ? .green : .secondary)
-                    Text("Passwords match")
-                        .font(.caption)
-                        .foregroundStyle(.secondary)
-                }
-            }
-            .padding(.vertical, Spacing.xs)
-
-            // Action Buttons
+        // Error Message
+        if let error = passwordChangeError {
             HStack(spacing: Spacing.sm) {
-                Button(action: {
-                    resetForm()
-                }) {
-                    Text("Cancel")
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(Color.webPrimary)
-                        .frame(maxWidth: .infinity)
-                        .padding(Spacing.sm)
-                        .background(Color.webPrimary.opacity(0.1))
-                        .cornerRadius(8)
-                }
-                .disabled(isChangingPassword)
-
-                Button(action: {
-                    changePassword()
-                }) {
-                    if isChangingPassword {
-                        ProgressView()
-                            .tint(.white)
-                    } else {
-                        Text("Save")
-                            .font(.body.weight(.medium))
-                    }
-                }
-                .frame(maxWidth: .infinity)
-                .foregroundStyle(.white)
-                .padding(Spacing.sm)
-                .background(Color.webPrimary)
-                .cornerRadius(8)
-                .disabled(!isFormValid || isChangingPassword)
+                Image(systemName: "exclamationmark.circle.fill")
+                    .foregroundStyle(.red)
+                Text(error)
+                    .font(.caption)
+                    .foregroundStyle(.red)
+                Spacer()
             }
         }
-        .padding(Spacing.md)
-        .background(Color.adaptiveBackground)
-        .cornerRadius(8)
+
+        // Success Message
+        if passwordChangeSuccess {
+            HStack(spacing: Spacing.sm) {
+                Image(systemName: "checkmark.circle.fill")
+                    .foregroundStyle(.green)
+                Text("Password changed successfully")
+                    .font(.caption)
+                    .foregroundStyle(.green)
+                Spacer()
+            }
+        }
+
+        // Current Password
+        SecureField("Current Password", text: $currentPassword)
+            .textContentType(.password)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+
+        // New Password
+        SecureField("New Password", text: $newPassword)
+            .textContentType(.newPassword)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+
+        // Confirm Password
+        SecureField("Confirm New Password", text: $confirmPassword)
+            .textContentType(.newPassword)
+            .autocorrectionDisabled()
+            .textInputAutocapitalization(.never)
+
+        // Validation Info
+        VStack(alignment: .leading, spacing: Spacing.xs) {
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: newPassword.count >= 6 ? "checkmark.circle.fill" : "circle")
+                    .font(.caption)
+                    .foregroundStyle(newPassword.count >= 6 ? .green : .secondary)
+                Text("At least 6 characters")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+
+            HStack(spacing: Spacing.xs) {
+                Image(systemName: passwordsMatch ? "checkmark.circle.fill" : "circle")
+                    .font(.caption)
+                    .foregroundStyle(passwordsMatch ? .green : .secondary)
+                Text("Passwords match")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
+        }
+
+        // Action Buttons
+        HStack(spacing: Spacing.sm) {
+            Button(action: {
+                resetForm()
+            }) {
+                Text("Cancel")
+                    .font(.body.weight(.medium))
+                    .foregroundStyle(Color.accentColor)
+                    .frame(maxWidth: .infinity)
+                    .padding(Spacing.sm)
+                    .background(Color.accentColor.opacity(0.1))
+                    .cornerRadius(8)
+            }
+            .disabled(isChangingPassword)
+
+            Button(action: {
+                changePassword()
+            }) {
+                if isChangingPassword {
+                    ProgressView()
+                        .tint(.white)
+                } else {
+                    Text("Save")
+                        .font(.body.weight(.medium))
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .foregroundStyle(.white)
+            .padding(Spacing.sm)
+            .background(Color.accentColor)
+            .cornerRadius(8)
+            .disabled(!isFormValid || isChangingPassword)
+        }
     }
 
     // MARK: - Helper Methods
@@ -337,5 +301,7 @@ struct AccountSettingsView: View {
 // MARK: - Preview
 
 #Preview {
-    AccountSettingsView()
+    NavigationStack {
+        AccountSettingsView()
+    }
 }
