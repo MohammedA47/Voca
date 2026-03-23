@@ -136,7 +136,7 @@ struct ProfileView: View {
                                 .padding(.horizontal, Spacing.md)
 
                             VStack(spacing: Spacing.sm) {
-                                ForEach(["A1", "A2", "B1", "B2", "C1", "C2"], id: \.self) { levelStr in
+                                ForEach(["A1", "A2", "B1", "B2", "C1"/*, "C2"*/], id: \.self) { levelStr in
                                     CEFRLevelProgressRow(
                                         level: levelStr,
                                         learnedWords: progressService.learnedWords,

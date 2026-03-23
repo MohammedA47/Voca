@@ -414,7 +414,7 @@ final class LearnViewModel {
 
 struct LevelSelector: View {
     @Binding var selectedLevel: String
-    let levels = ["A1", "A2", "B1", "B2", "C1", "C2"]
+    let levels = ["A1", "A2", "B1", "B2", "C1"/*, "C2"*/]
 
     var body: some View {
         HStack(spacing: 10) {
@@ -436,6 +436,7 @@ struct LevelSelector: View {
                 .buttonStyle(.plain)
             }
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

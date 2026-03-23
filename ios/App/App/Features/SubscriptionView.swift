@@ -72,7 +72,7 @@ struct SubscriptionView: View {
                 VStack(alignment: .leading, spacing: Spacing.sm) {
                     PlanFeatureRow(
                         icon: "globe",
-                        text: "Browse all CEFR levels (A1–C2)"
+                        text: "Browse all CEFR levels (A1–C1)" // C2 commented out
                     )
 
                     PlanFeatureRow(

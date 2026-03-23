@@ -37,7 +37,7 @@ struct HelpSupportView: View {
     private var faqSection: some View {
         Section(header: Text("Frequently Asked Questions")) {
             DisclosureGroup(isExpanded: $faqExpanded[0]) {
-                Text("Browse words by CEFR level (A1–C2) using the card deck on the Home tab. Tap a card to flip it and see the definition, or swipe to move to the next word.")
+                Text("Browse words by CEFR level (A1–C1) using the card deck on the Home tab. Tap a card to flip it and see the definition, or swipe to move to the next word.") // C2 commented out
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, Spacing.sm)
@@ -75,7 +75,7 @@ struct HelpSupportView: View {
             }
 
             DisclosureGroup(isExpanded: $faqExpanded[2]) {
-                Text("Words are categorized using the CEFR framework: A1-A2 (beginner), B1-B2 (intermediate), C1-C2 (advanced). Start at your comfort level and work up.")
+                Text("Words are categorized using the CEFR framework: A1-A2 (beginner), B1-B2 (intermediate), C1 (advanced). Start at your comfort level and work up.") // C2 commented out
                     .font(.body)
                     .foregroundStyle(.secondary)
                     .padding(.vertical, Spacing.sm)
