@@ -6,6 +6,8 @@ import UserNotifications
 // Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct NotificationsSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+
     // MARK: - Persisted Settings
     @AppStorage("dailyReminderEnabled") private var dailyReminderEnabled: Bool = false
     @AppStorage("dailyReminderTime") private var dailyReminderTimeInterval: Double = 32400 // 9:00 AM
@@ -25,6 +27,14 @@ struct NotificationsSettingsView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Notifications")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
+                }
+            }
+        }
         .onAppear {
             checkNotificationPermissionStatus()
             syncTimeFromStorage()

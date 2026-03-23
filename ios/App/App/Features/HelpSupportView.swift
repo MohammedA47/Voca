@@ -5,6 +5,7 @@ import SwiftUI
 // Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct HelpSupportView: View {
+    @Environment(\.dismiss) private var dismiss
     @State private var faqExpanded: [Bool] = Array(repeating: false, count: 5)
 
     var body: some View {
@@ -21,6 +22,14 @@ struct HelpSupportView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Help & Support")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
+                }
+            }
+        }
     }
 
     // MARK: - FAQ Section

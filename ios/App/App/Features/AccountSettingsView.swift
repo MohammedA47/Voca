@@ -5,6 +5,8 @@ import SwiftUI
 // Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct AccountSettingsView: View {
+    @Environment(\.dismiss) private var dismiss
+
     // Auth state
     private var authService = AuthService.shared
 
@@ -34,6 +36,14 @@ struct AccountSettingsView: View {
         .listStyle(.insetGrouped)
         .navigationTitle("Account")
         .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
+                }
+            }
+        }
         .sheet(isPresented: $showingEditProfile) {
             EditProfileView()
         }

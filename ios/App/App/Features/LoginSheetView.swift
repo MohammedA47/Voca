@@ -139,8 +139,8 @@ struct LoginSheetView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Cancel") {
+            ToolbarItem(placement: .topBarTrailing) {
+                SettingsCloseButton {
                     dismiss()
                 }
             }
@@ -258,8 +258,8 @@ struct LoginSheetView: View {
         }
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarLeading) {
-                Button("Cancel") {
+            ToolbarItem(placement: .topBarTrailing) {
+                SettingsCloseButton {
                     dismiss()
                 }
             }

@@ -37,11 +37,9 @@ struct SubscriptionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    SettingsCloseButton {
                         dismiss()
                     }
-                    .fontWeight(.semibold)
-                    .foregroundStyle(Color.webPrimary)
                 }
             }
         }

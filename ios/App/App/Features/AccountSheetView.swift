@@ -48,10 +48,9 @@ struct AccountSheetView: View {
             .navigationBarTitleDisplayMode(.large)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    SettingsCloseButton {
                         dismiss()
                     }
-                    .fontWeight(.semibold)
                 }
             }
         }
@@ -435,6 +434,61 @@ struct SettingsIcon: View {
     }
 }
 
+// MARK: - Navigation Button Components
+// Neutral circular buttons that match Apple's settings sheet chrome.
+
+struct SettingsToolbarCircleButton: View {
+    @Environment(\.isEnabled) private var isEnabled
+
+    let systemName: String
+    let accessibilityLabel: String
+    var iconSize: CGFloat = 17
+    var weight: Font.Weight = .semibold
+    let action: () -> Void
+
+    var body: some View {
+        Button(action: action) {
+            Image(systemName: systemName)
+        }
+        .buttonStyle(.plain)
+        .contentShape(Circle())
+        .opacity(isEnabled ? 1 : 0.65)
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    private var iconColor: Color {
+        Color.primary.opacity(isEnabled ? 0.88 : 0.35)
+    }
+}
+
+struct SettingsCloseButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        SettingsToolbarCircleButton(
+            systemName: "xmark",
+            accessibilityLabel: "Close",
+            iconSize: 16,
+            weight: .medium,
+            action: action
+        )
+    }
+}
+
+struct SettingsBackButton: View {
+    let action: () -> Void
+
+    var body: some View {
+        SettingsToolbarCircleButton(
+            systemName: "chevron.left",
+            accessibilityLabel: "Back",
+            iconSize: 18,
+            weight: .semibold,
+            action: action
+        )
+    }
+}
+
 // MARK: - App Subscription View
 // Named to avoid conflict with SwiftUI.SubscriptionView.
 
@@ -452,10 +506,9 @@ private struct AppSubscriptionView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    Button("Done") {
+                    SettingsCloseButton {
                         dismiss()
                     }
-                    .fontWeight(.semibold)
                 }
             }
         }

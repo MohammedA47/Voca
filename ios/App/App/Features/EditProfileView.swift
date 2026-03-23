@@ -71,7 +71,7 @@ struct EditProfileView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
-                    Button("Cancel") {
+                    SettingsCloseButton {
                         dismiss()
                     }
                     .disabled(isLoading)
@@ -80,12 +80,25 @@ struct EditProfileView: View {
                 ToolbarItem(placement: .topBarTrailing) {
                     if isLoading {
                         ProgressView()
-                            .scaleEffect(0.8, anchor: .center)
+                            .controlSize(.small)
+                            .frame(width: 44, height: 44)
+                            .background(
+                                Circle()
+                                    .fill(Color(uiColor: .tertiarySystemFill))
+                            )
+                            .overlay(
+                                Circle()
+                                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                            )
                     } else {
-                        Button("Save") {
+                        SettingsToolbarCircleButton(
+                            systemName: "checkmark",
+                            accessibilityLabel: "Save",
+                            iconSize: 16,
+                            weight: .semibold
+                        ) {
                             saveProfile()
                         }
-                        .fontWeight(.semibold)
                         .disabled(displayName.trimmingCharacters(in: .whitespaces).isEmpty)
                     }
                 }
