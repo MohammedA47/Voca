@@ -31,6 +31,9 @@ struct DeckConfiguration {
     /// Minimum drag distance to begin recognizing the gesture.
     /// Set higher than nested carousel gestures (30pt) to avoid conflicts.
     var dragMinimumDistance: CGFloat = 40
+    /// Small right-drag distance that swaps the behind slot from next to previous.
+    /// Keeping this low makes backward feel like the same "throw to reveal" model as forward.
+    var backwardRevealActivationDistance: CGFloat = 14
 
     // ── Animation ───────────────────────────────────────────────
     /// Duration for the fly-off exit animation.
@@ -54,14 +57,10 @@ enum CardState: Equatable {
     case behind2
     /// Third card behind.
     case behind3
-    /// Previous card in a deliberate pre-entry position (kept in tree for backward transitions).
-    case preEntry
-    /// Previous card animating into the active position during a backward swipe.
-    case incomingPrevious
     /// Active card animating off-screen during a forward swipe.
-    case outgoingActive
-    /// Active card being pushed into the stack during a backward swipe.
-    case demotingActive
+    case outgoingForward
+    /// Active card animating off-screen during a backward swipe.
+    case outgoingBackward
     /// Card is not rendered at all.
     case hidden
 }
@@ -72,14 +71,14 @@ enum CardState: Equatable {
 enum DeckPhase: Equatable {
     /// No transition in progress. Cards are in their resting positions.
     case idle
-    /// User is actively dragging the front card.
-    case dragging
+    /// User is dragging with the normal forward reveal model.
+    case draggingForward
+    /// User is dragging right and the previous card has replaced behind1.
+    case draggingBackwardReveal
     /// Front card is flying off-screen forward; deck is re-stacking.
     case animatingForward
-    /// Front card is flying off-screen backward; deck is re-stacking.
-    case animatingBackward
-    /// Brief phase after animation completes; used to atomically update index without visual animation.
-    case settling
+    /// Front card is flying off-screen to the right while the previous card is already revealed below.
+    case animatingBackwardThrow
 }
 
 // MARK: - Card Layout
@@ -126,30 +125,13 @@ func cardLayout(for state: CardState, config: DeckConfiguration) -> CardLayout {
             zIndex: 997
         )
 
-    case .preEntry:
-        // Held off-screen left (positioned via backwardEntryOffset), clipped by parent.
-        // Near-solid opacity avoids flash risk from layout updates.
-        return CardLayout(scale: 1.0, xOffset: 0, yOffset: 0, opacity: 0.98, zIndex: 1002)
-
-    case .incomingPrevious:
-        // Animates into the active position from the left side.
-        return CardLayout(scale: 1.0, xOffset: 0, yOffset: 0, opacity: 1.0, zIndex: 1002)
-
-    case .outgoingActive:
+    case .outgoingForward:
         // Stays at active layout until the fly-off offset is applied separately.
         return CardLayout(scale: 1.0, xOffset: 0, yOffset: 0, opacity: 1.0, zIndex: 1001)
 
-    case .demotingActive:
-        // Active card being pushed into the stack during backward navigation.
-        // Visually close to behind1 but distinct — slightly larger scale and less offset
-        // so the demotion reads as a deliberate push-back, not a hard snap.
-        return CardLayout(
-            scale: 1.0 - config.scaleStep * 0.7,
-            xOffset: config.horizontalOffsetStep * 0.6,
-            yOffset: config.verticalOffsetStep * 0.6,
-            opacity: 1.0 - config.opacityStep * 0.5,
-            zIndex: 1000
-        )
+    case .outgoingBackward:
+        // Uses the same active-card language as forward, but exits to the right via a separate overlay.
+        return CardLayout(scale: 1.0, xOffset: 0, yOffset: 0, opacity: 1.0, zIndex: 1002)
 
     case .hidden:
         return CardLayout(scale: 0.88, xOffset: 0, yOffset: 32, opacity: 0, zIndex: 0)
@@ -187,13 +169,19 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
     /// When non-nil, the body uses these entries instead of the computed `visibleEntries`.
     /// Freezes the card set during transitions to prevent identity/state thrash.
     @State private var frozenEntries: [VisibleEntry]? = nil
-    /// Offset applied to preEntry/incomingPrevious cards during backward animation.
-    /// Starts at -2000 (off-screen idle) and animates to 0 during backward swipe.
-    @State private var backwardEntryOffset: CGFloat = -2000
+    /// Separate overlay for the outgoing card during backward throws.
+    /// This lets the base deck switch to the previous index immediately, so the revealed card
+    /// is already stable underneath while the current card finishes flying away.
+    @State private var backwardOutgoingCard: OutgoingCard? = nil
+    @State private var backwardOutgoingOffset: CGFloat = 0
 
     // Haptic generators (pre-created per Apple guidance)
     private let mediumHaptic = UIImpactFeedbackGenerator(style: .medium)
     private let softHaptic = UIImpactFeedbackGenerator(style: .soft)
+
+    private var isDraggingPhase: Bool {
+        phase == .draggingForward || phase == .draggingBackwardReveal
+    }
 
     var body: some View {
         GeometryReader { geometry in
@@ -203,15 +191,12 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
                 let entries = frozenEntries ?? visibleEntries
                 ForEach(entries, id: \.id) { entry in
                     let layout = cardLayout(for: entry.state, config: config)
-                    let receivesDrag = entry.state == .active || entry.state == .outgoingActive
-                    let receivesBackwardOffset = entry.state == .preEntry || entry.state == .incomingPrevious
+                    let receivesDrag = entry.state == .active || entry.state == .outgoingForward
 
                     cardContent(entry.index)
                         .scaleEffect(layout.scale)
                         .offset(
-                            x: layout.xOffset
-                                + (receivesDrag ? dragOffset : 0)
-                                + (receivesBackwardOffset ? backwardEntryOffset : 0),
+                            x: layout.xOffset + (receivesDrag ? dragOffset : 0),
                             y: layout.yOffset
                         )
                         .rotationEffect(
@@ -226,6 +211,24 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
                         .accessibilityHidden(entry.state != .active)
                         .transition(.identity)
                 }
+
+                if let backwardOutgoingCard {
+                    let layout = cardLayout(for: .outgoingBackward, config: config)
+
+                    cardContent(backwardOutgoingCard.index)
+                        .id(backwardOutgoingCard.id)
+                        .scaleEffect(layout.scale)
+                        .offset(x: layout.xOffset + backwardOutgoingOffset, y: layout.yOffset)
+                        .rotationEffect(
+                            .degrees(Double(backwardOutgoingOffset / screenWidth) * config.dragRotationDegrees),
+                            anchor: .bottom
+                        )
+                        .opacity(layout.opacity)
+                        .zIndex(layout.zIndex)
+                        .allowsHitTesting(false)
+                        .accessibilityHidden(true)
+                        .transition(.identity)
+                }
             }
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .clipped()
@@ -233,16 +236,16 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
             .gesture(
                 DragGesture(minimumDistance: config.dragMinimumDistance)
                     .onChanged { value in
-                        guard phase == .idle || phase == .dragging else { return }
+                        guard phase == .idle || isDraggingPhase else { return }
                         // Horizontal-dominance check to avoid conflicts with vertical scrolling
                         guard abs(value.translation.width) > abs(value.translation.height) * 1.5 else { return }
-                        phase = .dragging
+                        phase = resolvedDragPhase(for: value.translation.width)
                         withAnimation(.interactiveSpring(response: 0.3, dampingFraction: 0.7)) {
                             dragOffset = value.translation.width
                         }
                     }
                     .onEnded { value in
-                        guard phase == .dragging else { return }
+                        guard isDraggingPhase else { return }
                         let threshold = screenWidth * config.swipeThresholdFraction
                         let velocity = value.predictedEndTranslation.width
 
@@ -292,52 +295,95 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
         let state: CardState
     }
 
+    private struct OutgoingCard {
+        let index: Int
+        let id: ID
+    }
+
     private var visibleEntries: [VisibleEntry] {
         guard itemCount > 0 else { return [] }
 
         var entries: [VisibleEntry] = []
-
-        // Previous card (for backward transitions)
-        if config.maxVisibleBefore > 0 {
-            let prevIndex = wrappedIndex(currentIndex - 1)
-            if prevIndex != currentIndex { // avoid duplicate when itemCount == 1
-                let state: CardState = (phase == .animatingBackward) ? .incomingPrevious : .preEntry
-                entries.append(VisibleEntry(index: prevIndex, id: itemId(prevIndex), state: state))
-            }
-        }
-
-        // Active card
         let safeCurrentIndex = clampedIndex(currentIndex)
-        let activeState: CardState
-        switch phase {
-        case .animatingForward:
-            activeState = .outgoingActive
-        case .animatingBackward:
-            activeState = .demotingActive
-        default:
-            activeState = .active
-        }
-        entries.append(VisibleEntry(
-            index: safeCurrentIndex,
-            id: itemId(safeCurrentIndex),
-            state: activeState
-        ))
+        let revealPreviousDuringDrag = phase == .draggingBackwardReveal
 
-        // Behind cards
-        let behindStates: [CardState] = [.behind1, .behind2, .behind3]
-        for offset in 1...config.maxVisibleBehind {
-            let idx = wrappedIndex(currentIndex + offset)
-            // Avoid duplicate entries (can happen when itemCount is small)
-            if !entries.contains(where: { $0.index == idx }) {
-                // During backward animation, behind cards shift down one slot
-                // because the active card is demoting into the stack above them.
-                let effectiveOffset = (phase == .animatingBackward) ? offset + 1 : offset
-                let state = effectiveOffset <= behindStates.count ? behindStates[effectiveOffset - 1] : .hidden
-                entries.append(VisibleEntry(index: idx, id: itemId(idx), state: state))
+        if config.maxVisibleBefore > 0 || revealPreviousDuringDrag {
+            let previousIndex = wrappedIndex(currentIndex - 1)
+            if previousIndex != safeCurrentIndex {
+                appendVisibleEntry(
+                    &entries,
+                    index: previousIndex,
+                    state: revealPreviousDuringDrag ? .behind1 : .hidden
+                )
             }
+        }
+
+        let activeState: CardState = phase == .animatingForward ? .outgoingForward : .active
+        appendVisibleEntry(&entries, index: safeCurrentIndex, state: activeState)
+
+        for offset in 1...config.maxVisibleBehind {
+            appendVisibleEntry(
+                &entries,
+                index: wrappedIndex(currentIndex + offset),
+                state: stateForNextCard(offset: offset, revealPreviousDuringDrag: revealPreviousDuringDrag)
+            )
         }
 
         return entries
+    }
+
+    private func appendVisibleEntry(_ entries: inout [VisibleEntry], index: Int, state: CardState) {
+        if let existingIndex = entries.firstIndex(where: { $0.index == index }) {
+            guard statePriority(for: state) > statePriority(for: entries[existingIndex].state) else { return }
+            entries[existingIndex] = VisibleEntry(index: index, id: itemId(index), state: state)
+            return
+        }
+
+        entries.append(VisibleEntry(index: index, id: itemId(index), state: state))
+    }
+
+    private func stateForNextCard(offset: Int, revealPreviousDuringDrag: Bool) -> CardState {
+        if revealPreviousDuringDrag {
+            switch offset {
+            case 1: return .behind2
+            case 2: return .behind3
+            default: return .hidden
+            }
+        }
+
+        switch offset {
+        case 1: return .behind1
+        case 2: return .behind2
+        case 3: return .behind3
+        default: return .hidden
+        }
+    }
+
+    private func statePriority(for state: CardState) -> Int {
+        switch state {
+        case .active, .outgoingForward, .outgoingBackward:
+            return 5
+        case .behind1:
+            return 4
+        case .behind2:
+            return 3
+        case .behind3:
+            return 2
+        case .hidden:
+            return 1
+        }
+    }
+
+    private func resolvedDragPhase(for translationWidth: CGFloat) -> DeckPhase {
+        if phase == .draggingBackwardReveal && translationWidth >= 0 {
+            return .draggingBackwardReveal
+        }
+
+        if translationWidth > config.backwardRevealActivationDistance && canNavigateBackward {
+            return .draggingBackwardReveal
+        }
+
+        return .draggingForward
     }
 
     // MARK: - Index Helpers
@@ -360,7 +406,7 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
     // MARK: - Swipe Commit
 
     private func commitForwardSwipe(screenWidth: CGFloat) {
-        guard phase == .dragging || phase == .idle else { return }
+        guard phase == .idle || isDraggingPhase else { return }
 
         let nextIndex = isLooping
             ? ((currentIndex + 1) % itemCount)
@@ -395,47 +441,38 @@ struct StackedCardDeck<ID: Hashable, Content: View>: View {
     }
 
     private func commitBackwardSwipe(screenWidth: CGFloat) {
-        guard phase == .dragging || phase == .idle else { return }
+        guard phase == .idle || isDraggingPhase else { return }
 
         let prevIndex = isLooping
             ? (((currentIndex - 1) % itemCount) + itemCount) % itemCount
             : max(currentIndex - 1, 0)
 
         mediumHaptic.impactOccurred()
+        frozenEntries = nil
+        backwardOutgoingCard = OutgoingCard(index: currentIndex, id: itemId(currentIndex))
+        backwardOutgoingOffset = dragOffset
 
-        // Phase 1 (Setup, no animation): Position the incoming previous card off-screen left
-        // and freeze entries. The phase is still idle here so the prev card is in preEntry state.
-        var setupTransaction = Transaction(animation: nil)
-        setupTransaction.disablesAnimations = true
-        withTransaction(setupTransaction) {
-            backwardEntryOffset = -screenWidth
-            // Freeze the idle-state entries first (prev card = preEntry, active = active)
-            frozenEntries = visibleEntries
+        // Rebase to the previous index immediately so the revealed card is already stable
+        // in the active stack beneath the outgoing overlay. This avoids any slide-in-from-left.
+        var baseDeckTransaction = Transaction(animation: nil)
+        baseDeckTransaction.disablesAnimations = true
+        withTransaction(baseDeckTransaction) {
+            currentIndex = prevIndex
+            dragOffset = 0
+            phase = .animatingBackwardThrow
         }
 
-        // Phase 2 (Animate): Switch to animatingBackward and slide everything to target positions.
-        // Update frozenEntries to the backward-specific states while keeping the same identity set.
-        DispatchQueue.main.async {
-            withAnimation(.spring(response: self.config.springResponse, dampingFraction: self.config.springDamping)) {
-                self.phase = .animatingBackward
-                self.backwardEntryOffset = 0
-                self.dragOffset = 0
-                // Update frozen entries to reflect backward-specific states
-                // (prev → incomingPrevious, active → demotingActive, behind cards shift)
-                // while preserving the same identity/membership set.
-                self.frozenEntries = self.visibleEntries
-            }
+        withAnimation(.easeIn(duration: config.flyOffDuration)) {
+            backwardOutgoingOffset = screenWidth * 1.4
         }
 
-        // Phase 3 (Finalize): After spring settles, atomically update the index.
-        DispatchQueue.main.asyncAfter(deadline: .now() + config.springResponse * 1.5) {
-            var settleTransaction = Transaction(animation: nil)
-            settleTransaction.disablesAnimations = true
-            withTransaction(settleTransaction) {
-                self.currentIndex = prevIndex
+        DispatchQueue.main.asyncAfter(deadline: .now() + config.flyOffDuration) {
+            var cleanupTransaction = Transaction(animation: nil)
+            cleanupTransaction.disablesAnimations = true
+            withTransaction(cleanupTransaction) {
+                self.backwardOutgoingCard = nil
+                self.backwardOutgoingOffset = 0
                 self.phase = .idle
-                self.backwardEntryOffset = -2000
-                self.frozenEntries = nil
             }
 
             self.onNavigate?(self.currentIndex)
