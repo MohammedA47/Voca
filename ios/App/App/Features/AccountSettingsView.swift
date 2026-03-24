@@ -19,9 +19,6 @@ struct AccountSettingsView: View {
     @State private var passwordChangeError: String?
     @State private var passwordChangeSuccess = false
 
-    // Edit profile
-    @State private var showingEditProfile = false
-
     var body: some View {
         List {
             // ── Account Info Section ────────────────────────────
@@ -43,9 +40,6 @@ struct AccountSettingsView: View {
                     dismiss()
                 }
             }
-        }
-        .sheet(isPresented: $showingEditProfile) {
-            EditProfileView()
         }
     }
 
@@ -86,17 +80,13 @@ struct AccountSettingsView: View {
 
     private var profileSection: some View {
         Section {
-            Button(action: {
-                showingEditProfile = true
-            }) {
+            NavigationLink(destination: EditProfileView()) {
                 SettingsRow(
                     icon: "person.fill",
                     iconColor: .blue,
-                    title: "Edit Profile",
-                    showChevron: true
+                    title: "Edit Profile"
                 )
             }
-            .buttonStyle(.plain)
         }
     }
 

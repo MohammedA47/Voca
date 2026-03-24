@@ -6,8 +6,6 @@ import SwiftUI
 
 struct AccountSheetView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.colorScheme) private var colorScheme
-
     // MARK: - Persisted Settings
     @AppStorage("isLooping") private var isLooping: Bool = true
     @AppStorage("phoneticsMode") private var phoneticsMode: String = "us"
@@ -18,9 +16,6 @@ struct AccountSheetView: View {
 
     // Auth State
     private var authService = AuthService.shared
-    @State private var showingLoginSheet = false
-    @State private var showingEditProfile = false
-    @State private var showingSubscriptionView = false
     @State private var showingDeleteAlert = false
     @State private var isDeleting = false
 
@@ -58,15 +53,6 @@ struct AccountSheetView: View {
             appearanceMode == "dark" ? .dark :
             appearanceMode == "light" ? .light : nil
         )
-        .sheet(isPresented: $showingLoginSheet) {
-            LoginSheetView()
-        }
-        .sheet(isPresented: $showingEditProfile) {
-            EditProfileView()
-        }
-        .sheet(isPresented: $showingSubscriptionView) {
-            AppSubscriptionView()
-        }
         .alert("Delete Account?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -114,9 +100,7 @@ struct AccountSheetView: View {
                 .accessibilityLabel("Account settings")
                 .accessibilityHint("Opens account details and security settings")
             } else {
-                Button(action: {
-                    showingLoginSheet = true
-                }) {
+                NavigationLink(destination: LoginSheetView()) {
                     HStack(spacing: Spacing.sm + Spacing.xs) {
                         Image(systemName: "person.crop.circle.fill")
                             .font(.system(size: 44))
@@ -135,7 +119,8 @@ struct AccountSheetView: View {
                     }
                     .padding(.vertical, Spacing.xs)
                 }
-                .buttonStyle(.plain)
+                .accessibilityLabel("Sign in")
+                .accessibilityHint("Opens the sign-in page")
             }
         }
     }
@@ -276,17 +261,13 @@ struct AccountSheetView: View {
             }
 
             // ── Subscription (sheet) ─────────────────────
-            Button(action: {
-                showingSubscriptionView = true
-            }) {
+            NavigationLink(destination: AppSubscriptionView()) {
                 SettingsRow(
                     icon: "creditcard.fill",
                     iconColor: .green,
-                    title: "Subscription & Billing",
-                    showChevron: true
+                    title: "Subscription & Billing"
                 )
             }
-            .buttonStyle(.plain)
             .accessibilityLabel("Subscription & Billing")
             .accessibilityHint("Opens subscription and billing settings")
 
@@ -490,25 +471,24 @@ struct SettingsBackButton: View {
 }
 
 // MARK: - App Subscription View
-// Named to avoid conflict with SwiftUI.SubscriptionView.
+// Kept local to the settings target so it participates in the same push navigation flow.
 
 private struct AppSubscriptionView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        NavigationStack {
-            ContentUnavailableView(
-                "Subscriptions",
-                systemImage: "creditcard",
-                description: Text("Subscription management is not available yet.")
-            )
-            .navigationTitle("Subscription")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    SettingsCloseButton {
-                        dismiss()
-                    }
+        ContentUnavailableView(
+            "Subscriptions",
+            systemImage: "creditcard",
+            description: Text("Subscription management is not available yet.")
+        )
+        .navigationTitle("Subscription & Billing")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
                 }
             }
         }

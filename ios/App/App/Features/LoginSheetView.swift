@@ -16,12 +16,10 @@ struct LoginSheetView: View {
     @State private var resetSuccess = false
     
     var body: some View {
-        NavigationStack {
-            if showingResetPassword {
-                resetPasswordView
-            } else {
-                loginSignUpView
-            }
+        if showingResetPassword {
+            resetPasswordView
+        } else {
+            loginSignUpView
         }
     }
 
@@ -137,10 +135,11 @@ struct LoginSheetView: View {
                 .padding(.horizontal, Spacing.lg)
             }
         }
+        .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                SettingsCloseButton {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
                     dismiss()
                 }
             }
@@ -256,10 +255,11 @@ struct LoginSheetView: View {
                 .padding(.horizontal, Spacing.lg)
             }
         }
+        .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            ToolbarItem(placement: .topBarTrailing) {
-                SettingsCloseButton {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
                     dismiss()
                 }
             }
@@ -305,5 +305,7 @@ struct LoginSheetView: View {
 }
 
 #Preview {
-    LoginSheetView()
+    NavigationStack {
+        LoginSheetView()
+    }
 }

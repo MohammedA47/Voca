@@ -2,44 +2,43 @@ import SwiftUI
 
 // MARK: - Subscription & Billing View
 // A StoreKit 2-ready placeholder screen for subscription management.
-// Currently displays plan information and premium features with "Coming soon" alerts.
+// Pushed inside Settings so it behaves like the rest of the settings stack.
 
-struct SubscriptionView: View {
+struct SubscriptionSettingsView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var billingPeriod: BillingPeriod = .monthly
     @State private var showComingSoonAlert = false
 
     var body: some View {
-        NavigationStack {
-            ScrollView {
-                VStack(spacing: Spacing.lg) {
-                    // ── Current Plan Section ────────────────────
-                    currentPlanSection
+        ScrollView {
+            VStack(spacing: Spacing.lg) {
+                // ── Current Plan Section ────────────────────
+                currentPlanSection
 
-                    // ── Premium Plan Card ────────────────────
-                    premiumPlanCard
+                // ── Premium Plan Card ────────────────────
+                premiumPlanCard
 
-                    // ── Billing Period Picker ────────────────────
-                    billingPeriodPicker
+                // ── Billing Period Picker ────────────────────
+                billingPeriodPicker
 
-                    // ── Price Display ────────────────────
-                    priceSection
+                // ── Price Display ────────────────────
+                priceSection
 
-                    // ── Upgrade & Restore Buttons ────────────────────
-                    buttonSection
+                // ── Upgrade & Restore Buttons ────────────────────
+                buttonSection
 
-                    Spacer(minLength: Spacing.lg)
-                }
-                .padding(Spacing.lg)
+                Spacer(minLength: Spacing.lg)
             }
-            .background(Color.adaptiveBackground.ignoresSafeArea())
-            .navigationTitle("Subscription & Billing")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    SettingsCloseButton {
-                        dismiss()
-                    }
+            .padding(Spacing.lg)
+        }
+        .background(Color.adaptiveBackground.ignoresSafeArea())
+        .navigationTitle("Subscription & Billing")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
                 }
             }
         }
@@ -314,5 +313,7 @@ enum BillingPeriod {
 // MARK: - Preview
 
 #Preview {
-    SubscriptionView()
+    NavigationStack {
+        SubscriptionSettingsView()
+    }
 }

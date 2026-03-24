@@ -2,7 +2,7 @@ import SwiftUI
 
 // MARK: - Edit Profile View
 // A form-based view for editing user profile information.
-// Presented as a sheet with Cancel/Save — keeps its own NavigationStack.
+// Pushed from AccountSettingsView inside the shared settings NavigationStack.
 
 struct EditProfileView: View {
     @Environment(\.dismiss) private var dismiss
@@ -16,91 +16,90 @@ struct EditProfileView: View {
     private var authService = AuthService.shared
 
     var body: some View {
-        NavigationStack {
-            List {
-                // ── Profile Fields ──────────────────────────
-                Section(header: Text("Profile")) {
-                    HStack {
-                        Text("Name")
-                            .font(.body)
-                        Spacer()
-                        TextField("Display Name", text: $displayName)
-                            .multilineTextAlignment(.trailing)
-                            .disabled(isLoading)
-                    }
-
-                    HStack {
-                        Text("Email")
-                            .font(.body)
-                        Spacer()
-                        Text(authService.currentUser?.email ?? "")
-                            .font(.body)
-                            .foregroundStyle(.secondary)
-                    }
+        List {
+            // ── Profile Fields ──────────────────────────
+            Section(header: Text("Profile")) {
+                HStack {
+                    Text("Name")
+                        .font(.body)
+                    Spacer()
+                    TextField("Display Name", text: $displayName)
+                        .multilineTextAlignment(.trailing)
+                        .disabled(isLoading)
                 }
 
-                // ── Status Messages ─────────────────────────
-                if let errorMessage = errorMessage {
-                    Section {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "exclamationmark.circle.fill")
-                                .foregroundStyle(.red)
-                            Text(errorMessage)
-                                .font(.subheadline)
-                                .foregroundStyle(.red)
-                            Spacer()
-                        }
-                    }
+                HStack {
+                    Text("Email")
+                        .font(.body)
+                    Spacer()
+                    Text(authService.currentUser?.email ?? "")
+                        .font(.body)
+                        .foregroundStyle(.secondary)
                 }
+            }
 
-                if showSuccessMessage, let successMessage = successMessage {
-                    Section {
-                        HStack(spacing: Spacing.sm) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundStyle(.green)
-                            Text(successMessage)
-                                .font(.subheadline)
-                                .foregroundStyle(.green)
-                            Spacer()
-                        }
+            // ── Status Messages ─────────────────────────
+            if let errorMessage = errorMessage {
+                Section {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "exclamationmark.circle.fill")
+                            .foregroundStyle(.red)
+                        Text(errorMessage)
+                            .font(.subheadline)
+                            .foregroundStyle(.red)
+                        Spacer()
                     }
                 }
             }
-            .listStyle(.insetGrouped)
-            .navigationTitle("Edit Profile")
-            .navigationBarTitleDisplayMode(.inline)
-            .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    SettingsCloseButton {
-                        dismiss()
-                    }
-                    .disabled(isLoading)
-                }
 
-                ToolbarItem(placement: .topBarTrailing) {
-                    if isLoading {
-                        ProgressView()
-                            .controlSize(.small)
-                            .frame(width: 44, height: 44)
-                            .background(
-                                Circle()
-                                    .fill(Color(uiColor: .tertiarySystemFill))
-                            )
-                            .overlay(
-                                Circle()
-                                    .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-                            )
-                    } else {
-                        SettingsToolbarCircleButton(
-                            systemName: "checkmark",
-                            accessibilityLabel: "Save",
-                            iconSize: 16,
-                            weight: .semibold
-                        ) {
-                            saveProfile()
-                        }
-                        .disabled(displayName.trimmingCharacters(in: .whitespaces).isEmpty)
+            if showSuccessMessage, let successMessage = successMessage {
+                Section {
+                    HStack(spacing: Spacing.sm) {
+                        Image(systemName: "checkmark.circle.fill")
+                            .foregroundStyle(.green)
+                        Text(successMessage)
+                            .font(.subheadline)
+                            .foregroundStyle(.green)
+                        Spacer()
                     }
+                }
+            }
+        }
+        .listStyle(.insetGrouped)
+        .navigationTitle("Edit Profile")
+        .navigationBarTitleDisplayMode(.inline)
+        .navigationBarBackButtonHidden(true)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
+                }
+                .disabled(isLoading)
+            }
+
+            ToolbarItem(placement: .topBarTrailing) {
+                if isLoading {
+                    ProgressView()
+                        .controlSize(.small)
+                        .frame(width: 44, height: 44)
+                        .background(
+                            Circle()
+                                .fill(Color(uiColor: .tertiarySystemFill))
+                        )
+                        .overlay(
+                            Circle()
+                                .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
+                        )
+                } else {
+                    SettingsToolbarCircleButton(
+                        systemName: "checkmark",
+                        accessibilityLabel: "Save",
+                        iconSize: 16,
+                        weight: .semibold
+                    ) {
+                        saveProfile()
+                    }
+                    .disabled(displayName.trimmingCharacters(in: .whitespaces).isEmpty)
                 }
             }
         }
@@ -183,5 +182,7 @@ struct EditProfileView: View {
 
 // MARK: - Preview
 #Preview {
-    EditProfileView()
+    NavigationStack {
+        EditProfileView()
+    }
 }

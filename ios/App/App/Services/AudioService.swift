@@ -33,13 +33,14 @@ actor AudioCacheActor {
 /// Caches audio data in memory via `AudioCacheActor` to avoid re-fetching identical pronunciations.
 @Observable
 @MainActor
-final class AudioService: NSObject, AVAudioPlayerDelegate {
+final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDelegate {
     static let shared = AudioService()
 
     var isSpeaking: Bool = false
     var lastError: String? = nil
 
     private var audioPlayer: AVAudioPlayer?
+    private let speechSynthesizer = AVSpeechSynthesizer()
     private var currentTask: Task<Void, Never>?
 
     /// Actor-isolated TTS audio cache.
@@ -53,6 +54,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
 
     private override init() {
         super.init()
+        speechSynthesizer.delegate = self
         setupAudioSession()
     }
 
@@ -91,7 +93,11 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
                     self.audioPlayer = try AVAudioPlayer(data: cachedData)
                     self.audioPlayer?.delegate = self
                     self.audioPlayer?.prepareToPlay()
-                    self.audioPlayer?.play()
+                    if self.audioPlayer?.play() == true {
+                        return
+                    }
+
+                    self.playSystemSpeech(text: text, accent: accent, speed: speed)
                     return
                 }
 
@@ -141,16 +147,14 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
                 self.audioPlayer = try AVAudioPlayer(data: data)
                 self.audioPlayer?.delegate = self
                 self.audioPlayer?.prepareToPlay()
-                self.audioPlayer?.play()
+                if self.audioPlayer?.play() != true {
+                    self.playSystemSpeech(text: text, accent: accent, speed: speed)
+                }
 
             } catch {
                 print("Failed to fetch or play TTS audio: \(error.localizedDescription)")
-                // Set error message if not already set by rate limit/network handlers above
-                if self.lastError == nil {
-                    self.lastError = "Network error. Check your connection."
-                }
                 if !Task.isCancelled {
-                    self.isSpeaking = false
+                    self.playSystemSpeech(text: text, accent: accent, speed: speed)
                 }
             }
         }
@@ -162,7 +166,29 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
         currentTask = nil
         audioPlayer?.stop()
         audioPlayer = nil
+        speechSynthesizer.stopSpeaking(at: .immediate)
         isSpeaking = false
+    }
+
+    private func playSystemSpeech(text: String, accent: String, speed: Double) {
+        audioPlayer?.stop()
+        audioPlayer = nil
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.voice = accent == "uk"
+            ? AVSpeechSynthesisVoice(language: "en-GB")
+            : AVSpeechSynthesisVoice(language: "en-US")
+        utterance.rate = speechRate(for: speed)
+
+        lastError = nil
+        isSpeaking = true
+        speechSynthesizer.speak(utterance)
+    }
+
+    private func speechRate(for speed: Double) -> Float {
+        let clampedSpeed = min(max(speed, 0.7), 1.2)
+        let normalized = (clampedSpeed - 0.7) / 0.5
+        return 0.42 + Float(normalized) * 0.12
     }
 
     // MARK: - AVAudioPlayerDelegate
@@ -174,6 +200,18 @@ final class AudioService: NSObject, AVAudioPlayerDelegate {
     }
 
     nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
+        Task { @MainActor [weak self] in
+            self?.isSpeaking = false
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
+        Task { @MainActor [weak self] in
+            self?.isSpeaking = false
+        }
+    }
+
+    nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         Task { @MainActor [weak self] in
             self?.isSpeaking = false
         }

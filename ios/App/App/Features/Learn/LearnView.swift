@@ -167,15 +167,18 @@ struct LearnView: View {
         .onChange(of: audioService.isSpeaking) { oldValue, newValue in
             viewModel.isSpeaking = newValue
             if viewModel.isLooping {
-                viewModel.isPlayAnimating = newValue
-                // When audio finishes in loop mode, add gap delay then play next word
-                if oldValue && !newValue {
+                // When audio finishes in loop mode, replay after gap (only if still in play state)
+                if oldValue && !newValue && viewModel.isPlayAnimating {
                     Task {
                         try? await Task.sleep(for: .seconds(viewModel.loopGapSeconds))
-                        viewModel.nextWord()
-                        viewModel.playAudio()
+                        if viewModel.isPlayAnimating {
+                            viewModel.playAudio()
+                        }
                     }
                 }
+            } else {
+                // Non-loop mode: button follows audio state directly
+                viewModel.isPlayAnimating = newValue
             }
         }
         .sheet(isPresented: $showAccountSheet) {
@@ -380,14 +383,14 @@ final class LearnViewModel {
                 isPlayAnimating = false
             }
         } else if isLooping {
-            // Loop mode: animation follows real speech
-            playAudio()
-        } else {
-            // Non-loop mode: animation follows real speech state
-            playAudio()
+            // Loop mode: lock button to "Playing…" until user pauses
             withAnimation(.easeInOut(duration: 0.25)) {
                 isPlayAnimating = true
             }
+            playAudio()
+        } else {
+            // Non-loop mode: button follows audio state via onChange
+            playAudio()
         }
     }
 
