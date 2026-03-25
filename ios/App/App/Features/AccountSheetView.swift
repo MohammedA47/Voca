@@ -166,25 +166,31 @@ struct AccountSheetView: View {
             .accessibilityElement(children: .combine)
 
             // ── Loop Gap ──────────────────────────────────
-            HStack(spacing: Spacing.sm + Spacing.xs) {
-                SettingsIcon(systemName: "timer", color: .orange)
+            VStack(spacing: Spacing.sm) {
+                HStack(spacing: Spacing.sm + Spacing.xs) {
+                    SettingsIcon(systemName: "timer", color: .orange)
 
-                VStack(alignment: .leading, spacing: Spacing.xs / 2) {
-                    Text("Loop Gap")
-                        .font(.body)
-                        .foregroundStyle(.primary)
-                    Text("\(loopGapSeconds, specifier: "%.1f")s between repeats")
-                        .font(.caption)
+                    VStack(alignment: .leading, spacing: Spacing.xs / 2) {
+                        Text("Loop Gap")
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                        Text("Time between repeats")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+
+                    Spacer()
+
+                    Text("\(loopGapSeconds, specifier: "%.1f")s")
+                        .font(.subheadline.monospacedDigit().bold())
                         .foregroundStyle(.secondary)
                 }
 
-                Spacer()
-
-                Stepper("", value: $loopGapSeconds, in: 0...10, step: 0.5)
-                    .labelsHidden()
+                Slider(value: $loopGapSeconds, in: 0...10)
+                    .accessibilityLabel("Loop gap")
+                    .accessibilityValue("\(loopGapSeconds, specifier: "%.1f") seconds")
             }
-            .accessibilityElement(children: .combine)
-            .accessibilityLabel("Loop gap \(loopGapSeconds, specifier: "%.1f") seconds")
+            .padding(.vertical, Spacing.xs)
 
             // ── Playback Speed ────────────────────────────
             VStack(spacing: Spacing.sm) {
@@ -202,7 +208,7 @@ struct AccountSheetView: View {
                         .foregroundStyle(.secondary)
                 }
 
-                Slider(value: $playbackSpeed, in: 0.5...2.0, step: 0.1)
+                Slider(value: $playbackSpeed, in: 0.5...2.0)
                     .accessibilityLabel("Playback speed")
                     .accessibilityValue("\(playbackSpeed, specifier: "%.1f") times")
             }
