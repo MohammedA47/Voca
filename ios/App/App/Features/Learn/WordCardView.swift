@@ -150,6 +150,7 @@ struct CardFrontFace: View {
                             Text("\(currentExampleIndex + 1) of \(examples.count)")
                                 .font(.system(size: 12))
                                 .foregroundStyle(.secondary)
+                                .contentTransition(.numericText())
                         }
 
                         VStack(alignment: .leading, spacing: 12) {
@@ -160,6 +161,7 @@ struct CardFrontFace: View {
                                 .lineSpacing(5)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .id("front-ex-\(word.id)-\(safeIndex)")
+                                .transition(.opacity.combined(with: .scale(scale: 0.96)))
 
                             HStack(spacing: 6) {
                                 Button(action: { onPlayExample(examples[safeIndex]) }) {
