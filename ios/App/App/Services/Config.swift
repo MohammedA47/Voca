@@ -16,4 +16,11 @@ enum Config {
     static var supabaseAnonKey: String {
         Bundle.main.infoDictionary?["SUPABASE_ANON_KEY"] as? String ?? "sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT"
     }
+
+    /// Deep link used by Supabase auth emails to return to the app.
+    static var authRedirectURL: URL {
+        let fallback = "com.oxford.pronunciation://auth-callback"
+        let rawValue = Bundle.main.infoDictionary?["SUPABASE_REDIRECT_URL"] as? String ?? fallback
+        return URL(string: rawValue) ?? URL(string: fallback)!
+    }
 }

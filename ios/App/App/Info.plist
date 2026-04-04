@@ -20,6 +20,19 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>CFBundleURLName</key>
+			<string>com.oxford.pronunciation.auth</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>com.oxford.pronunciation</string>
+			</array>
+		</dict>
+	</array>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>UILaunchStoryboardName</key>
@@ -53,5 +66,7 @@
 	<string>https://brknoeqgpejhxsqsjnan.supabase.co</string>
 	<key>SUPABASE_ANON_KEY</key>
 	<string>sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT</string>
+	<key>SUPABASE_REDIRECT_URL</key>
+	<string>com.oxford.pronunciation://auth-callback</string>
 </dict>
 </plist>

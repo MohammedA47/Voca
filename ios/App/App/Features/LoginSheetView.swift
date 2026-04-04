@@ -14,9 +14,14 @@ struct LoginSheetView: View {
     @State private var resetEmail = ""
     @State private var resetLoading = false
     @State private var resetSuccess = false
+    @State private var showPendingConfirmation = false
+    @State private var resendLoading = false
+    @State private var resendSuccess = false
     
     var body: some View {
-        if showingResetPassword {
+        if showPendingConfirmation {
+            pendingConfirmationView
+        } else if showingResetPassword {
             resetPasswordView
         } else {
             loginSignUpView
@@ -151,6 +156,78 @@ struct LoginSheetView: View {
         }
     }
 
+    private var pendingConfirmationView: some View {
+        ScrollView {
+            VStack(spacing: Spacing.xl) {
+                VStack(spacing: Spacing.sm) {
+                    Image(systemName: "checkmark.circle.fill")
+                        .font(.system(size: 64))
+                        .foregroundStyle(.green)
+                        .padding(.bottom, Spacing.xs)
+
+                    Text("Account Created!")
+                        .font(.title2.bold())
+
+                    Text("We sent a confirmation email to **\(email)**. You can use the app for 48 hours while you confirm.")
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                }
+                .padding(.top, Spacing.xl)
+
+                VStack(spacing: Spacing.md) {
+                    // Continue Button
+                    Button(action: { dismiss() }) {
+                        HStack {
+                            Spacer()
+                            Text("Continue")
+                                .font(.headline)
+                            Spacer()
+                        }
+                        .foregroundStyle(.white)
+                        .padding()
+                        .background(Color.webPrimary)
+                        .clipShape(.rect(cornerRadius: 12))
+                    }
+
+                    // Resend Email Button
+                    Button(action: {
+                        Task { await resendEmail() }
+                    }) {
+                        HStack {
+                            Spacer()
+                            if resendLoading {
+                                ProgressView()
+                            } else if resendSuccess {
+                                Label("Email Sent", systemImage: "checkmark")
+                                    .font(.subheadline.weight(.medium))
+                            } else {
+                                Text("Resend Confirmation Email")
+                                    .font(.subheadline.weight(.medium))
+                            }
+                            Spacer()
+                        }
+                        .foregroundStyle(Color.webPrimary)
+                        .padding()
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(.rect(cornerRadius: 12))
+                    }
+                    .disabled(resendLoading || resendSuccess)
+                }
+                .padding(.horizontal, Spacing.lg)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
+                }
+            }
+        }
+    }
+
     private var resetPasswordView: some View {
         ScrollView {
             VStack(spacing: Spacing.xl) {
@@ -279,13 +356,28 @@ struct LoginSheetView: View {
 
         do {
             if isSignUp {
-                _ = try await authService.signUp(email: email, password: password)
+                let session = try await authService.signUp(email: email, password: password)
+                if session == nil {
+                    // Email confirmation required — show success view
+                    withAnimation { showPendingConfirmation = true }
+                }
             } else {
                 _ = try await authService.signIn(email: email, password: password)
             }
             // Dismissal is handled by the onChange publisher above
         } catch {
-            errorMessage = error.localizedDescription
+            errorMessage = authService.lastError ?? error.localizedDescription
+        }
+    }
+
+    private func resendEmail() async {
+        resendLoading = true
+        defer { resendLoading = false }
+        do {
+            try await authService.resendConfirmationEmail()
+            resendSuccess = true
+        } catch {
+            // Silently fail — the button text stays unchanged
         }
     }
 

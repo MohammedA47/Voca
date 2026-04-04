@@ -31,6 +31,14 @@ struct Session: Codable {
         }
     }
 
+    init(accessToken: String, refreshToken: String?, expiresIn: Int?, user: AuthUser?, createdAt: Date?) {
+        self.accessToken = accessToken
+        self.refreshToken = refreshToken
+        self.expiresIn = expiresIn
+        self.user = user
+        self.createdAt = createdAt
+    }
+
     func encode(to encoder: Encoder) throws {
         var container = encoder.container(keyedBy: CodingKeys.self)
         try container.encode(accessToken, forKey: .accessToken)
@@ -50,6 +58,13 @@ struct AuthUser: Codable {
     let email: String?
 }
 
+/// Lightweight response returned by Supabase when email confirmations are
+/// enabled and the user has not yet verified their address.
+struct SignUpUser: Codable {
+    let id: String
+    let email: String?
+}
+
 /// Handles Supabase email/password authentication.
 ///
 /// Persists the session to `UserDefaults` so users stay logged in across launches.
@@ -62,10 +77,29 @@ final class AuthService {
     var sessionToken: String?
     var lastError: String? = nil
 
+    // MARK: - Grace Period State
+
+    var pendingConfirmationEmail: String?
+    var signUpDate: Date?
+
+    var isPendingConfirmation: Bool {
+        pendingConfirmationEmail != nil && !isAuthenticated
+    }
+
+    var isGracePeriodExpired: Bool {
+        guard let signUpDate, isPendingConfirmation else { return false }
+        return Date().timeIntervalSince(signUpDate) > 48 * 60 * 60
+    }
+
+    var graceDeadline: Date? {
+        signUpDate?.addingTimeInterval(48 * 60 * 60)
+    }
+
     private var storedSession: Session?
 
     private init() {
         loadSession()
+        loadPendingConfirmation()
         Task {
             await checkAndRefreshIfNeeded()
         }
@@ -97,11 +131,33 @@ final class AuthService {
         }
     }
 
+    // MARK: - Pending Confirmation Persistence
+
+    private func savePendingConfirmation(email: String) {
+        UserDefaults.standard.set(email, forKey: "pending_confirmation_email")
+        UserDefaults.standard.set(Date(), forKey: "pending_confirmation_date")
+        self.pendingConfirmationEmail = email
+        self.signUpDate = Date()
+    }
+
+    private func loadPendingConfirmation() {
+        self.pendingConfirmationEmail = UserDefaults.standard.string(forKey: "pending_confirmation_email")
+        self.signUpDate = UserDefaults.standard.object(forKey: "pending_confirmation_date") as? Date
+    }
+
+    func clearPendingConfirmation() {
+        UserDefaults.standard.removeObject(forKey: "pending_confirmation_email")
+        UserDefaults.standard.removeObject(forKey: "pending_confirmation_date")
+        self.pendingConfirmationEmail = nil
+        self.signUpDate = nil
+    }
+
     /// Clears the stored session and signs the user out.
     func logout() {
         UserDefaults.standard.removeObject(forKey: "supabase_session")
         self.sessionToken = nil
         self.currentUser = nil
+        clearPendingConfirmation()
     }
 
     /// Deletes the user account by clearing all local data and authentication.
@@ -121,12 +177,14 @@ final class AuthService {
         // Clear authentication state
         self.sessionToken = nil
         self.currentUser = nil
+        clearPendingConfirmation()
     }
 
-    /// Creates a new account and returns the session.
-    func signUp(email: String, password: String) async throws -> Session {
+    /// Creates a new account and returns the session, or `nil` when
+    /// email confirmation is pending (grace period starts).
+    func signUp(email: String, password: String) async throws -> Session? {
         lastError = nil
-        guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/signup") else { throw URLError(.badURL) }
+        guard let url = authURL(path: "signup", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -155,9 +213,21 @@ final class AuthService {
             throw URLError(.badServerResponse)
         }
 
-        let session = try JSONDecoder().decode(Session.self, from: data)
-        saveSession(session: session)
-        return session
+        // Try to decode a full session (returned when email confirmations are disabled).
+        if let session = try? JSONDecoder().decode(Session.self, from: data) {
+            saveSession(session: session)
+            clearPendingConfirmation()
+            return session
+        }
+
+        // No session means email confirmation is required — start the grace period.
+        if let _ = try? JSONDecoder().decode(SignUpUser.self, from: data) {
+            savePendingConfirmation(email: email)
+            return nil
+        }
+
+        lastError = "Sign up failed. Please try again."
+        throw URLError(.badServerResponse)
     }
 
     /// Signs in with email + password and returns the session.
@@ -185,8 +255,13 @@ final class AuthService {
             print("Auth API Sign In failed with status \(httpResponse.statusCode): \(errorBody)")
             if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
                let errorMessage = errorDict["error_description"] as? String {
-                lastError = errorMessage
-                throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: errorMessage])
+                // Friendly message for unconfirmed email
+                if errorMessage.lowercased().contains("email not confirmed") {
+                    lastError = "Please confirm your email first. Check your inbox for the confirmation link."
+                } else {
+                    lastError = errorMessage
+                }
+                throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: lastError!])
             }
             lastError = "Sign in failed. Please try again."
             throw URLError(.badServerResponse)
@@ -194,12 +269,13 @@ final class AuthService {
 
         let session = try JSONDecoder().decode(Session.self, from: data)
         saveSession(session: session)
+        clearPendingConfirmation()
         return session
     }
 
     /// Sends a password reset email to the given address.
     func resetPassword(email: String) async throws {
-        guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/recover") else { throw URLError(.badURL) }
+        guard let url = authURL(path: "recover", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
 
         var request = URLRequest(url: url)
         request.httpMethod = "POST"
@@ -275,6 +351,29 @@ final class AuthService {
         }
     }
 
+    /// Resends the sign-up confirmation email for the pending address.
+    func resendConfirmationEmail() async throws {
+        guard let email = pendingConfirmationEmail else { return }
+        guard let url = authURL(path: "resend", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "POST"
+        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body: [String: String] = ["type": "signup", "email": email]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse,
+              (200...299).contains(httpResponse.statusCode) else {
+            let errorBody = String(data: data, encoding: .utf8) ?? ""
+            print("Resend confirmation failed: \(errorBody)")
+            throw URLError(.badServerResponse)
+        }
+    }
+
     /// Checks if the current session token is expired or about to expire (within 60 seconds).
     /// If so, attempts to refresh it using the refresh token.
     func checkAndRefreshIfNeeded() async {
@@ -292,6 +391,116 @@ final class AuthService {
         if Date() >= expiryTime.addingTimeInterval(-bufferTime) {
             print("Session token is expired or about to expire, refreshing...")
             await refreshSession()
+        }
+    }
+
+    /// Handles auth callbacks coming back from Supabase email links.
+    func handleIncomingAuthURL(_ url: URL) async {
+        guard matchesAuthRedirect(url) else { return }
+
+        let parameters = urlParameters(from: url)
+
+        if let message = parameters["error_description"] ?? parameters["error"] {
+            lastError = message
+            return
+        }
+
+        guard let accessToken = parameters["access_token"] else {
+            return
+        }
+
+        let session = Session(
+            accessToken: accessToken,
+            refreshToken: parameters["refresh_token"],
+            expiresIn: parameters["expires_in"].flatMap(Int.init),
+            user: currentUser,
+            createdAt: Date()
+        )
+
+        saveSession(session: session)
+        clearPendingConfirmation()
+        lastError = nil
+        await fetchCurrentUser()
+    }
+
+    private func authURL(path: String, redirectTo: URL? = nil) -> URL? {
+        guard var components = URLComponents(string: "\(Config.supabaseUrl)/auth/v1/\(path)") else {
+            return nil
+        }
+
+        if let redirectTo {
+            components.queryItems = [URLQueryItem(name: "redirect_to", value: redirectTo.absoluteString)]
+        }
+
+        return components.url
+    }
+
+    private func matchesAuthRedirect(_ url: URL) -> Bool {
+        guard let expectedScheme = Config.authRedirectURL.scheme?.lowercased(),
+              url.scheme?.lowercased() == expectedScheme else {
+            return false
+        }
+
+        if let expectedHost = Config.authRedirectURL.host, !expectedHost.isEmpty {
+            return url.host?.lowercased() == expectedHost.lowercased()
+        }
+
+        return true
+    }
+
+    private func urlParameters(from url: URL) -> [String: String] {
+        var parameters: [String: String] = [:]
+
+        if let components = URLComponents(url: url, resolvingAgainstBaseURL: false) {
+            for item in components.queryItems ?? [] {
+                parameters[item.name] = item.value ?? ""
+            }
+        }
+
+        if let fragment = URLComponents(url: url, resolvingAgainstBaseURL: false)?.fragment,
+           let fragmentComponents = URLComponents(string: "auth://callback?\(fragment)") {
+            for item in fragmentComponents.queryItems ?? [] {
+                parameters[item.name] = item.value ?? ""
+            }
+        }
+
+        return parameters
+    }
+
+    private func fetchCurrentUser() async {
+        guard let sessionToken,
+              let url = URL(string: "\(Config.supabaseUrl)/auth/v1/user") else {
+            return
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "GET"
+        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
+
+        do {
+            let (data, response) = try await URLSession.shared.data(for: request)
+            guard let httpResponse = response as? HTTPURLResponse,
+                  (200...299).contains(httpResponse.statusCode),
+                  let user = try? JSONDecoder().decode(AuthUser.self, from: data) else {
+                return
+            }
+
+            self.currentUser = user
+
+            if let storedSession {
+                saveSession(
+                    session: Session(
+                        accessToken: storedSession.accessToken,
+                        refreshToken: storedSession.refreshToken,
+                        expiresIn: storedSession.expiresIn,
+                        user: user,
+                        createdAt: storedSession.createdAt
+                    )
+                )
+            }
+        } catch {
+            print("Failed to load confirmed user: \(error.localizedDescription)")
         }
     }
 }

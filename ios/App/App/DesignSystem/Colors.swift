@@ -13,16 +13,17 @@ extension Color {
         self.init(hue: h360, saturation: sHSV, brightness: bHSV)
     }
     
-    // MARK: - Web Theme Colors (static, light-only originals)
-    
-    // --primary: 330 65% 50%
-    static let webPrimary = Color(hue: 330, saturation: 0.65, lightness: 0.50)
-    
-    // --secondary: 330 45% 70%
-    static let webSecondary = Color(hue: 330, saturation: 0.45, lightness: 0.70)
-    
-    // --oxford-gold: 330 65% 55%
-    static let oxfordGold = Color(hue: 330, saturation: 0.65, lightness: 0.55)
+    // MARK: - Web Theme Colors (driven by the user-selected AccentTheme)
+    // These resolve against `ThemeManager.shared.accent` so switching the
+    // accent in Settings swaps every brand surface in one place. Views that
+    // must react to changes should depend on `ThemeManager.shared.accent`
+    // (directly or via an `.id(...)` on a parent) to trigger a rebuild.
+
+    static var webPrimary: Color { ThemeManager.shared.accent.primary }
+
+    static var webSecondary: Color { ThemeManager.shared.accent.secondary }
+
+    static var oxfordGold: Color { ThemeManager.shared.accent.gold }
     
     // MARK: - Adaptive Semantic Colors
     // These switch automatically between light and dark mode.
@@ -103,8 +104,8 @@ extension Color {
     static let webBorder = Color(hue: 220, saturation: 0.20, lightness: 0.88)
     
     // MARK: - Semantic Aliases
-    static let brandPrimary = webPrimary
-    static let brandSecondary = webSecondary
+    static var brandPrimary: Color { webPrimary }
+    static var brandSecondary: Color { webSecondary }
     static let background = webBackground
     static let surface = webMuted
 }

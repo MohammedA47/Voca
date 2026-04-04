@@ -14,6 +14,9 @@ struct AccountSheetView: View {
     @AppStorage("randomSpeedEnabled") private var randomSpeedEnabled: Bool = false
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
 
+    // Theme
+    @State private var themeManager = ThemeManager.shared
+
     // Auth State
     private var authService = AuthService.shared
     @State private var showingDeleteAlert = false
@@ -99,6 +102,34 @@ struct AccountSheetView: View {
                 }
                 .accessibilityLabel("Account settings")
                 .accessibilityHint("Opens account details and security settings")
+            } else if authService.isPendingConfirmation {
+                NavigationLink(destination: ConfirmationStatusView()) {
+                    HStack(spacing: Spacing.sm + Spacing.xs) {
+                        Image(systemName: "envelope.badge.fill")
+                            .font(.system(size: 40))
+                            .symbolRenderingMode(.hierarchical)
+                            .foregroundStyle(.orange)
+
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Confirm Your Email")
+                                .font(.title3.weight(.semibold))
+                                .foregroundStyle(.primary)
+
+                            if let deadline = authService.graceDeadline {
+                                Text(timeRemainingText(until: deadline))
+                                    .font(.subheadline)
+                                    .foregroundStyle(.orange)
+                            }
+
+                            Text(authService.pendingConfirmationEmail ?? "")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
+                        }
+                    }
+                    .padding(.vertical, Spacing.xs)
+                }
+                .accessibilityLabel("Confirm your email")
+                .accessibilityHint("Opens email confirmation status")
             } else {
                 NavigationLink(destination: LoginSheetView()) {
                     HStack(spacing: Spacing.sm + Spacing.xs) {
@@ -250,6 +281,31 @@ struct AccountSheetView: View {
                 .pickerStyle(.menu)
             }
             .accessibilityElement(children: .combine)
+
+            // ── Accent Color ──────────────────────────────
+            HStack(spacing: Spacing.sm + Spacing.xs) {
+                SettingsIcon(
+                    systemName: "paintpalette.fill",
+                    color: themeManager.accent.swatch
+                )
+
+                Picker(
+                    selection: Binding(
+                        get: { themeManager.accent },
+                        set: { themeManager.accent = $0 }
+                    )
+                ) {
+                    ForEach(AccentTheme.allCases) { theme in
+                        Text(theme.displayName).tag(theme)
+                    }
+                } label: {
+                    Text("Accent Color")
+                        .font(.body)
+                        .foregroundStyle(.primary)
+                }
+                .pickerStyle(.menu)
+            }
+            .accessibilityElement(children: .combine)
         }
     }
 
@@ -356,6 +412,17 @@ struct AccountSheetView: View {
 
     private var appBuild: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+
+    private func timeRemainingText(until deadline: Date) -> String {
+        let remaining = deadline.timeIntervalSince(Date())
+        if remaining <= 0 { return "Grace period expired" }
+        let hours = Int(remaining) / 3600
+        let minutes = (Int(remaining) % 3600) / 60
+        if hours > 0 {
+            return "\(hours)h \(minutes)m left to confirm"
+        }
+        return "\(minutes)m left to confirm"
     }
 }
 
@@ -498,6 +565,128 @@ private struct AppSubscriptionView: View {
                 }
             }
         }
+    }
+}
+
+// MARK: - Confirmation Status View
+// Pushed from the profile row when the user has a pending email confirmation.
+// Shows the confirmation email, a live countdown, and resend / sign-in actions.
+
+struct ConfirmationStatusView: View {
+    @Environment(\.dismiss) private var dismiss
+    private var authService = AuthService.shared
+
+    @State private var resendLoading = false
+    @State private var resendSuccess = false
+    @State private var now = Date()
+    @State private var showLogin = false
+
+    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+
+    var body: some View {
+        ScrollView {
+            VStack(spacing: Spacing.xl) {
+                // Header
+                VStack(spacing: Spacing.sm) {
+                    Image(systemName: "envelope.circle.fill")
+                        .font(.system(size: 64))
+                        .foregroundStyle(.orange)
+                        .padding(.bottom, Spacing.xs)
+
+                    Text("Check Your Email")
+                        .font(.title2.bold())
+
+                    if let email = authService.pendingConfirmationEmail {
+                        Text("We sent a confirmation email to **\(email)**. You can use the app while you confirm.")
+                            .font(.subheadline)
+                            .foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .padding(.top, Spacing.xl)
+
+                // Countdown
+                if let deadline = authService.graceDeadline {
+                    let remaining = max(deadline.timeIntervalSince(now), 0)
+                    let hours = Int(remaining) / 3600
+                    let minutes = (Int(remaining) % 3600) / 60
+                    let seconds = Int(remaining) % 60
+
+                    VStack(spacing: Spacing.sm) {
+                        Text("Time remaining")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+
+                        Text(String(format: "%02d:%02d:%02d", hours, minutes, seconds))
+                            .font(.system(size: 40, weight: .bold, design: .monospaced))
+                            .foregroundStyle(remaining < 3600 ? .red : .orange)
+                    }
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(Color(UIColor.secondarySystemBackground))
+                    .clipShape(.rect(cornerRadius: 12))
+                }
+
+                // Actions
+                VStack(spacing: Spacing.md) {
+                    // Already confirmed? Sign in
+                    NavigationLink(destination: LoginSheetView()) {
+                        HStack {
+                            Spacer()
+                            Text("I've Confirmed — Sign In")
+                                .font(.headline)
+                            Spacer()
+                        }
+                        .foregroundStyle(.white)
+                        .padding()
+                        .background(Color.webPrimary)
+                        .clipShape(.rect(cornerRadius: 12))
+                    }
+
+                    // Resend
+                    Button(action: {
+                        Task { await resendEmail() }
+                    }) {
+                        HStack {
+                            Spacer()
+                            if resendLoading {
+                                ProgressView()
+                            } else if resendSuccess {
+                                Label("Email Sent", systemImage: "checkmark")
+                                    .font(.subheadline.weight(.medium))
+                            } else {
+                                Text("Resend Confirmation Email")
+                                    .font(.subheadline.weight(.medium))
+                            }
+                            Spacer()
+                        }
+                        .foregroundStyle(Color.webPrimary)
+                        .padding()
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(.rect(cornerRadius: 12))
+                    }
+                    .disabled(resendLoading || resendSuccess)
+                }
+            }
+            .padding(.horizontal, Spacing.lg)
+        }
+        .onReceive(timer) { _ in now = Date() }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton { dismiss() }
+            }
+        }
+    }
+
+    private func resendEmail() async {
+        resendLoading = true
+        defer { resendLoading = false }
+        do {
+            try await authService.resendConfirmationEmail()
+            resendSuccess = true
+        } catch {}
     }
 }
 

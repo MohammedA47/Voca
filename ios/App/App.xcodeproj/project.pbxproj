@@ -45,6 +45,8 @@
 		AA000002B234567890ABCDEF /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */; };
 		AA000003B234567890ABCDEF /* AccountSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003C234567890ABCDEF /* AccountSettingsView.swift */; };
 		AA000004B234567890ABCDEF /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004C234567890ABCDEF /* HelpSupportView.swift */; };
+		BB000005B234567890ABCDEF /* GracePeriodExpiredView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */; };
+		CC000006B234567890ABCDEF /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000006C234567890ABCDEF /* ThemeManager.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -100,6 +102,8 @@
 		AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
 		AA000003C234567890ABCDEF /* AccountSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccountSettingsView.swift; sourceTree = "<group>"; };
 		AA000004C234567890ABCDEF /* HelpSupportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
+		BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GracePeriodExpiredView.swift; sourceTree = "<group>"; };
+		CC000006C234567890ABCDEF /* ThemeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -139,6 +143,7 @@
 				86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */,
 				4535146DD2BF10DB9C739F30 /* AuthService.swift */,
 				5678DEF0GHIJ1234K5L6MNOP /* Config.swift */,
+				CC000006C234567890ABCDEF /* ThemeManager.swift */,
 			);
 			path = Services;
 			sourceTree = "<group>";
@@ -167,6 +172,7 @@
 				AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */,
 				AA000003C234567890ABCDEF /* AccountSettingsView.swift */,
 				AA000004C234567890ABCDEF /* HelpSupportView.swift */,
+				BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -421,6 +427,8 @@
 				AA000002B234567890ABCDEF /* NotificationsSettingsView.swift in Sources */,
 				AA000003B234567890ABCDEF /* AccountSettingsView.swift in Sources */,
 				AA000004B234567890ABCDEF /* HelpSupportView.swift in Sources */,
+				BB000005B234567890ABCDEF /* GracePeriodExpiredView.swift in Sources */,
+				CC000006B234567890ABCDEF /* ThemeManager.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

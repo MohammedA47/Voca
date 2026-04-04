@@ -12,8 +12,8 @@ enum GlassStyle {
     static let shadowRadius: CGFloat = 16
     static let shadowYOffset: CGFloat = 6
 
-    static let activeTint = Color.webPrimary
-    static let inactiveTint = Color.webForeground.opacity(0.58)
+    static var activeTint: Color { Color.webPrimary }
+    static var inactiveTint: Color { Color.webForeground.opacity(0.58) }
 }
 
 extension View {
