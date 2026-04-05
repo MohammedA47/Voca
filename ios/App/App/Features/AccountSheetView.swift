@@ -349,10 +349,11 @@ struct AccountSheetView: View {
 
     @ViewBuilder
     private var signOutSection: some View {
-        if authService.isAuthenticated {
+        if authService.isAuthenticated || authService.isPendingConfirmation {
             Section {
                 Button(action: {
                     authService.logout()
+                    dismiss()
                 }) {
                     HStack {
                         Spacer()

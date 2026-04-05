@@ -20,6 +20,7 @@
 		504EC30F1FED79650016851F /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30E1FED79650016851F /* Assets.xcassets */; };
 		504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC3101FED79650016851F /* LaunchScreen.storyboard */; };
 		50B271D11FEDC1A000F3C39B /* public in Resources */ = {isa = PBXBuildFile; fileRef = 50B271D01FEDC1A000F3C39B /* public */; };
+		5A49A6E42F81FECC0087AEB4 /* SetNewPasswordView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5A49A6E32F81FECC0087AEB4 /* SetNewPasswordView.swift */; };
 		5C8D5426F6BC9C2488375941 /* Typography.swift in Sources */ = {isa = PBXBuildFile; fileRef = ACC8AB358C5CA2BF6044AC3C /* Typography.swift */; };
 		77AD13C7DC64A35F9AFED57C /* LoginSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34E0EAE327C950362B3014D5 /* LoginSheetView.swift */; };
 		7D4197BF2265B2399230F674 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92303A00F92BED6BE63141A5 /* Word.swift */; };
@@ -29,24 +30,24 @@
 		987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF736059A901232C8D2297B /* Buttons.swift */; };
 		9CB5BAAA662E06D30F0B3F44 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DB232B31F794FDDFB89685 /* GlassCard.swift */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
-		AB12CD34EF56AB78CD90EF12 /* AccountSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AB34CD56EF78AB90CD12EF /* AccountSheetView.swift */; };
-		AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */; };
-		C1AC34834AA30338680B2A5A /* OtherTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1911E28486ADF1DD637173 /* OtherTabs.swift */; };
-		CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */; };
-		D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE10E077EB19A349A5775D7 /* FloatingTabBar.swift */; };
-		F1A2B3C4D5E6F7081234ABCD /* WordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */; };
-		FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4535146DD2BF10DB9C739F30 /* AuthService.swift */; };
-		FED1CBA098765432E5F60718 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */; };
-		E2D1CBA0F8765432E5F60729 /* CardBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */; };
-		E5F607182AB3CDEF04425535 /* StackedCardDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */; };
-		B3C4D5E6F7081AABCDEF2345 /* WordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */; };
-		F3E1CBA1A876543AE5F6073A /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */; };
 		AA000001B234567890ABCDEF /* EditProfileView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000001C234567890ABCDEF /* EditProfileView.swift */; };
 		AA000002B234567890ABCDEF /* NotificationsSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */; };
 		AA000003B234567890ABCDEF /* AccountSettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000003C234567890ABCDEF /* AccountSettingsView.swift */; };
 		AA000004B234567890ABCDEF /* HelpSupportView.swift in Sources */ = {isa = PBXBuildFile; fileRef = AA000004C234567890ABCDEF /* HelpSupportView.swift */; };
+		AB12CD34EF56AB78CD90EF12 /* AccountSheetView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 12AB34CD56EF78AB90CD12EF /* AccountSheetView.swift */; };
+		AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */; };
+		B3C4D5E6F7081AABCDEF2345 /* WordCardView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */; };
 		BB000005B234567890ABCDEF /* GracePeriodExpiredView.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */; };
+		C1AC34834AA30338680B2A5A /* OtherTabs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2C1911E28486ADF1DD637173 /* OtherTabs.swift */; };
 		CC000006B234567890ABCDEF /* ThemeManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = CC000006C234567890ABCDEF /* ThemeManager.swift */; };
+		CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */ = {isa = PBXBuildFile; fileRef = 84C2FFE03108122F3ED8FEE3 /* Color+HSL.swift */; };
+		D9D67BC07F8BC0A3C34D8266 /* FloatingTabBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = 9DE10E077EB19A349A5775D7 /* FloatingTabBar.swift */; };
+		E2D1CBA0F8765432E5F60729 /* CardBackgroundModifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */; };
+		E5F607182AB3CDEF04425535 /* StackedCardDeck.swift in Sources */ = {isa = PBXBuildFile; fileRef = D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */; };
+		F1A2B3C4D5E6F7081234ABCD /* WordDetailView.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */; };
+		F3E1CBA1A876543AE5F6073A /* AppRoute.swift in Sources */ = {isa = PBXBuildFile; fileRef = C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */; };
+		FAE29C8933E1D2B3D77A571F /* AuthService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 4535146DD2BF10DB9C739F30 /* AuthService.swift */; };
+		FED1CBA098765432E5F60718 /* AppIntents.swift in Sources */ = {isa = PBXBuildFile; fileRef = A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -61,7 +62,6 @@
 		3DD397E4664B1F5DA9FD1398 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = Search/SearchViewModel.swift; sourceTree = "<group>"; };
 		4535146DD2BF10DB9C739F30 /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
-		5678DEF0GHIJ1234K5L6MNOP /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
 		504EC3041FED79650016851F /* App.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = App.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		504EC3071FED79650016851F /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -70,6 +70,8 @@
 		504EC3111FED79650016851F /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		504EC3131FED79650016851F /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
+		5678DEF0GHIJ1234K5L6MNOP /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
+		5A49A6E32F81FECC0087AEB4 /* SetNewPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetNewPasswordView.swift; sourceTree = "<group>"; };
 		6BA001F7992CA655D7B5931B /* VocabularyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocabularyService.swift; sourceTree = "<group>"; };
 		799AFC8CE50ADE592541958B /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocabularyService.swift; sourceTree = "<group>"; };
@@ -78,14 +80,25 @@
 		91B307A17769D7E8A299CAA4 /* AudioService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		92303A00F92BED6BE63141A5 /* Word.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
 		9DE10E077EB19A349A5775D7 /* FloatingTabBar.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = FloatingTabBar.swift; sourceTree = "<group>"; };
+		A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
 		A1B2C3D4E5F60718DEADBEEF /* WordDetailView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = WordDetailView.swift; sourceTree = "<group>"; };
+		A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WordCardView.swift; path = Learn/WordCardView.swift; sourceTree = "<group>"; };
 		A5715A0F40EF4DED207C5812 /* Buttons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Buttons.swift; path = Components/Buttons.swift; sourceTree = "<group>"; };
+		AA000001C234567890ABCDEF /* EditProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
+		AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
+		AA000003C234567890ABCDEF /* AccountSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccountSettingsView.swift; sourceTree = "<group>"; };
+		AA000004C234567890ABCDEF /* HelpSupportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
 		ACC8AB358C5CA2BF6044AC3C /* Typography.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Typography.swift; sourceTree = "<group>"; };
 		ADAFA7606093D890FACB8745 /* AudioService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AudioService.swift; sourceTree = "<group>"; };
 		AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_App.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.release.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.release.xcconfig"; sourceTree = "<group>"; };
+		B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CardBackgroundModifier.swift; path = Components/CardBackgroundModifier.swift; sourceTree = "<group>"; };
+		BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GracePeriodExpiredView.swift; sourceTree = "<group>"; };
 		BEF736059A901232C8D2297B /* Buttons.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = Buttons.swift; path = Components/Buttons.swift; sourceTree = "<group>"; };
+		C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRoute.swift; path = Navigation/AppRoute.swift; sourceTree = "<group>"; };
 		C905450FAC03FAF7132FF510 /* ProgressService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
+		CC000006C234567890ABCDEF /* ThemeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
+		D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StackedCardDeck.swift; path = Components/StackedCardDeck.swift; sourceTree = "<group>"; };
 		E194CC1F78CDA0E2C70B6A13 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = Search/SearchViewModel.swift; sourceTree = "<group>"; };
 		E2EFEA5B41AB38998FAFA8E0 /* OtherTabs.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OtherTabs.swift; sourceTree = "<group>"; };
 		E47D2B2636DAA7890742D094 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
@@ -93,17 +106,6 @@
 		EF4531F85D1BA4DCC08F0F73 /* ProgressService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
 		F9DF97E6EE3616C06E7CF119 /* OxfordPronunciationApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OxfordPronunciationApp.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
-		A1B2C3D4E5F60718ABCDEF01 /* AppIntents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AppIntents.swift; sourceTree = "<group>"; };
-		B2C3D4E5F6071829ABCDEF02 /* CardBackgroundModifier.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = CardBackgroundModifier.swift; path = Components/CardBackgroundModifier.swift; sourceTree = "<group>"; };
-		C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = AppRoute.swift; path = Navigation/AppRoute.swift; sourceTree = "<group>"; };
-		D4E5F6071829AB3CDEF04424 /* StackedCardDeck.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = StackedCardDeck.swift; path = Components/StackedCardDeck.swift; sourceTree = "<group>"; };
-		A2B3C4D5E6F70819ABCD1234 /* WordCardView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = WordCardView.swift; path = Learn/WordCardView.swift; sourceTree = "<group>"; };
-		AA000001C234567890ABCDEF /* EditProfileView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = EditProfileView.swift; sourceTree = "<group>"; };
-		AA000002C234567890ABCDEF /* NotificationsSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = NotificationsSettingsView.swift; sourceTree = "<group>"; };
-		AA000003C234567890ABCDEF /* AccountSettingsView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AccountSettingsView.swift; sourceTree = "<group>"; };
-		AA000004C234567890ABCDEF /* HelpSupportView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = HelpSupportView.swift; sourceTree = "<group>"; };
-		BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = GracePeriodExpiredView.swift; sourceTree = "<group>"; };
-		CC000006C234567890ABCDEF /* ThemeManager.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ThemeManager.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -173,6 +175,7 @@
 				AA000003C234567890ABCDEF /* AccountSettingsView.swift */,
 				AA000004C234567890ABCDEF /* HelpSupportView.swift */,
 				BB000005C234567890ABCDEF /* GracePeriodExpiredView.swift */,
+				5A49A6E32F81FECC0087AEB4 /* SetNewPasswordView.swift */,
 			);
 			path = Features;
 			sourceTree = "<group>";
@@ -404,6 +407,7 @@
 				7D4197BF2265B2399230F674 /* Word.swift in Sources */,
 				0101242A8C80CBA9D1DC6C33 /* AudioService.swift in Sources */,
 				4E037E90A1656ED7FF4517F0 /* VocabularyService.swift in Sources */,
+				5A49A6E42F81FECC0087AEB4 /* SetNewPasswordView.swift in Sources */,
 				4B21D8A5B27F649810C47685 /* ProgressService.swift in Sources */,
 				942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */,
 				AEDD8527E8996E47B6A05954 /* SearchViewModel.swift in Sources */,

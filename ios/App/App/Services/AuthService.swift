@@ -1,4 +1,5 @@
 import Foundation
+import Security
 
 struct Session: Codable {
     let accessToken: String
@@ -82,6 +83,10 @@ final class AuthService {
     var pendingConfirmationEmail: String?
     var signUpDate: Date?
 
+    /// Set to `true` when the user opens a password-recovery email link.
+    /// The UI observes this to present a "set new password" screen.
+    var isPasswordRecovery: Bool = false
+
     var isPendingConfirmation: Bool {
         pendingConfirmationEmail != nil && !isAuthenticated
     }
@@ -97,11 +102,20 @@ final class AuthService {
 
     private var storedSession: Session?
 
+    /// Timestamp of the most recent silent confirmation probe. Used to
+    /// throttle `checkConfirmationStatus` against scene-phase churn.
+    private var lastConfirmationCheck: Date?
+
+    /// Keychain account identifier for the sign-up password cached during
+    /// the email-confirmation grace period.
+    private let pendingPasswordKeychainAccount = "pending_confirmation_password"
+
     private init() {
         loadSession()
         loadPendingConfirmation()
         Task {
             await checkAndRefreshIfNeeded()
+            await checkConfirmationStatus()
         }
     }
 
@@ -150,6 +164,58 @@ final class AuthService {
         UserDefaults.standard.removeObject(forKey: "pending_confirmation_date")
         self.pendingConfirmationEmail = nil
         self.signUpDate = nil
+        clearPendingPassword()
+        lastConfirmationCheck = nil
+    }
+
+    // MARK: - Pending Password Keychain
+
+    /// Stores the sign-up password in the Keychain so the app can silently
+    /// verify confirmation status later without asking the user to retype it.
+    /// Cleared the moment a real session is established.
+    private func savePendingPassword(_ password: String) {
+        guard let data = password.data(using: .utf8) else { return }
+
+        // Delete any existing entry first so we can upsert cleanly.
+        let deleteQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: pendingPasswordKeychainAccount
+        ]
+        SecItemDelete(deleteQuery as CFDictionary)
+
+        let addQuery: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: pendingPasswordKeychainAccount,
+            kSecAttrAccessible as String: kSecAttrAccessibleAfterFirstUnlockThisDeviceOnly,
+            kSecValueData as String: data
+        ]
+        SecItemAdd(addQuery as CFDictionary, nil)
+    }
+
+    private func loadPendingPassword() -> String? {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: pendingPasswordKeychainAccount,
+            kSecReturnData as String: true,
+            kSecMatchLimit as String: kSecMatchLimitOne
+        ]
+
+        var result: AnyObject?
+        let status = SecItemCopyMatching(query as CFDictionary, &result)
+        guard status == errSecSuccess,
+              let data = result as? Data,
+              let password = String(data: data, encoding: .utf8) else {
+            return nil
+        }
+        return password
+    }
+
+    private func clearPendingPassword() {
+        let query: [String: Any] = [
+            kSecClass as String: kSecClassGenericPassword,
+            kSecAttrAccount as String: pendingPasswordKeychainAccount
+        ]
+        SecItemDelete(query as CFDictionary)
     }
 
     /// Clears the stored session and signs the user out.
@@ -223,6 +289,7 @@ final class AuthService {
         // No session means email confirmation is required — start the grace period.
         if let _ = try? JSONDecoder().decode(SignUpUser.self, from: data) {
             savePendingConfirmation(email: email)
+            savePendingPassword(password)
             return nil
         }
 
@@ -353,7 +420,13 @@ final class AuthService {
 
     /// Resends the sign-up confirmation email for the pending address.
     func resendConfirmationEmail() async throws {
-        guard let email = pendingConfirmationEmail else { return }
+        guard let email = pendingConfirmationEmail, !email.isEmpty else {
+            throw NSError(
+                domain: "AuthError",
+                code: -1,
+                userInfo: [NSLocalizedDescriptionKey: "No pending email to resend. Please sign up again."]
+            )
+        }
         guard let url = authURL(path: "resend", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
 
         var request = URLRequest(url: url)
@@ -366,11 +439,71 @@ final class AuthService {
 
         let (data, response) = try await URLSession.shared.data(for: request)
 
-        guard let httpResponse = response as? HTTPURLResponse,
-              (200...299).contains(httpResponse.statusCode) else {
-            let errorBody = String(data: data, encoding: .utf8) ?? ""
-            print("Resend confirmation failed: \(errorBody)")
+        guard let httpResponse = response as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
+        }
+
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorBody = String(data: data, encoding: .utf8) ?? ""
+            print("Resend confirmation failed with status \(httpResponse.statusCode): \(errorBody)")
+
+            // Parse a human-readable message from Supabase's error body.
+            var message = "Could not resend the confirmation email. Please try again."
+            if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+                if let msg = errorDict["msg"] as? String { message = msg }
+                else if let msg = errorDict["error_description"] as? String { message = msg }
+                else if let msg = errorDict["message"] as? String { message = msg }
+            }
+
+            // Supabase rate-limits resends (default: once every 60 seconds).
+            if httpResponse.statusCode == 429 {
+                message = "Please wait a minute before requesting another email."
+            }
+
+            throw NSError(
+                domain: "AuthError",
+                code: httpResponse.statusCode,
+                userInfo: [NSLocalizedDescriptionKey: message]
+            )
+        }
+    }
+
+    /// Silently probes Supabase to see whether the user's email has been
+    /// confirmed since sign-up. If so, a real session is established and the
+    /// pending state is cleared automatically by `signIn`.
+    ///
+    /// Returns `true` iff the user ends up authenticated. Never surfaces the
+    /// expected "email not confirmed" response as a user-facing error.
+    func checkConfirmationStatus(force: Bool = false) async -> Bool {
+        // Nothing to check.
+        if pendingConfirmationEmail == nil {
+            return isAuthenticated
+        }
+
+        // Throttle unless forced (e.g. explicit button tap).
+        if !force, let last = lastConfirmationCheck,
+           Date().timeIntervalSince(last) < 10 {
+            return isAuthenticated
+        }
+        lastConfirmationCheck = Date()
+
+        guard let email = pendingConfirmationEmail,
+              let password = loadPendingPassword() else {
+            return false
+        }
+
+        let previousError = lastError
+        do {
+            _ = try await signIn(email: email, password: password)
+            return true
+        } catch {
+            let description = (error as NSError).localizedDescription.lowercased()
+            if description.contains("email not confirmed") ||
+                description.contains("confirm your email") {
+                // Expected: the user hasn't confirmed yet. Don't pollute UI.
+                lastError = previousError
+            }
+            return false
         }
     }
 
@@ -395,6 +528,11 @@ final class AuthService {
     }
 
     /// Handles auth callbacks coming back from Supabase email links.
+    ///
+    /// Supabase appends `type=signup` for email confirmations and `type=recovery`
+    /// for password reset links. For recovery, we flip `isPasswordRecovery` so
+    /// the UI can present the "set new password" screen instead of simply
+    /// signing the user in silently.
     func handleIncomingAuthURL(_ url: URL) async {
         guard matchesAuthRedirect(url) else { return }
 
@@ -417,10 +555,61 @@ final class AuthService {
             createdAt: Date()
         )
 
+        let linkType = parameters["type"]?.lowercased()
         saveSession(session: session)
-        clearPendingConfirmation()
         lastError = nil
+
+        if linkType == "recovery" {
+            // Keep the user on the "set new password" screen. Do not clear the
+            // pending-confirmation grace period here — the user hasn't completed
+            // a sign-up flow.
+            isPasswordRecovery = true
+        } else {
+            clearPendingConfirmation()
+        }
+
         await fetchCurrentUser()
+    }
+
+    /// Updates the current user's password. Used after the user opens a
+    /// password-recovery email link and enters a new password.
+    func updatePassword(newPassword: String) async throws {
+        guard let sessionToken else {
+            throw NSError(domain: "AuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No active session."])
+        }
+        guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/user") else {
+            throw URLError(.badURL)
+        }
+
+        var request = URLRequest(url: url)
+        request.httpMethod = "PUT"
+        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
+        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+
+        let body = ["password": newPassword]
+        request.httpBody = try JSONSerialization.data(withJSONObject: body)
+
+        let (data, response) = try await URLSession.shared.data(for: request)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorBody = String(data: data, encoding: .utf8) ?? "No error body"
+            print("Update password failed with status \(httpResponse.statusCode): \(errorBody)")
+            if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let msg = (errorDict["msg"] as? String) ?? (errorDict["error_description"] as? String) {
+                throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
+            }
+            throw URLError(.badServerResponse)
+        }
+    }
+
+    /// Called by the UI when the user finishes or cancels the recovery flow.
+    func finishPasswordRecovery() {
+        isPasswordRecovery = false
     }
 
     private func authURL(path: String, redirectTo: URL? = nil) -> URL? {

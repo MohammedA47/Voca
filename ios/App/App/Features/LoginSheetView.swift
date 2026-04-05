@@ -17,6 +17,17 @@ struct LoginSheetView: View {
     @State private var showPendingConfirmation = false
     @State private var resendLoading = false
     @State private var resendSuccess = false
+    @State private var resendError: String? = nil
+    @State private var verifyLoading = false
+    @State private var verifyError: String? = nil
+
+    init(startInPendingConfirmation: Bool = false) {
+        _showPendingConfirmation = State(initialValue: startInPendingConfirmation)
+        if startInPendingConfirmation,
+           let pending = AuthService.shared.pendingConfirmationEmail {
+            _email = State(initialValue: pending)
+        }
+    }
     
     var body: some View {
         if showPendingConfirmation {
@@ -168,7 +179,7 @@ struct LoginSheetView: View {
                     Text("Account Created!")
                         .font(.title2.bold())
 
-                    Text("We sent a confirmation email to **\(email)**. You can use the app for 48 hours while you confirm.")
+                    Text("We sent a confirmation email to **\(authService.pendingConfirmationEmail ?? email)**. You can use the app for 48 hours while you confirm.")
                         .font(.subheadline)
                         .foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
@@ -176,18 +187,56 @@ struct LoginSheetView: View {
                 .padding(.top, Spacing.xl)
 
                 VStack(spacing: Spacing.md) {
-                    // Continue Button
-                    Button(action: { dismiss() }) {
+                    // Primary: verify confirmation against Supabase and dismiss on success
+                    if let verifyError {
+                        Text(verifyError)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+
+                    Button(action: {
+                        Task { await verifyConfirmation() }
+                    }) {
                         HStack {
                             Spacer()
-                            Text("Continue")
-                                .font(.headline)
+                            if verifyLoading {
+                                ProgressView()
+                                    .tint(.white)
+                            } else {
+                                Text("I've Confirmed My Email")
+                                    .font(.headline)
+                            }
                             Spacer()
                         }
                         .foregroundStyle(.white)
                         .padding()
                         .background(Color.webPrimary)
                         .clipShape(.rect(cornerRadius: 12))
+                    }
+                    .disabled(verifyLoading)
+
+                    // Secondary: continue into the app using the 48-hour grace period
+                    Button(action: { dismiss() }) {
+                        HStack {
+                            Spacer()
+                            Text("Continue Without Confirming")
+                                .font(.subheadline.weight(.medium))
+                            Spacer()
+                        }
+                        .foregroundStyle(Color.webPrimary)
+                        .padding()
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(.rect(cornerRadius: 12))
+                    }
+
+                    if let resendError {
+                        Text(resendError)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
                     }
 
                     // Resend Email Button
@@ -225,6 +274,15 @@ struct LoginSheetView: View {
                     dismiss()
                 }
             }
+        }
+        .task {
+            // Auto-close the sheet if the user already confirmed via another device.
+            if await authService.checkConfirmationStatus() {
+                dismiss()
+            }
+        }
+        .onChange(of: authService.isAuthenticated) { _, isAuth in
+            if isAuth { dismiss() }
         }
     }
 
@@ -370,14 +428,34 @@ struct LoginSheetView: View {
         }
     }
 
+    private func verifyConfirmation() async {
+        verifyError = nil
+        verifyLoading = true
+        defer { verifyLoading = false }
+
+        let confirmed = await authService.checkConfirmationStatus(force: true)
+        if confirmed {
+            // Dismissal handled by the .onChange(of: authService.isAuthenticated) above.
+            return
+        }
+        // If the service set a real error (non-"email not confirmed"), surface it;
+        // otherwise show the generic not-yet message.
+        verifyError = authService.lastError
+            ?? "We couldn't verify your email yet. Please tap the link in your inbox, then try again."
+    }
+
     private func resendEmail() async {
+        resendError = nil
         resendLoading = true
         defer { resendLoading = false }
         do {
             try await authService.resendConfirmationEmail()
             resendSuccess = true
+            // Allow the user to request another resend after the rate-limit window.
+            try? await Task.sleep(nanoseconds: 60 * 1_000_000_000)
+            resendSuccess = false
         } catch {
-            // Silently fail — the button text stays unchanged
+            resendError = error.localizedDescription
         }
     }
 

@@ -8,6 +8,7 @@ struct GracePeriodExpiredView: View {
 
     @State private var resendLoading = false
     @State private var resendSuccess = false
+    @State private var resendError: String? = nil
     @State private var showLogin = false
 
     var body: some View {
@@ -56,6 +57,14 @@ struct GracePeriodExpiredView: View {
                         .clipShape(.rect(cornerRadius: 12))
                     }
 
+                    if let resendError {
+                        Text(resendError)
+                            .font(.caption)
+                            .foregroundStyle(.red)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal)
+                    }
+
                     // Resend Confirmation Email
                     Button(action: {
                         Task { await resendEmail() }
@@ -97,13 +106,17 @@ struct GracePeriodExpiredView: View {
     }
 
     private func resendEmail() async {
+        resendError = nil
         resendLoading = true
         defer { resendLoading = false }
         do {
             try await authService.resendConfirmationEmail()
             resendSuccess = true
+            // Allow another resend after the Supabase rate-limit window.
+            try? await Task.sleep(nanoseconds: 60 * 1_000_000_000)
+            resendSuccess = false
         } catch {
-            // Silently fail
+            resendError = error.localizedDescription
         }
     }
 }
