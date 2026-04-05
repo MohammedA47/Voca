@@ -28,11 +28,17 @@ struct AccountSheetView: View {
                 // ── Profile Row ──────────────────────────────
                 profileSection
 
-                // ── Preferences ──────────────────────────────
-                preferencesSection
+                // ── Learning ─────────────────────────────────
+                learningSection
 
-                // ── General ──────────────────────────────────
-                generalSection
+                // ── Appearance ───────────────────────────────
+                appearanceSection
+
+                // ── App ──────────────────────────────────────
+                appSection
+
+                // ── Support ──────────────────────────────────
+                supportSection
 
                 // ── Sign Out & Delete ────────────────────────
                 signOutSection
@@ -156,27 +162,10 @@ struct AccountSheetView: View {
         }
     }
 
-    // MARK: - Preferences Section
+    // MARK: - Learning Section
 
-    private var preferencesSection: some View {
-        Section(header: Text("Settings")) {
-            // ── Loop Words ────────────────────────────────
-            HStack(spacing: Spacing.sm + Spacing.xs) {
-                SettingsIcon(systemName: "repeat", color: .green)
-
-                Toggle(isOn: $isLooping) {
-                    VStack(alignment: .leading, spacing: Spacing.xs / 2) {
-                        Text("Loop Words")
-                            .font(.body)
-                            .foregroundStyle(.primary)
-                        Text("Repeat list when finished")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
-                    }
-                }
-            }
-            .accessibilityElement(children: .combine)
-
+    private var learningSection: some View {
+        Section(header: Text("Learning")) {
             // ── Phonetics Mode ────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(
@@ -193,6 +182,23 @@ struct AccountSheetView: View {
                         .foregroundStyle(.primary)
                 }
                 .pickerStyle(.menu)
+            }
+            .accessibilityElement(children: .combine)
+
+            // ── Loop Words ────────────────────────────────
+            HStack(spacing: Spacing.sm + Spacing.xs) {
+                SettingsIcon(systemName: "repeat", color: .green)
+
+                Toggle(isOn: $isLooping) {
+                    VStack(alignment: .leading, spacing: Spacing.xs / 2) {
+                        Text("Loop Words")
+                            .font(.body)
+                            .foregroundStyle(.primary)
+                        Text("Repeat list when finished")
+                            .font(.caption)
+                            .foregroundStyle(.secondary)
+                    }
+                }
             }
             .accessibilityElement(children: .combine)
 
@@ -261,6 +267,13 @@ struct AccountSheetView: View {
                 }
             }
             .accessibilityElement(children: .combine)
+        }
+    }
+
+    // MARK: - Appearance Section
+
+    private var appearanceSection: some View {
+        Section(header: Text("Appearance")) {
 
             // ── Appearance ────────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
@@ -309,10 +322,10 @@ struct AccountSheetView: View {
         }
     }
 
-    // MARK: - General Section
+    // MARK: - App Section
 
-    private var generalSection: some View {
-        Section {
+    private var appSection: some View {
+        Section(header: Text("App")) {
             // ── Notifications (push navigation) ──────────
             NavigationLink(destination: NotificationsSettingsView()) {
                 SettingsRow(
@@ -332,7 +345,13 @@ struct AccountSheetView: View {
             }
             .accessibilityLabel("Subscription & Billing")
             .accessibilityHint("Opens subscription and billing settings")
+        }
+    }
 
+    // MARK: - Support Section
+
+    private var supportSection: some View {
+        Section(header: Text("Support")) {
             // ── Help & Support (push navigation) ─────────
             NavigationLink(destination: HelpSupportView()) {
                 SettingsRow(
