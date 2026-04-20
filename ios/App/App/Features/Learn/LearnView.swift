@@ -238,9 +238,11 @@ final class LearnViewModel {
     var isPlayAnimating: Bool = false
 
     private var words: [Word] = []
+    private(set) var availableWordTypes: [String] = []
     var currentIndex: Int = 0
     private let vocabularyService = VocabularyService.shared
     private var progressService: ProgressService?
+    private var loadWordsTask: Task<Void, Never>?
 
     init(progressService: ProgressService? = nil) {
         self.progressService = progressService
@@ -249,8 +251,7 @@ final class LearnViewModel {
         if vocabularyService.isLoaded {
             loadWordsForLevel()
         } else {
-            // Wait for vocabulary to load using async/await continuation
-            Task { [weak self] in
+            loadWordsTask = Task { [weak self] in
                 await self?.vocabularyService.waitUntilLoaded()
                 self?.loadWordsForLevel()
             }
@@ -274,18 +275,16 @@ final class LearnViewModel {
         }
     }
 
-    var availableWordTypes: [String] {
-        let levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
-        let counts = Dictionary(grouping: levelWords, by: { $0.type }).mapValues { $0.count }
-        return counts.keys.sorted { counts[$0, default: 0] > counts[$1, default: 0] }
-    }
-
     private func loadWordsForLevel() {
-        var levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
+        let levelWords = vocabularyService.wordsByLevel[selectedLevel] ?? []
+        let counts = Dictionary(grouping: levelWords, by: \.type).mapValues(\.count)
+        availableWordTypes = counts.keys.sorted { counts[$0, default: 0] > counts[$1, default: 0] }
+
+        var filteredWords = levelWords
         if let type = selectedWordType {
-            levelWords = levelWords.filter { $0.type == type }
+            filteredWords = levelWords.filter { $0.type == type }
         }
-        self.words = levelWords
+        self.words = filteredWords
         // Clamp currentIndex to valid bounds after filtering
         self.currentIndex = words.isEmpty ? 0 : min(currentIndex, words.count - 1)
     }

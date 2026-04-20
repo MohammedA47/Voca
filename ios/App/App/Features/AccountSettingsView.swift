@@ -240,46 +240,13 @@ struct AccountSettingsView: View {
     }
 
     private func changePassword() {
-        guard let sessionToken = authService.sessionToken else {
-            passwordChangeError = "No active session"
-            return
-        }
-
         isChangingPassword = true
         passwordChangeError = nil
         passwordChangeSuccess = false
 
         Task {
             do {
-                // Call Supabase PUT /auth/v1/user endpoint
-                guard let url = URL(string: "https://brknoeqgpejhxsqsjnan.supabase.co/auth/v1/user") else {
-                    throw URLError(.badURL)
-                }
-
-                var request = URLRequest(url: url)
-                request.httpMethod = "PUT"
-                request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
-                request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-                let body: [String: String] = ["password": newPassword]
-                request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-                let (data, response) = try await URLSession.shared.data(for: request)
-
-                guard let httpResponse = response as? HTTPURLResponse else {
-                    throw URLError(.badServerResponse)
-                }
-
-                if !(200...299).contains(httpResponse.statusCode) {
-                    let errorBody = String(data: data, encoding: .utf8) ?? "Unknown error"
-                    print("Password change failed with status \(httpResponse.statusCode): \(errorBody)")
-
-                    if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-                       let msg = errorDict["msg"] as? String {
-                        throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
-                    }
-                    throw URLError(.badServerResponse)
-                }
+                try await authService.updatePassword(newPassword: newPassword)
 
                 // Success
                 await MainActor.run {

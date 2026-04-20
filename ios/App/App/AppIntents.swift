@@ -1,5 +1,6 @@
 import AppIntents
 import CoreSpotlight
+import Foundation
 
 // MARK: - Learn Word Intent
 
@@ -53,25 +54,25 @@ struct PronunciationAppShortcuts: AppShortcutsProvider {
 // MARK: - Spotlight Indexing
 
 /// Indexes vocabulary words in Core Spotlight for system-wide search.
-@MainActor
 enum SpotlightIndexer {
+    private static let indexedVocabularyCountKey = "spotlightIndexedVocabularyCount"
+
     /// Call once after vocabulary loads to index all words in batches.
-    static func indexAllWords() {
-        let vocabularyService = VocabularyService.shared
-        guard vocabularyService.isLoaded else { return }
+    static func indexAllWordsIfNeeded() async {
+        let words = await MainActor.run { () -> [Word] in
+            let vocabularyService = VocabularyService.shared
+            guard vocabularyService.isLoaded else { return [] }
+            return vocabularyService.words
+        }
+        let totalWords = words.count
+        guard totalWords > 0 else { return }
+        let defaults = UserDefaults.standard
+        guard defaults.integer(forKey: indexedVocabularyCountKey) != totalWords else { return }
 
         let batchSize = 500
-        let words = Array(vocabularyService.words)
-        let totalWords = words.count
-        let searchableIndex = CSSearchableIndex.default()
-        var indexedCount = 0
-
-        // Index words in batches of 500 to avoid memory spikes
-        for batchStart in stride(from: 0, to: words.count, by: batchSize) {
+        let batches = stride(from: 0, to: words.count, by: batchSize).map { batchStart in
             let batchEnd = min(batchStart + batchSize, words.count)
-            let batchWords = Array(words[batchStart..<batchEnd])
-
-            let items = batchWords.map { word -> CSSearchableItem in
+            return words[batchStart..<batchEnd].map { word -> CSSearchableItem in
                 let attributes = CSSearchableItemAttributeSet(contentType: .text)
                 attributes.title = word.word.capitalized
                 attributes.contentDescription = "\(word.type) (\(word.level)) — \(word.definition ?? "Learn this word")"
@@ -83,15 +84,38 @@ enum SpotlightIndexer {
                     attributeSet: attributes
                 )
             }
+        }
 
-            searchableIndex.indexSearchableItems(items) { error in
-                if let error {
-                    print("Spotlight indexing error for batch [\(batchStart)-\(batchEnd)]: \(error.localizedDescription)")
-                } else {
-                    indexedCount += items.count
-                    print("Indexed batch [\(batchStart)-\(batchEnd)]: \(items.count) words (\(indexedCount)/\(totalWords) total).")
+        do {
+            try await Task.detached(priority: .utility) {
+                let searchableIndex = CSSearchableIndex.default()
+                try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                    searchableIndex.deleteSearchableItems(withDomainIdentifiers: ["com.oxford.pronunciation.words"]) { error in
+                        if let error {
+                            continuation.resume(throwing: error)
+                        } else {
+                            continuation.resume()
+                        }
+                    }
                 }
-            }
+
+                for items in batches {
+                    try Task.checkCancellation()
+                    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+                        searchableIndex.indexSearchableItems(items) { error in
+                            if let error {
+                                continuation.resume(throwing: error)
+                            } else {
+                                continuation.resume()
+                            }
+                        }
+                    }
+                }
+            }.value
+
+            defaults.set(totalWords, forKey: indexedVocabularyCountKey)
+        } catch {
+            print("Spotlight indexing error: \(error.localizedDescription)")
         }
     }
 }

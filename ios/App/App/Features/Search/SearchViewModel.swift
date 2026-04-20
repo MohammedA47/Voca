@@ -1,5 +1,4 @@
 import SwiftUI
-import Combine
 
 /// Handles debounced search and type-based filtering for the vocabulary search tab.
 @Observable
@@ -21,11 +20,17 @@ final class SearchViewModel {
     }
 
     private var filterTask: Task<Void, Never>?
+    private var initialLoadTask: Task<Void, Never>?
 
     init() {
-        // Initial load (if already loaded)
         if vocabularyService.isLoaded {
             filterWords()
+        } else {
+            initialLoadTask = Task { [weak self] in
+                await self?.vocabularyService.waitUntilLoaded()
+                guard let self else { return }
+                self.filterWords()
+            }
         }
     }
 
@@ -39,12 +44,13 @@ final class SearchViewModel {
     }
 
     private func filterWords() {
+        filterTask?.cancel()
         let currentSearchText = searchText
         let currentType = selectedWordType
         let wordsByType = vocabularyService.wordsByType
         let allWords = vocabularyService.words
 
-        Task.detached(priority: .userInitiated) { [weak self] in
+        filterTask = Task(priority: .userInitiated) { [weak self] in
             var results: [Word]
             if let type = currentType {
                 results = wordsByType[type] ?? []
@@ -53,11 +59,13 @@ final class SearchViewModel {
             }
 
             if !currentSearchText.isEmpty {
+                let normalizedSearchText = currentSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
                 results = results.filter {
-                    $0.word.localizedCaseInsensitiveContains(currentSearchText)
+                    $0.word.localizedCaseInsensitiveContains(normalizedSearchText)
                 }
             }
 
+            guard !Task.isCancelled else { return }
             let finalResults = results
             await MainActor.run {
                 guard let self = self else { return }

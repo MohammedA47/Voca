@@ -35,6 +35,13 @@ actor AudioCacheActor {
 @MainActor
 final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDelegate {
     static let shared = AudioService()
+    private static let networkSession: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.waitsForConnectivity = true
+        configuration.timeoutIntervalForRequest = 20
+        configuration.timeoutIntervalForResource = 60
+        return URLSession(configuration: configuration)
+    }()
 
     var isSpeaking: Bool = false
     var lastError: String? = nil
@@ -86,7 +93,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
 
             do {
                 let voiceId = self.voiceIds[accent] ?? self.voiceIds["us", default: "cjVigY5qzO86Huf0OWal"]
-                let cacheKey = "\(text)_\(accent)_\(speed)"
+                let cacheKey = "\(text.lowercased())_\(accent)_\(String(format: "%.2f", speed))"
 
                 // Check actor-isolated cache first
                 if let cachedData = await self.audioCache.get(cacheKey) {
@@ -109,6 +116,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
                 request.httpMethod = "POST"
                 request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
                 request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+                request.timeoutInterval = 20
 
                 // Add Authorization header if logged in to get higher rate limits
                 if let token = AuthService.shared.sessionToken {
@@ -123,7 +131,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
 
                 request.httpBody = try JSONSerialization.data(withJSONObject: body)
 
-                let (data, response) = try await URLSession.shared.data(for: request)
+                let (data, response) = try await Self.networkSession.data(for: request)
 
                 guard let httpResponse = response as? HTTPURLResponse else {
                     throw URLError(.badServerResponse)

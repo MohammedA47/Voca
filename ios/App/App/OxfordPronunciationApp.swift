@@ -24,8 +24,7 @@ struct OxfordPronunciationApp: App {
                         .preferredColorScheme(resolvedColorScheme)
                         .id(themeManager.accent)
                         .task {
-                            // Index vocabulary words in Spotlight
-                            SpotlightIndexer.indexAllWords()
+                            await SpotlightIndexer.indexAllWordsIfNeeded()
                         }
                 } else {
                     // Show loading state while vocabulary loads

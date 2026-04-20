@@ -12,6 +12,8 @@ final class ProgressService {
     private let learnedKey = "Oxford_LearnedWords_V2" // Use new key for dictionary migration
     private let legacyLearnedKey = "Oxford_LearnedWords"
     private let bookmarkedKey = "Oxford_BookmarkedWords"
+    @ObservationIgnored private var saveLearnedTask: Task<Void, Never>?
+    @ObservationIgnored private var saveBookmarksTask: Task<Void, Never>?
 
     init() {
         loadProgress()
@@ -100,17 +102,21 @@ final class ProgressService {
     }
 
     private func saveLearned() {
+        saveLearnedTask?.cancel()
         if let data = try? JSONEncoder().encode(learnedWords) {
-            Task.detached(priority: .background) {
-                UserDefaults.standard.set(data, forKey: self.learnedKey)
+            saveLearnedTask = Task(priority: .utility) { [learnedKey] in
+                guard !Task.isCancelled else { return }
+                UserDefaults.standard.set(data, forKey: learnedKey)
             }
         }
     }
 
     private func saveBookmarks() {
+        saveBookmarksTask?.cancel()
         let array = Array(bookmarkedWords)
-        Task.detached(priority: .background) {
-            UserDefaults.standard.set(array, forKey: self.bookmarkedKey)
+        saveBookmarksTask = Task(priority: .utility) { [bookmarkedKey] in
+            guard !Task.isCancelled else { return }
+            UserDefaults.standard.set(array, forKey: bookmarkedKey)
         }
     }
 }

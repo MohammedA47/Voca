@@ -598,10 +598,6 @@ struct ConfirmationStatusView: View {
 
     @State private var resendLoading = false
     @State private var resendSuccess = false
-    @State private var now = Date()
-    @State private var showLogin = false
-
-    private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
     var body: some View {
         ScrollView {
@@ -627,24 +623,26 @@ struct ConfirmationStatusView: View {
 
                 // Countdown
                 if let deadline = authService.graceDeadline {
-                    let remaining = max(deadline.timeIntervalSince(now), 0)
-                    let hours = Int(remaining) / 3600
-                    let minutes = (Int(remaining) % 3600) / 60
-                    let seconds = Int(remaining) % 60
+                    TimelineView(.periodic(from: .now, by: 1)) { context in
+                        let remaining = max(deadline.timeIntervalSince(context.date), 0)
+                        let hours = Int(remaining) / 3600
+                        let minutes = (Int(remaining) % 3600) / 60
+                        let seconds = Int(remaining) % 60
 
-                    VStack(spacing: Spacing.sm) {
-                        Text("Time remaining")
-                            .font(.caption)
-                            .foregroundStyle(.secondary)
+                        VStack(spacing: Spacing.sm) {
+                            Text("Time remaining")
+                                .font(.caption)
+                                .foregroundStyle(.secondary)
 
-                        Text(String(format: "%02d:%02d:%02d", hours, minutes, seconds))
-                            .font(.system(size: 40, weight: .bold, design: .monospaced))
-                            .foregroundStyle(remaining < 3600 ? .red : .orange)
+                            Text(String(format: "%02d:%02d:%02d", hours, minutes, seconds))
+                                .font(.system(size: 40, weight: .bold, design: .monospaced))
+                                .foregroundStyle(remaining < 3600 ? .red : .orange)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color(UIColor.secondarySystemBackground))
+                        .clipShape(.rect(cornerRadius: 12))
                     }
-                    .padding()
-                    .frame(maxWidth: .infinity)
-                    .background(Color(UIColor.secondarySystemBackground))
-                    .clipShape(.rect(cornerRadius: 12))
                 }
 
                 // Actions
@@ -690,7 +688,6 @@ struct ConfirmationStatusView: View {
             }
             .padding(.horizontal, Spacing.lg)
         }
-        .onReceive(timer) { _ in now = Date() }
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {

@@ -19,7 +19,7 @@ final class VocabularyService {
     /// Dictionary for O(1) ID lookups.
     var wordsById: [String: Word] = [:]
 
-    private var loadContinuation: CheckedContinuation<Void, Never>?
+    private var loadContinuations: [CheckedContinuation<Void, Never>] = []
 
     private init() {
         Task {
@@ -28,7 +28,7 @@ final class VocabularyService {
     }
 
     func reloadWords() async {
-        await loadWords()
+        await loadWords(force: true)
     }
 
     /// Waits until vocabulary is loaded using continuation-based async/await.
@@ -40,45 +40,64 @@ final class VocabularyService {
         }
 
         await withCheckedContinuation { continuation in
-            self.loadContinuation = continuation
+            loadContinuations.append(continuation)
         }
     }
 
-    private func loadWords() async {
+    private func loadWords(force: Bool = false) async {
+        if isLoaded && !force { return }
+
         guard let url = Bundle.main.url(forResource: "oxford_vocabulary", withExtension: "json") else {
             let errorMsg = "oxford_vocabulary.json not found in bundle."
             print("ERROR: \(errorMsg)")
-            self.loadError = errorMsg
+            loadError = errorMsg
+            resumeWaiters()
             return
         }
 
         do {
-            let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
-            let decoded = try decoder.decode([Word].self, from: data)
-            let byLevel = Dictionary(grouping: decoded, by: { $0.level })
-            let byType = Dictionary(grouping: decoded, by: { $0.type })
-            let byId = decoded.reduce(into: [String: Word]()) { result, word in result[word.id] = word }
+            let snapshot = try await Task.detached(priority: .userInitiated) {
+                let data = try Data(contentsOf: url, options: [.mappedIfSafe])
+                let decoded = try JSONDecoder().decode([Word].self, from: data)
+                let byLevel = Dictionary(grouping: decoded, by: \.level)
+                let byType = Dictionary(grouping: decoded, by: \.type)
+                let byId = decoded.reduce(into: [String: Word]()) { result, word in
+                    result[word.id] = word
+                }
+                return VocabularySnapshot(
+                    words: decoded,
+                    wordsByLevel: byLevel,
+                    wordsByType: byType,
+                    wordsById: byId
+                )
+            }.value
 
-            self.words = decoded
-            self.wordsByLevel = byLevel
-            self.wordsByType = byType
-            self.wordsById = byId
-            self.isLoaded = true
-            self.loadError = nil
-            print("Successfully loaded \(decoded.count) words.")
-
-            // Resume any waiters
-            self.loadContinuation?.resume()
-            self.loadContinuation = nil
+            words = snapshot.words
+            wordsByLevel = snapshot.wordsByLevel
+            wordsByType = snapshot.wordsByType
+            wordsById = snapshot.wordsById
+            isLoaded = true
+            loadError = nil
+            print("Successfully loaded \(snapshot.words.count) words.")
+            resumeWaiters()
         } catch {
             let errorMsg = "Failed to decode vocabulary: \(error)"
             print("ERROR: \(errorMsg)")
-            self.loadError = errorMsg
-
-            // Resume waiters even on error
-            self.loadContinuation?.resume()
-            self.loadContinuation = nil
+            loadError = errorMsg
+            resumeWaiters()
         }
     }
+
+    private func resumeWaiters() {
+        let continuations = loadContinuations
+        loadContinuations.removeAll(keepingCapacity: false)
+        continuations.forEach { $0.resume() }
+    }
+}
+
+private struct VocabularySnapshot {
+    let words: [Word]
+    let wordsByLevel: [Level: [Word]]
+    let wordsByType: [String: [Word]]
+    let wordsById: [String: Word]
 }

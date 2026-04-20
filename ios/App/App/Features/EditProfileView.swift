@@ -125,11 +125,7 @@ struct EditProfileView: View {
 
         Task {
             do {
-                guard let sessionToken = authService.sessionToken else {
-                    throw NSError(domain: "AuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No active session"])
-                }
-
-                try await updateUserProfile(displayName: trimmedDisplayName, token: sessionToken)
+                try await authService.updateProfile(displayName: trimmedDisplayName)
 
                 successMessage = "Profile updated successfully!"
                 showSuccessMessage = true
@@ -141,41 +137,6 @@ struct EditProfileView: View {
             }
 
             isLoading = false
-        }
-    }
-
-    // MARK: - API Call
-
-    private func updateUserProfile(displayName: String, token: String) async throws {
-        let supabaseUrl = "https://brknoeqgpejhxsqsjnan.supabase.co"
-        guard let url = URL(string: "\(supabaseUrl)/auth/v1/user") else {
-            throw URLError(.badURL)
-        }
-
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let metadata: [String: Any] = ["display_name": displayName]
-        let body: [String: Any] = ["user_metadata": metadata]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-
-        if !(200...299).contains(httpResponse.statusCode) {
-            let errorBody = String(data: data, encoding: .utf8) ?? "No error body"
-            print("Auth API Update Profile failed with status \(httpResponse.statusCode): \(errorBody)")
-
-            if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let msg = errorDict["msg"] as? String {
-                throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
-            }
-            throw URLError(.badServerResponse)
         }
     }
 }

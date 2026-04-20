@@ -91,8 +91,12 @@ struct BookmarksView: View {
 struct ProfileView: View {
     @Environment(ProgressService.self) private var progressService
     private let vocabService = VocabularyService.shared
+    private let levelOrder = ["A1", "A2", "B1", "B2", "C1"]
 
     var body: some View {
+        let streak = progressService.calculateStreak()
+        let learnedWordIDs = Set(progressService.learnedWords.keys)
+
         NavigationStack {
             ZStack {
                 // Adaptive background
@@ -136,10 +140,10 @@ struct ProfileView: View {
                                 .padding(.horizontal, Spacing.md)
 
                             VStack(spacing: Spacing.sm) {
-                                ForEach(["A1", "A2", "B1", "B2", "C1"/*, "C2"*/], id: \.self) { levelStr in
+                                ForEach(levelOrder, id: \.self) { levelStr in
                                     CEFRLevelProgressRow(
                                         level: levelStr,
-                                        learnedWords: progressService.learnedWords,
+                                        learnedWordIDs: learnedWordIDs,
                                         vocabService: vocabService
                                     )
                                 }
@@ -169,10 +173,9 @@ struct ProfileView: View {
                             HStack(spacing: Spacing.sm) {
                                 Image(systemName: "flame.fill")
                                     .font(.title2)
-                                    .foregroundStyle(progressService.calculateStreak() > 0 ? Color.orange : Color.secondary.opacity(0.3))
+                                    .foregroundStyle(streak > 0 ? Color.orange : Color.secondary.opacity(0.3))
 
                                 VStack(alignment: .leading, spacing: 2) {
-                                    let streak = progressService.calculateStreak()
                                     Text(streak > 0 ? "\(streak) Day Streak!" : "Start your streak!")
                                         .font(.body)
                                         .fontWeight(.bold)
@@ -298,7 +301,7 @@ struct StatCard: View {
 // MARK: - CEFR Level Progress Row
 struct CEFRLevelProgressRow: View {
     let level: String
-    let learnedWords: [String: Date]
+    let learnedWordIDs: Set<String>
     let vocabService: VocabularyService
 
     var levelWords: [Word] {
@@ -306,7 +309,11 @@ struct CEFRLevelProgressRow: View {
     }
 
     var learnedCount: Int {
-        levelWords.filter { learnedWords.keys.contains($0.id) }.count
+        levelWords.reduce(into: 0) { count, word in
+            if learnedWordIDs.contains(word.id) {
+                count += 1
+            }
+        }
     }
 
     var totalCount: Int {

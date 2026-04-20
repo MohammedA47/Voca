@@ -1,6 +1,17 @@
 import Foundation
 import Security
 
+private enum AuthServiceError: LocalizedError {
+    case missingSession
+
+    var errorDescription: String? {
+        switch self {
+        case .missingSession:
+            return "No active session."
+        }
+    }
+}
+
 struct Session: Codable {
     let accessToken: String
     let refreshToken: String?
@@ -25,8 +36,7 @@ struct Session: Codable {
 
         // Try to decode createdAt, otherwise use current date
         if let createdAtString = try container.decodeIfPresent(String.self, forKey: .createdAt) {
-            let formatter = ISO8601DateFormatter()
-            self.createdAt = formatter.date(from: createdAtString)
+            self.createdAt = Self.iso8601Formatter.date(from: createdAtString)
         } else {
             self.createdAt = Date()
         }
@@ -48,10 +58,11 @@ struct Session: Codable {
         try container.encodeIfPresent(user, forKey: .user)
 
         if let createdAt = createdAt {
-            let formatter = ISO8601DateFormatter()
-            try container.encode(formatter.string(from: createdAt), forKey: .createdAt)
+            try container.encode(Self.iso8601Formatter.string(from: createdAt), forKey: .createdAt)
         }
     }
+
+    private static let iso8601Formatter = ISO8601DateFormatter()
 }
 
 struct AuthUser: Codable {
@@ -73,6 +84,16 @@ struct SignUpUser: Codable {
 @MainActor
 final class AuthService {
     static let shared = AuthService()
+    private static let sessionKey = "supabase_session"
+    private static let pendingConfirmationEmailKey = "pending_confirmation_email"
+    private static let pendingConfirmationDateKey = "pending_confirmation_date"
+    private static let authSession: URLSession = {
+        let configuration = URLSessionConfiguration.default
+        configuration.waitsForConnectivity = true
+        configuration.timeoutIntervalForRequest = 30
+        configuration.timeoutIntervalForResource = 60
+        return URLSession(configuration: configuration)
+    }()
 
     var currentUser: AuthUser?
     var sessionToken: String?
@@ -115,7 +136,7 @@ final class AuthService {
         loadPendingConfirmation()
         Task {
             await checkAndRefreshIfNeeded()
-            await checkConfirmationStatus()
+            _ = await checkConfirmationStatus()
         }
     }
 
@@ -127,7 +148,7 @@ final class AuthService {
     private func saveSession(session: Session) {
         let encoder = JSONEncoder()
         if let encoded = try? encoder.encode(session) {
-            UserDefaults.standard.set(encoded, forKey: "supabase_session")
+            UserDefaults.standard.set(encoded, forKey: Self.sessionKey)
         }
         self.storedSession = session
         self.sessionToken = session.accessToken
@@ -135,7 +156,7 @@ final class AuthService {
     }
 
     private func loadSession() {
-        if let savedData = UserDefaults.standard.data(forKey: "supabase_session") {
+        if let savedData = UserDefaults.standard.data(forKey: Self.sessionKey) {
             let decoder = JSONDecoder()
             if let loadedSession = try? decoder.decode(Session.self, from: savedData) {
                 self.storedSession = loadedSession
@@ -148,20 +169,20 @@ final class AuthService {
     // MARK: - Pending Confirmation Persistence
 
     private func savePendingConfirmation(email: String) {
-        UserDefaults.standard.set(email, forKey: "pending_confirmation_email")
-        UserDefaults.standard.set(Date(), forKey: "pending_confirmation_date")
+        UserDefaults.standard.set(email, forKey: Self.pendingConfirmationEmailKey)
+        UserDefaults.standard.set(Date(), forKey: Self.pendingConfirmationDateKey)
         self.pendingConfirmationEmail = email
         self.signUpDate = Date()
     }
 
     private func loadPendingConfirmation() {
-        self.pendingConfirmationEmail = UserDefaults.standard.string(forKey: "pending_confirmation_email")
-        self.signUpDate = UserDefaults.standard.object(forKey: "pending_confirmation_date") as? Date
+        self.pendingConfirmationEmail = UserDefaults.standard.string(forKey: Self.pendingConfirmationEmailKey)
+        self.signUpDate = UserDefaults.standard.object(forKey: Self.pendingConfirmationDateKey) as? Date
     }
 
     func clearPendingConfirmation() {
-        UserDefaults.standard.removeObject(forKey: "pending_confirmation_email")
-        UserDefaults.standard.removeObject(forKey: "pending_confirmation_date")
+        UserDefaults.standard.removeObject(forKey: Self.pendingConfirmationEmailKey)
+        UserDefaults.standard.removeObject(forKey: Self.pendingConfirmationDateKey)
         self.pendingConfirmationEmail = nil
         self.signUpDate = nil
         clearPendingPassword()
@@ -220,7 +241,7 @@ final class AuthService {
 
     /// Clears the stored session and signs the user out.
     func logout() {
-        UserDefaults.standard.removeObject(forKey: "supabase_session")
+        UserDefaults.standard.removeObject(forKey: Self.sessionKey)
         self.sessionToken = nil
         self.currentUser = nil
         clearPendingConfirmation()
@@ -229,7 +250,7 @@ final class AuthService {
     /// Deletes the user account by clearing all local data and authentication.
     func deleteAccount() async throws {
         // Clear all app-specific UserDefaults
-        UserDefaults.standard.removeObject(forKey: "supabase_session")
+        UserDefaults.standard.removeObject(forKey: Self.sessionKey)
         UserDefaults.standard.removeObject(forKey: "Oxford_BookmarkedWords")
         UserDefaults.standard.removeObject(forKey: "Oxford_LearnedWords")
         UserDefaults.standard.removeObject(forKey: "Oxford_LearnedWords_V2")
@@ -252,15 +273,8 @@ final class AuthService {
         lastError = nil
         guard let url = authURL(path: "signup", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body = ["email": email, "password": password]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await sendJSONRequest(to: url, method: "POST", body: body)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             lastError = "Network error. Check your connection."
@@ -302,15 +316,8 @@ final class AuthService {
         lastError = nil
         guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/token?grant_type=password") else { throw URLError(.badURL) }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body = ["email": email, "password": password]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await sendJSONRequest(to: url, method: "POST", body: body)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             lastError = "Network error. Check your connection."
@@ -344,15 +351,8 @@ final class AuthService {
     func resetPassword(email: String) async throws {
         guard let url = authURL(path: "recover", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body = ["email": email]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await sendJSONRequest(to: url, method: "POST", body: body)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
@@ -385,16 +385,9 @@ final class AuthService {
             return
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body = ["refresh_token": refreshToken]
-        request.httpBody = try? JSONSerialization.data(withJSONObject: body)
-
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await sendJSONRequest(to: url, method: "POST", body: body)
 
             guard let httpResponse = response as? HTTPURLResponse else {
                 print("Invalid response from refresh token endpoint")
@@ -429,15 +422,8 @@ final class AuthService {
         }
         guard let url = authURL(path: "resend", redirectTo: Config.authRedirectURL) else { throw URLError(.badURL) }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "POST"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
         let body: [String: String] = ["type": "signup", "email": email]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response) = try await sendJSONRequest(to: url, method: "POST", body: body)
 
         guard let httpResponse = response as? HTTPURLResponse else {
             throw URLError(.badServerResponse)
@@ -574,37 +560,12 @@ final class AuthService {
     /// Updates the current user's password. Used after the user opens a
     /// password-recovery email link and enters a new password.
     func updatePassword(newPassword: String) async throws {
-        guard let sessionToken else {
-            throw NSError(domain: "AuthError", code: -1, userInfo: [NSLocalizedDescriptionKey: "No active session."])
-        }
-        guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/user") else {
-            throw URLError(.badURL)
-        }
+        _ = try await updateCurrentUser(payload: ["password": newPassword])
+    }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "PUT"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
-        request.setValue("application/json", forHTTPHeaderField: "Content-Type")
-
-        let body = ["password": newPassword]
-        request.httpBody = try JSONSerialization.data(withJSONObject: body)
-
-        let (data, response) = try await URLSession.shared.data(for: request)
-
-        guard let httpResponse = response as? HTTPURLResponse else {
-            throw URLError(.badServerResponse)
-        }
-
-        if !(200...299).contains(httpResponse.statusCode) {
-            let errorBody = String(data: data, encoding: .utf8) ?? "No error body"
-            print("Update password failed with status \(httpResponse.statusCode): \(errorBody)")
-            if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
-               let msg = (errorDict["msg"] as? String) ?? (errorDict["error_description"] as? String) {
-                throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
-            }
-            throw URLError(.badServerResponse)
-        }
+    @discardableResult
+    func updateProfile(displayName: String) async throws -> Data {
+        try await updateCurrentUser(payload: ["user_metadata": ["display_name": displayName]])
     }
 
     /// Called by the UI when the user finishes or cancels the recovery flow.
@@ -662,13 +623,12 @@ final class AuthService {
             return
         }
 
-        var request = URLRequest(url: url)
-        request.httpMethod = "GET"
-        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
-        request.setValue("Bearer \(sessionToken)", forHTTPHeaderField: "Authorization")
-
         do {
-            let (data, response) = try await URLSession.shared.data(for: request)
+            let (data, response) = try await sendRequest(
+                to: url,
+                method: "GET",
+                bearerToken: sessionToken
+            )
             guard let httpResponse = response as? HTTPURLResponse,
                   (200...299).contains(httpResponse.statusCode),
                   let user = try? JSONDecoder().decode(AuthUser.self, from: data) else {
@@ -691,5 +651,86 @@ final class AuthService {
         } catch {
             print("Failed to load confirmed user: \(error.localizedDescription)")
         }
+    }
+
+    private func updateCurrentUser(payload: [String: Any]) async throws -> Data {
+        guard let sessionToken else { throw AuthServiceError.missingSession }
+        guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/user") else {
+            throw URLError(.badURL)
+        }
+
+        let (data, response) = try await sendJSONRequest(
+            to: url,
+            method: "PUT",
+            body: payload,
+            bearerToken: sessionToken
+        )
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            throw URLError(.badServerResponse)
+        }
+
+        guard (200...299).contains(httpResponse.statusCode) else {
+            let errorBody = String(data: data, encoding: .utf8) ?? "No error body"
+            print("Update user failed with status \(httpResponse.statusCode): \(errorBody)")
+            throw authError(from: data, statusCode: httpResponse.statusCode)
+        }
+
+        return data
+    }
+
+    private func sendJSONRequest(
+        to url: URL,
+        method: String,
+        body: Any,
+        bearerToken: String? = nil
+    ) async throws -> (Data, URLResponse) {
+        let bodyData = try JSONSerialization.data(withJSONObject: body)
+        return try await sendRequest(
+            to: url,
+            method: method,
+            body: bodyData,
+            bearerToken: bearerToken
+        )
+    }
+
+    private func sendRequest(
+        to url: URL,
+        method: String,
+        body: Data? = nil,
+        bearerToken: String? = nil
+    ) async throws -> (Data, URLResponse) {
+        var request = URLRequest(url: url)
+        request.httpMethod = method
+        request.setValue(Config.supabaseAnonKey, forHTTPHeaderField: "apikey")
+        if body != nil {
+            request.setValue("application/json", forHTTPHeaderField: "Content-Type")
+        }
+        if let bearerToken {
+            request.setValue("Bearer \(bearerToken)", forHTTPHeaderField: "Authorization")
+        }
+        request.httpBody = body
+        return try await Self.authSession.data(for: request)
+    }
+
+    private func authError(from data: Data, statusCode: Int) -> NSError {
+        if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any] {
+            let message = (errorDict["msg"] as? String)
+                ?? (errorDict["error_description"] as? String)
+                ?? (errorDict["message"] as? String)
+            if let message {
+                return NSError(
+                    domain: "AuthError",
+                    code: statusCode,
+                    userInfo: [NSLocalizedDescriptionKey: message]
+                )
+            }
+        }
+
+        return NSError(
+            domain: "AuthError",
+            code: statusCode,
+            userInfo: [NSLocalizedDescriptionKey: "Request failed. Please try again."]
+        )
     }
 }
