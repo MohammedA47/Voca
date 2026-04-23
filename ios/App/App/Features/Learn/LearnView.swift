@@ -621,7 +621,7 @@ struct LearnHeaderView: View {
                 Button {
                     selectedWordType = nil
                 } label: {
-                    Label("All Types", systemImage: selectedWordType == nil ? "checkmark" : "")
+                    filterMenuLabel("All Types", isSelected: selectedWordType == nil)
                 }
 
                 Divider()
@@ -630,7 +630,7 @@ struct LearnHeaderView: View {
                     Button {
                         selectedWordType = type
                     } label: {
-                        Label(type.capitalized, systemImage: selectedWordType == type ? "checkmark" : "")
+                        filterMenuLabel(type.capitalized, isSelected: selectedWordType == type)
                     }
                 }
             } label: {
@@ -650,6 +650,16 @@ struct LearnHeaderView: View {
             }
             .accessibilityLabel("Account")
             .accessibilityHint("Opens your account panel")
+        }
+    }
+
+    @ViewBuilder
+    private func filterMenuLabel(_ title: String, isSelected: Bool) -> some View {
+        if isSelected {
+            Label(title, systemImage: "checkmark")
+        } else {
+            Text(title)
+                .padding(.leading, 30)
         }
     }
 }
