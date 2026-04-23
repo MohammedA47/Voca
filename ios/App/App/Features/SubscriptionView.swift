@@ -113,12 +113,12 @@ struct SubscriptionSettingsView: View {
 
                     Text("Unlock All")
                         .font(.caption.weight(.semibold))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
                         .padding(.horizontal, Spacing.sm)
                         .padding(.vertical, Spacing.xs / 2)
                         .background(
                             Capsule()
-                                .fill(Color.webPrimary.opacity(0.15))
+                                .fill(Color.accentPrimary.opacity(0.15))
                         )
                 }
 
@@ -148,7 +148,7 @@ struct SubscriptionSettingsView: View {
             .background(
                 LinearGradient(
                     gradient: Gradient(colors: [
-                        Color.webPrimary.opacity(0.08),
+                        Color.accentPrimary.opacity(0.08),
                         Color.adaptiveCardBackground
                     ]),
                     startPoint: .topLeading,
@@ -158,7 +158,7 @@ struct SubscriptionSettingsView: View {
             .cornerRadius(Spacing.md)
             .overlay(
                 RoundedRectangle(cornerRadius: Spacing.md)
-                    .stroke(Color.webPrimary.opacity(0.2), lineWidth: 1)
+                    .stroke(Color.accentPrimary.opacity(0.2), lineWidth: 1)
             )
         }
     }
@@ -176,7 +176,7 @@ struct SubscriptionSettingsView: View {
                 Text("Annual").tag(BillingPeriod.annual)
             }
             .pickerStyle(.segmented)
-            .tint(.webPrimary)
+            .tint(.accentPrimary)
         }
     }
 
@@ -193,7 +193,7 @@ struct SubscriptionSettingsView: View {
                 VStack(alignment: .center, spacing: Spacing.xs) {
                     Text(billingPeriod == .monthly ? "$4.99" : "$29.99")
                         .font(.title.weight(.bold))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
 
                     Text(billingPeriod == .monthly ? "per month" : "per year")
                         .font(.caption)
@@ -208,18 +208,18 @@ struct SubscriptionSettingsView: View {
                     VStack(alignment: .center, spacing: Spacing.xs) {
                         Text("Save")
                             .font(.caption.weight(.semibold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
 
                         Text("38%")
                             .font(.body.weight(.bold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     .frame(maxWidth: .infinity)
                     .padding(Spacing.md)
                     .background(
                         LinearGradient(
                             gradient: Gradient(colors: [
-                                Color.webPrimary.opacity(0.15),
+                                Color.accentPrimary.opacity(0.15),
                                 Color.brandGold.opacity(0.08)
                             ]),
                             startPoint: .topLeading,
@@ -250,7 +250,7 @@ struct SubscriptionSettingsView: View {
                 .padding(Spacing.md)
                 .background(
                     Capsule()
-                        .fill(Color.webPrimary)
+                        .fill(Color.accentPrimary)
                 )
             }
             .buttonStyle(.plain)
@@ -267,11 +267,11 @@ struct SubscriptionSettingsView: View {
                         .font(.body.weight(.semibold))
                     Spacer()
                 }
-                .foregroundStyle(Color.webPrimary)
+                .foregroundStyle(Color.accentPrimary)
                 .padding(Spacing.md)
                 .background(
                     Capsule()
-                        .stroke(Color.webPrimary.opacity(0.3), lineWidth: 1.5)
+                        .stroke(Color.accentPrimary.opacity(0.3), lineWidth: 1.5)
                 )
             }
             .buttonStyle(.plain)
@@ -291,7 +291,7 @@ struct PlanFeatureRow: View {
         HStack(spacing: Spacing.sm) {
             Image(systemName: icon)
                 .font(.system(size: 14, weight: .semibold))
-                .foregroundStyle(Color.webPrimary)
+                .foregroundStyle(Color.accentPrimary)
                 .frame(width: 20, alignment: .center)
 
             Text(text)

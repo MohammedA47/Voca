@@ -87,9 +87,9 @@ struct CardFrontFace: View {
 
                     Button(action: handleToggleLearned) {
                         Circle()
-                            .strokeBorder(isLearned ? Color.webPrimary : Color.secondary.opacity(0.3), lineWidth: 2)
+                            .strokeBorder(isLearned ? Color.accentPrimary : Color.secondary.opacity(0.3), lineWidth: 2)
                             .background(
-                                Circle().fill(isLearned ? Color.webPrimary : Color.clear)
+                                Circle().fill(isLearned ? Color.accentPrimary : Color.clear)
                             )
                             .frame(width: 28, height: 28)
                             .overlay(
@@ -113,17 +113,17 @@ struct CardFrontFace: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, 6)
                         .padding(.vertical, 2)
-                        .background(Color.webPrimary.opacity(0.8))
+                        .background(Color.accentPrimary.opacity(0.8))
                         .clipShape(.rect(cornerRadius: 4))
 
                     Text(phonetic)
                         .font(.system(size: 17, weight: .medium, design: .monospaced))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
 
                     Button(action: onPlay) {
                         Image(systemName: "speaker.wave.3.fill")
                             .font(.callout)
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     .accessibilityLabel("Play pronunciation")
                 }
@@ -143,7 +143,7 @@ struct CardFrontFace: View {
                         HStack {
                             Text("USAGE EXAMPLES")
                                 .font(.system(size: 11, weight: .bold))
-                                .foregroundStyle(Color.webPrimary)
+                                .foregroundStyle(Color.accentPrimary)
                                 .tracking(1)
 
                             Spacer()
@@ -158,7 +158,7 @@ struct CardFrontFace: View {
                             let safeIndex = examples.indices.contains(currentExampleIndex) ? currentExampleIndex : 0
                             Text("\"" + examples[safeIndex] + "\"")
                                 .font(.brandBody(size: 16))
-                                .foregroundStyle(Color.webForeground)
+                                .foregroundStyle(Color.appForeground)
                                 .lineSpacing(5)
                                 .fixedSize(horizontal: false, vertical: true)
                                 .id("front-ex-\(word.id)-\(safeIndex)")
@@ -168,7 +168,7 @@ struct CardFrontFace: View {
                                 Button(action: { onPlayExample(examples[safeIndex]) }) {
                                     Image(systemName: "play.fill")
                                         .font(.system(size: 11))
-                                        .foregroundStyle(Color.webPrimary)
+                                        .foregroundStyle(Color.accentPrimary)
                                 }
                                 .accessibilityLabel("Play example")
 
@@ -176,7 +176,7 @@ struct CardFrontFace: View {
 
                                 ForEach(0..<min(examples.count, 5), id: \.self) { i in
                                     Circle()
-                                        .fill(i == safeIndex ? Color.webPrimary : Color.secondary.opacity(0.25))
+                                        .fill(i == safeIndex ? Color.accentPrimary : Color.secondary.opacity(0.25))
                                         .frame(width: 7, height: 7)
                                 }
                             }
@@ -232,7 +232,7 @@ struct CardFrontFace: View {
             Button(action: handleBookmark) {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                     .font(.title3)
-                    .foregroundStyle(isBookmarked ? Color.webPrimary : Color.secondary.opacity(0.4))
+                    .foregroundStyle(isBookmarked ? Color.accentPrimary : Color.secondary.opacity(0.4))
             }
             .padding(.leading, 22)
             .padding(.bottom, 22)
@@ -278,23 +278,23 @@ struct CardBackFace: View {
                     .foregroundStyle(.white)
                     .padding(.horizontal, 8)
                     .padding(.vertical, 4)
-                    .background(Color.webPrimary)
+                    .background(Color.accentPrimary)
                     .clipShape(.rect(cornerRadius: 6))
             }
 
             Divider()
-                .background(Color.webPrimary.opacity(0.2))
+                .background(Color.accentPrimary.opacity(0.2))
 
             // ── Definition ──────────────────────────────
             VStack(alignment: .leading, spacing: 6) {
                 Text("DEFINITION")
                     .font(.system(size: 11, weight: .bold))
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
                     .tracking(1)
 
                 Text(word.definition ?? "No definition available.")
                     .font(.brandBody(size: 17))
-                    .foregroundStyle(Color.webForeground)
+                    .foregroundStyle(Color.appForeground)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
 
@@ -320,7 +320,7 @@ struct CardBackFace: View {
                                 ForEach(synonyms, id: \.self) { syn in
                                     Text(syn)
                                         .font(.system(size: 14))
-                                        .foregroundStyle(Color.webForeground)
+                                        .foregroundStyle(Color.appForeground)
                                         .padding(.horizontal, 14)
                                         .padding(.vertical, 8)
                                         .overlay(

@@ -25,7 +25,7 @@ struct ContentView: View {
                     .searchable(text: $searchViewModel.searchText, prompt: "Search words...")
             }
         }
-        .tint(.webPrimary)
+        .tint(.accentPrimary)
     }
 }
 

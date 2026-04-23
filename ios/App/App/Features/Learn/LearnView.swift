@@ -70,7 +70,7 @@ struct LearnView: View {
                                 .foregroundStyle(.white)
                                 .frame(height: 44)
                                 .frame(maxWidth: .infinity)
-                                .background(Color.webPrimary)
+                                .background(Color.accentPrimary)
                                 .clipShape(Capsule())
                         }
                         .padding(.horizontal, Spacing.md)
@@ -427,8 +427,8 @@ struct LevelSelector: View {
                     Text(level)
                         .font(.system(size: 14, weight: .bold))
                         .frame(width: 48, height: 34)
-                        .background(selectedLevel == level ? Color.webPrimary : Color.adaptivePillBackground)
-                        .foregroundStyle(selectedLevel == level ? .white : .webForeground)
+                        .background(selectedLevel == level ? Color.accentPrimary : Color.adaptivePillBackground)
+                        .foregroundStyle(selectedLevel == level ? .white : .appForeground)
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
@@ -459,8 +459,8 @@ struct WordTypeSelector: View {
                         .font(.system(size: 13, weight: .semibold))
                         .padding(.horizontal, 14)
                         .padding(.vertical, 7)
-                        .background(selectedType == nil ? Color.webPrimary : Color.adaptivePillBackground)
-                        .foregroundStyle(selectedType == nil ? .white : .webForeground)
+                        .background(selectedType == nil ? Color.accentPrimary : Color.adaptivePillBackground)
+                        .foregroundStyle(selectedType == nil ? .white : .appForeground)
                         .clipShape(Capsule())
                         .overlay(
                             Capsule()
@@ -477,8 +477,8 @@ struct WordTypeSelector: View {
                             .font(.system(size: 13, weight: .semibold))
                             .padding(.horizontal, 14)
                             .padding(.vertical, 7)
-                            .background(selectedType == type ? Color.webPrimary : Color.adaptivePillBackground)
-                            .foregroundStyle(selectedType == type ? .white : .webForeground)
+                            .background(selectedType == type ? Color.accentPrimary : Color.adaptivePillBackground)
+                            .foregroundStyle(selectedType == type ? .white : .appForeground)
                             .clipShape(Capsule())
                             .overlay(
                                 Capsule()
@@ -503,11 +503,11 @@ struct LearnProgressView: View {
             GeometryReader { geo in
                 ZStack(alignment: .leading) {
                     Capsule()
-                        .fill(Color.webPrimary.opacity(0.15))
+                        .fill(Color.accentPrimary.opacity(0.15))
                         .frame(height: 6)
 
                     Capsule()
-                        .fill(Color.webPrimary)
+                        .fill(Color.accentPrimary)
                         .frame(width: max(0, geo.size.width * CGFloat(currentIndex + 1) / CGFloat(max(totalWords, 1))), height: 6)
                 }
             }
@@ -567,14 +567,14 @@ struct PlayPronunciationView: View {
                     .fill(
                         LinearGradient(
                             colors: isPlayAnimating
-                                ? [Color.webPrimary.opacity(0.9), Color.webPrimary.opacity(0.6)]
-                                : [Color.webPrimary, Color.webPrimary.opacity(0.8)],
+                                ? [Color.accentPrimary.opacity(0.9), Color.accentPrimary.opacity(0.6)]
+                                : [Color.accentPrimary, Color.accentPrimary.opacity(0.8)],
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing
                         )
                     )
                     .shadow(
-                        color: .webPrimary.opacity(isPlayAnimating ? 0.5 : 0.35),
+                        color: .accentPrimary.opacity(isPlayAnimating ? 0.5 : 0.35),
                         radius: isPlayAnimating ? 20 : 16,
                         y: 8
                     )
@@ -602,15 +602,15 @@ struct LearnHeaderView: View {
         HStack {
             Text(selectedLevel)
                 .font(.title2.bold())
-                .foregroundStyle(Color.webPrimary)
+                .foregroundStyle(Color.accentPrimary)
 
             if let type = selectedWordType {
                 Text(type.capitalized)
                     .font(.system(size: 13, weight: .semibold))
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
                     .padding(.horizontal, Spacing.sm + 2)
                     .padding(.vertical, Spacing.xs + 1)
-                    .background(Color.webPrimary.opacity(0.12))
+                    .background(Color.accentPrimary.opacity(0.12))
                     .clipShape(Capsule())
             }
 
@@ -636,7 +636,7 @@ struct LearnHeaderView: View {
             } label: {
                 Image(systemName: selectedWordType == nil ? "line.3.horizontal.decrease.circle" : "line.3.horizontal.decrease.circle.fill")
                     .font(.system(size: 22))
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
             }
 
             Button {
@@ -646,7 +646,7 @@ struct LearnHeaderView: View {
                 Image(systemName: "person.crop.circle.fill")
                     .font(.system(size: 28))
                     .symbolRenderingMode(.hierarchical)
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
             }
             .accessibilityLabel("Account")
             .accessibilityHint("Opens your account panel")

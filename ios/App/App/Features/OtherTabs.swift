@@ -241,7 +241,7 @@ struct StatsCardsRow: View {
                 title: "Words Learned",
                 value: "\(wordsLearned)",
                 subtitle: "\(learnedPercentage)% of \(totalWords)",
-                color: Color.webPrimary
+                color: Color.accentPrimary
             )
 
             // Bookmarked Card
@@ -257,7 +257,7 @@ struct StatsCardsRow: View {
                 title: "Total Available",
                 value: "\(totalWords)",
                 subtitle: "words",
-                color: Color.webSecondary
+                color: Color.accentSecondary
             )
         }
     }
@@ -348,7 +348,7 @@ struct CEFRLevelProgressRow: View {
 
                     // Progress fill
                     RoundedRectangle(cornerRadius: 4)
-                        .fill(Color.webPrimary)
+                        .fill(Color.accentPrimary)
                         .frame(width: geometry.size.width * progress)
                 }
             }
@@ -398,7 +398,7 @@ struct WordsTypeChart: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
-                                        gradient: Gradient(colors: [Color.webPrimary, Color.brandGold]),
+                                        gradient: Gradient(colors: [Color.accentPrimary, Color.brandGold]),
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )

@@ -720,7 +720,7 @@ struct ConfirmationStatusView: View {
                         }
                         .foregroundStyle(.white)
                         .padding()
-                        .background(Color.webPrimary)
+                        .background(Color.accentPrimary)
                         .clipShape(.rect(cornerRadius: 12))
                     }
 
@@ -741,7 +741,7 @@ struct ConfirmationStatusView: View {
                             }
                             Spacer()
                         }
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
                         .padding()
                         .background(Color(UIColor.secondarySystemBackground))
                         .clipShape(.rect(cornerRadius: 12))

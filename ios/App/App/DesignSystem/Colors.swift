@@ -13,15 +13,15 @@ extension Color {
         self.init(hue: h360, saturation: sHSV, brightness: bHSV)
     }
     
-    // MARK: - Web Theme Colors (driven by the user-selected AccentTheme)
+    // MARK: - Accent Colors (driven by the user-selected AccentTheme)
     // These resolve against `ThemeManager.shared.accent` so switching the
     // accent in Settings swaps every brand surface in one place. Views that
     // must react to changes should depend on `ThemeManager.shared.accent`
     // (directly or via an `.id(...)` on a parent) to trigger a rebuild.
 
-    static var webPrimary: Color { ThemeManager.shared.accent.primary }
+    static var accentPrimary: Color { ThemeManager.shared.accent.primary }
 
-    static var webSecondary: Color { ThemeManager.shared.accent.secondary }
+    static var accentSecondary: Color { ThemeManager.shared.accent.secondary }
 
     static var brandGold: Color { ThemeManager.shared.accent.gold }
     
@@ -92,22 +92,21 @@ extension Color {
     })
     
     /// Body / foreground text
-    static let webForeground = Color(UIColor { traits in
+    static let appForeground = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 0.88, green: 0.87, blue: 0.90, alpha: 1)
             : UIColor(red: 0.14, green: 0.15, blue: 0.19, alpha: 1)
     })
-    
-    // Legacy aliases kept for compatibility
-    static let webBackground = Color(hue: 40, saturation: 0.33, lightness: 0.97)
-    static let webMuted = Color(hue: 40, saturation: 0.20, lightness: 0.92)
-    static let webBorder = Color(hue: 220, saturation: 0.20, lightness: 0.88)
-    
+
+    static let appBackground = Color(hue: 40, saturation: 0.33, lightness: 0.97)
+    static let appMuted = Color(hue: 40, saturation: 0.20, lightness: 0.92)
+    static let appBorder = Color(hue: 220, saturation: 0.20, lightness: 0.88)
+
     // MARK: - Semantic Aliases
-    static var brandPrimary: Color { webPrimary }
-    static var brandSecondary: Color { webSecondary }
-    static let background = webBackground
-    static let surface = webMuted
+    static var brandPrimary: Color { accentPrimary }
+    static var brandSecondary: Color { accentSecondary }
+    static let background = appBackground
+    static let surface = appMuted
 }
 
 // MARK: - Spacing Grid

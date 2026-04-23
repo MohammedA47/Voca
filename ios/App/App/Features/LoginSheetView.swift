@@ -75,11 +75,11 @@ struct LoginSheetView: View {
                 VStack(spacing: Spacing.md) {
                     ZStack {
                         Circle()
-                            .fill(Color.webPrimary.opacity(0.12))
+                            .fill(Color.accentPrimary.opacity(0.12))
 
                         Image(systemName: "person.badge.key.fill")
                             .font(.system(size: 28, weight: .semibold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     .frame(width: 78, height: 78)
 
@@ -132,7 +132,7 @@ struct LoginSheetView: View {
                 }) {
                     Text(isSignUp ? "Already have an account? Sign In" : "Don't have an account? Create one")
                         .font(.footnote.weight(.semibold))
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
                 }
                 .padding(.top, Spacing.xs)
 
@@ -151,11 +151,11 @@ struct LoginSheetView: View {
                 VStack(spacing: Spacing.md) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(Color.webPrimary.opacity(0.12))
+                            .fill(Color.accentPrimary.opacity(0.12))
 
                         Image(systemName: "envelope.badge.fill")
                             .font(.system(size: 26, weight: .semibold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     .frame(width: 72, height: 72)
 
@@ -231,7 +231,7 @@ struct LoginSheetView: View {
                             }) {
                                 Text("Forgot Password?")
                                     .font(.footnote.weight(.semibold))
-                                    .foregroundStyle(Color.webPrimary)
+                                    .foregroundStyle(Color.accentPrimary)
                             }
                         }
                     }
@@ -256,7 +256,7 @@ struct LoginSheetView: View {
                         .padding()
                         .background(
                             LinearGradient(
-                                colors: [Color.webPrimary, Color.webPrimary.opacity(0.82)],
+                                colors: [Color.accentPrimary, Color.accentPrimary.opacity(0.82)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -274,7 +274,7 @@ struct LoginSheetView: View {
                     }) {
                         Text("Other Sign-In Options")
                             .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
 
                     Button(action: {
@@ -362,7 +362,7 @@ struct LoginSheetView: View {
                         .padding()
                         .background(
                             LinearGradient(
-                                colors: [Color.webPrimary, Color.webPrimary.opacity(0.82)],
+                                colors: [Color.accentPrimary, Color.accentPrimary.opacity(0.82)],
                                 startPoint: .leading,
                                 endPoint: .trailing
                             )
@@ -378,7 +378,7 @@ struct LoginSheetView: View {
                                 .font(.subheadline.weight(.medium))
                             Spacer()
                         }
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
                         .padding()
                         .background(Color(UIColor.secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -408,7 +408,7 @@ struct LoginSheetView: View {
                             }
                             Spacer()
                         }
-                        .foregroundStyle(Color.webPrimary)
+                        .foregroundStyle(Color.accentPrimary)
                         .padding()
                         .background(Color(UIColor.secondarySystemBackground))
                         .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
@@ -435,11 +435,11 @@ struct LoginSheetView: View {
                 VStack(spacing: Spacing.sm) {
                     ZStack {
                         RoundedRectangle(cornerRadius: 22, style: .continuous)
-                            .fill(Color.webPrimary.opacity(0.12))
+                            .fill(Color.accentPrimary.opacity(0.12))
 
                         Image(systemName: "envelope.badge.shield.half.fill")
                             .font(.system(size: 26, weight: .semibold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     .frame(width: 72, height: 72)
                     .padding(.bottom, Spacing.xs)
@@ -512,7 +512,7 @@ struct LoginSheetView: View {
                             .padding()
                             .background(
                                 LinearGradient(
-                                    colors: [Color.webPrimary, Color.webPrimary.opacity(0.82)],
+                                    colors: [Color.accentPrimary, Color.accentPrimary.opacity(0.82)],
                                     startPoint: .leading,
                                     endPoint: .trailing
                                 )
@@ -531,7 +531,7 @@ struct LoginSheetView: View {
                     }) {
                         Text("Back to Sign In")
                             .font(.footnote)
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                     }
                     .padding(.top, Spacing.xs)
                 }
@@ -742,7 +742,7 @@ private struct AuthMethodButton: View {
         case .email:
             return AnyShapeStyle(
                 LinearGradient(
-                    colors: [Color.webPrimary, Color.webPrimary.opacity(0.82)],
+                    colors: [Color.accentPrimary, Color.accentPrimary.opacity(0.82)],
                     startPoint: .leading,
                     endPoint: .trailing
                 )

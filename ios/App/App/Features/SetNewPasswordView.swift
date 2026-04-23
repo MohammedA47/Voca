@@ -33,7 +33,7 @@ struct SetNewPasswordView: View {
                     Button("Cancel") {
                         authService.finishPasswordRecovery()
                     }
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
                     .disabled(isLoading)
                 }
             }
@@ -44,11 +44,11 @@ struct SetNewPasswordView: View {
         VStack(spacing: Spacing.sm) {
             Image(systemName: "key.horizontal.fill")
                 .font(.system(size: 56))
-                .foregroundStyle(Color.webPrimary)
+                .foregroundStyle(Color.accentPrimary)
 
             Text("Set New Password")
                 .font(.title2.bold())
-                .foregroundStyle(Color.webForeground)
+                .foregroundStyle(Color.appForeground)
 
             Text("Choose a new password to finish your recovery flow.")
                 .font(.subheadline)

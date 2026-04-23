@@ -69,7 +69,7 @@ struct WordDetailView: View {
                         .foregroundStyle(.white)
                         .padding(.horizontal, Spacing.sm + 2)
                         .padding(.vertical, Spacing.xs)
-                        .background(Color.webPrimary)
+                        .background(Color.accentPrimary)
                         .clipShape(Capsule())
                 }
 
@@ -78,7 +78,7 @@ struct WordDetailView: View {
                     VStack(alignment: .leading, spacing: Spacing.sm + Spacing.xs) {
                         Text("USAGE EXAMPLES")
                             .font(.system(size: 11, weight: .bold))
-                            .foregroundStyle(Color.webPrimary)
+                            .foregroundStyle(Color.accentPrimary)
                             .tracking(1)
 
                         ForEach(Array(examples.enumerated()), id: \.offset) { index, example in
@@ -90,7 +90,7 @@ struct WordDetailView: View {
 
                                 Text("\"\(example)\"")
                                     .font(.brandBody(size: 16))
-                                    .foregroundStyle(Color.webForeground)
+                                    .foregroundStyle(Color.appForeground)
                                     .lineSpacing(5)
                                     .fixedSize(horizontal: false, vertical: true)
                             }
@@ -116,7 +116,7 @@ struct WordDetailView: View {
                 AudioService.shared.speak(text: word.word)
             } label: {
                 Image(systemName: "speaker.wave.3.fill")
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
             }
             .accessibilityLabel("Play pronunciation")
 
@@ -124,7 +124,7 @@ struct WordDetailView: View {
                 progressService.toggleBookmark(word.id)
             } label: {
                 Image(systemName: progressService.isBookmarked(word.id) ? "bookmark.fill" : "bookmark")
-                    .foregroundStyle(progressService.isBookmarked(word.id) ? Color.webPrimary : Color.secondary)
+                    .foregroundStyle(progressService.isBookmarked(word.id) ? Color.accentPrimary : Color.secondary)
             }
             .accessibilityLabel(progressService.isBookmarked(word.id) ? "Remove bookmark" : "Add bookmark")
 
@@ -157,22 +157,22 @@ private struct PhoneticChip: View {
                 .foregroundStyle(.white)
                 .padding(.horizontal, 6)
                 .padding(.vertical, 2)
-                .background(Color.webPrimary.opacity(0.8))
+                .background(Color.accentPrimary.opacity(0.8))
                 .clipShape(.rect(cornerRadius: 4))
 
             Text(phonetic)
                 .font(.system(size: 16, weight: .medium, design: .monospaced))
-                .foregroundStyle(Color.webPrimary)
+                .foregroundStyle(Color.accentPrimary)
 
             Button(action: onPlay) {
                 Image(systemName: "speaker.wave.2.fill")
                     .font(.system(size: 13))
-                    .foregroundStyle(Color.webPrimary)
+                    .foregroundStyle(Color.accentPrimary)
             }
         }
         .padding(.horizontal, 12)
         .padding(.vertical, 8)
-        .background(Color.webPrimary.opacity(0.06))
+        .background(Color.accentPrimary.opacity(0.06))
         .clipShape(.rect(cornerRadius: 10))
     }
 }
