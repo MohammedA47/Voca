@@ -16,6 +16,9 @@ struct AccountSheetView: View {
 
     // Theme
     @State private var themeManager = ThemeManager.shared
+    @State private var selectedPhoneticsMode = UserDefaults.standard.string(forKey: "phoneticsMode") ?? "us"
+    @State private var selectedAppearanceMode = UserDefaults.standard.string(forKey: "appearanceMode") ?? "system"
+    @State private var selectedAccentTheme = ThemeManager.shared.accent
 
     // Auth State
     private var authService = AuthService.shared
@@ -62,6 +65,24 @@ struct AccountSheetView: View {
             appearanceMode == "dark" ? .dark :
             appearanceMode == "light" ? .light : nil
         )
+        .onAppear {
+            syncDraftSelections()
+        }
+        .onChange(of: phoneticsMode) { _, newValue in
+            if selectedPhoneticsMode != newValue {
+                selectedPhoneticsMode = newValue
+            }
+        }
+        .onChange(of: appearanceMode) { _, newValue in
+            if selectedAppearanceMode != newValue {
+                selectedAppearanceMode = newValue
+            }
+        }
+        .onChange(of: themeManager.accent) { _, newValue in
+            if selectedAccentTheme != newValue {
+                selectedAccentTheme = newValue
+            }
+        }
         .alert("Delete Account?", isPresented: $showingDeleteAlert) {
             Button("Cancel", role: .cancel) { }
             Button("Delete", role: .destructive) {
@@ -173,7 +194,10 @@ struct AccountSheetView: View {
                     color: .indigo
                 )
 
-                Picker(selection: $phoneticsMode) {
+                Picker(selection: Binding(
+                    get: { selectedPhoneticsMode },
+                    set: applyPhoneticsSelection
+                )) {
                     Text("US English").tag("us")
                     Text("UK English").tag("uk")
                 } label: {
@@ -278,11 +302,14 @@ struct AccountSheetView: View {
             // ── Appearance ────────────────────────────────
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(
-                    systemName: appearanceMode == "dark" ? "moon.fill" : "sun.max.fill",
-                    color: appearanceMode == "dark" ? .indigo : .yellow
+                    systemName: selectedAppearanceMode == "dark" ? "moon.fill" : "sun.max.fill",
+                    color: selectedAppearanceMode == "dark" ? .indigo : .yellow
                 )
 
-                Picker(selection: $appearanceMode) {
+                Picker(selection: Binding(
+                    get: { selectedAppearanceMode },
+                    set: applyAppearanceSelection
+                )) {
                     Text("System").tag("system")
                     Text("Light").tag("light")
                     Text("Dark").tag("dark")
@@ -299,13 +326,13 @@ struct AccountSheetView: View {
             HStack(spacing: Spacing.sm + Spacing.xs) {
                 SettingsIcon(
                     systemName: "paintpalette.fill",
-                    color: themeManager.accent.swatch
+                    color: selectedAccentTheme.swatch
                 )
 
                 Picker(
                     selection: Binding(
-                        get: { themeManager.accent },
-                        set: { themeManager.accent = $0 }
+                        get: { selectedAccentTheme },
+                        set: applyAccentSelection
                     )
                 ) {
                     ForEach(AccentTheme.allCases) { theme in
@@ -417,7 +444,7 @@ struct AccountSheetView: View {
         Section {
             EmptyView()
         } footer: {
-            Text("Oxford Pronunciation v\(appVersion) (\(appBuild))")
+            Text("Voca v\(appVersion) (\(appBuild))")
                 .frame(maxWidth: .infinity, alignment: .center)
                 .font(.footnote)
                 .foregroundStyle(.secondary)
@@ -432,6 +459,42 @@ struct AccountSheetView: View {
 
     private var appBuild: String {
         Bundle.main.infoDictionary?["CFBundleVersion"] as? String ?? "1"
+    }
+
+    private func syncDraftSelections() {
+        selectedPhoneticsMode = phoneticsMode
+        selectedAppearanceMode = appearanceMode
+        selectedAccentTheme = themeManager.accent
+    }
+
+    private func applyPhoneticsSelection(_ newValue: String) {
+        selectedPhoneticsMode = newValue
+        Task { @MainActor in
+            await Task.yield()
+            if phoneticsMode != newValue {
+                phoneticsMode = newValue
+            }
+        }
+    }
+
+    private func applyAppearanceSelection(_ newValue: String) {
+        selectedAppearanceMode = newValue
+        Task { @MainActor in
+            await Task.yield()
+            if appearanceMode != newValue {
+                appearanceMode = newValue
+            }
+        }
+    }
+
+    private func applyAccentSelection(_ newValue: AccentTheme) {
+        selectedAccentTheme = newValue
+        Task { @MainActor in
+            await Task.yield()
+            if themeManager.accent != newValue {
+                themeManager.accent = newValue
+            }
+        }
     }
 
     private func timeRemainingText(until deadline: Date) -> String {

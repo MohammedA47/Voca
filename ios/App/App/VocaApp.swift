@@ -1,7 +1,7 @@
 import SwiftUI
 
 @main
-struct OxfordPronunciationApp: App {
+struct VocaApp: App {
     @AppStorage("appearanceMode") private var appearanceMode: String = "system"
     @Environment(\.scenePhase) private var scenePhase
     @State private var progressService = ProgressService()

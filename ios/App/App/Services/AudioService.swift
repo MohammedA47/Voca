@@ -49,6 +49,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
     private var audioPlayer: AVAudioPlayer?
     private let speechSynthesizer = AVSpeechSynthesizer()
     private var currentTask: Task<Void, Never>?
+    private var hasConfiguredAudioSession = false
 
     /// Actor-isolated TTS audio cache.
     private let audioCache = AudioCacheActor()
@@ -62,15 +63,27 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
     private override init() {
         super.init()
         speechSynthesizer.delegate = self
-        setupAudioSession()
     }
 
-    private func setupAudioSession() {
+    /// Defers session activation until the user actually starts playback.
+    private func activateAudioSessionIfNeeded() {
         do {
-            try AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
-            try AVAudioSession.sharedInstance().setActive(true)
+            let session = AVAudioSession.sharedInstance()
+            if !hasConfiguredAudioSession {
+                try session.setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+                hasConfiguredAudioSession = true
+            }
+            try session.setActive(true)
         } catch {
-            print("Failed to set up audio session: \(error.localizedDescription)")
+            print("Failed to activate audio session: \(error.localizedDescription)")
+        }
+    }
+
+    private func deactivateAudioSessionIfNeeded() {
+        do {
+            try AVAudioSession.sharedInstance().setActive(false, options: [.notifyOthersOnDeactivation])
+        } catch {
+            print("Failed to deactivate audio session: \(error.localizedDescription)")
         }
     }
 
@@ -89,6 +102,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
 
         currentTask = Task { [weak self] in
             guard let self else { return }
+            self.activateAudioSessionIfNeeded()
             self.isSpeaking = true
 
             do {
@@ -176,6 +190,7 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
         audioPlayer = nil
         speechSynthesizer.stopSpeaking(at: .immediate)
         isSpeaking = false
+        deactivateAudioSessionIfNeeded()
     }
 
     private func playSystemSpeech(text: String, accent: String, speed: Double) {
@@ -204,24 +219,28 @@ final class AudioService: NSObject, AVAudioPlayerDelegate, AVSpeechSynthesizerDe
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         Task { @MainActor [weak self] in
             self?.isSpeaking = false
+            self?.deactivateAudioSessionIfNeeded()
         }
     }
 
     nonisolated func audioPlayerDecodeErrorDidOccur(_ player: AVAudioPlayer, error: Error?) {
         Task { @MainActor [weak self] in
             self?.isSpeaking = false
+            self?.deactivateAudioSessionIfNeeded()
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didFinish utterance: AVSpeechUtterance) {
         Task { @MainActor [weak self] in
             self?.isSpeaking = false
+            self?.deactivateAudioSessionIfNeeded()
         }
     }
 
     nonisolated func speechSynthesizer(_ synthesizer: AVSpeechSynthesizer, didCancel utterance: AVSpeechUtterance) {
         Task { @MainActor [weak self] in
             self?.isSpeaking = false
+            self?.deactivateAudioSessionIfNeeded()
         }
     }
 }

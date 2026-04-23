@@ -51,7 +51,7 @@ struct WordCardView: View {
         }
         .accessibilityAddTraits(.isButton)
         .accessibilityLabel(isFlipped ? "Word card showing definition. Tap to flip back." : "Word card for \(word.word). Tap to see definition.")
-        .onChange(of: word.id) { _ in
+        .onChange(of: word.id) {
             // Reset to front when word changes
             isFlipped = false
         }
@@ -72,6 +72,7 @@ struct CardFrontFace: View {
     var onToggleLearned: () -> Void
 
     @State private var currentExampleIndex = 0
+    private let lightHaptic = UIImpactFeedbackGenerator(style: .light)
 
     var body: some View {
         ZStack(alignment: .bottomLeading) {
@@ -79,12 +80,12 @@ struct CardFrontFace: View {
                 // ── Word Title + Learned Circle ─────────────
                 HStack(alignment: .top) {
                     Text(word.word.capitalized)
-                        .font(.oxfordDisplay(size: 36))
-                        .foregroundStyle(Color.oxfordNavy)
+                        .font(.brandDisplay(size: 36))
+                        .foregroundStyle(Color.brandInk)
 
                     Spacer()
 
-                    Button(action: onToggleLearned) {
+                    Button(action: handleToggleLearned) {
                         Circle()
                             .strokeBorder(isLearned ? Color.webPrimary : Color.secondary.opacity(0.3), lineWidth: 2)
                             .background(
@@ -156,7 +157,7 @@ struct CardFrontFace: View {
                         VStack(alignment: .leading, spacing: 12) {
                             let safeIndex = examples.indices.contains(currentExampleIndex) ? currentExampleIndex : 0
                             Text("\"" + examples[safeIndex] + "\"")
-                                .font(.oxfordBody(size: 16))
+                                .font(.brandBody(size: 16))
                                 .foregroundStyle(Color.webForeground)
                                 .lineSpacing(5)
                                 .fixedSize(horizontal: false, vertical: true)
@@ -228,7 +229,7 @@ struct CardFrontFace: View {
             .padding(22)
 
             // ── Bookmark Button (pinned bottom-left) ────
-            Button(action: onBookmark) {
+            Button(action: handleBookmark) {
                 Image(systemName: isBookmarked ? "bookmark.fill" : "bookmark")
                     .font(.title3)
                     .foregroundStyle(isBookmarked ? Color.webPrimary : Color.secondary.opacity(0.4))
@@ -239,9 +240,19 @@ struct CardFrontFace: View {
         }
         .frame(height: cardHeight)
         .cardBackground()
-        .onChange(of: word.id) { _ in
+        .onChange(of: word.id) {
             currentExampleIndex = 0
         }
+    }
+
+    private func handleBookmark() {
+        lightHaptic.impactOccurred()
+        onBookmark()
+    }
+
+    private func handleToggleLearned() {
+        lightHaptic.impactOccurred()
+        onToggleLearned()
     }
 }
 
@@ -256,8 +267,8 @@ struct CardBackFace: View {
             // ── Header ──────────────────────────────────
             HStack {
                 Text(word.word.capitalized)
-                    .font(.oxfordDisplay(size: 24))
-                    .foregroundStyle(Color.oxfordNavy)
+                    .font(.brandDisplay(size: 24))
+                    .foregroundStyle(Color.brandInk)
 
                 Spacer()
 
@@ -282,7 +293,7 @@ struct CardBackFace: View {
                     .tracking(1)
 
                 Text(word.definition ?? "No definition available.")
-                    .font(.oxfordBody(size: 17))
+                    .font(.brandBody(size: 17))
                     .foregroundStyle(Color.webForeground)
                     .lineSpacing(5)
                     .fixedSize(horizontal: false, vertical: true)
@@ -290,7 +301,7 @@ struct CardBackFace: View {
                 // ── Example ──────────────────────────────────
                 if let example = word.example, !example.isEmpty {
                     Text("\u{201C}\(example)\u{201D}")
-                        .font(.oxfordBody(size: 16))
+                        .font(.brandBody(size: 16))
                         .foregroundStyle(.secondary)
                         .italic()
                         .padding(.top, 4)

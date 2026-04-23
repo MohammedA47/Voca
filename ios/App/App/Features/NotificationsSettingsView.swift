@@ -2,7 +2,7 @@ import SwiftUI
 import UserNotifications
 
 // MARK: - Notifications Settings View
-// Manages notification preferences and permissions for the Oxford Pronunciation App.
+// Manages notification preferences and permissions for Voca.
 // Pushed via NavigationLink from AccountSheetView — inherits parent NavigationStack.
 
 struct NotificationsSettingsView: View {
@@ -39,10 +39,10 @@ struct NotificationsSettingsView: View {
             checkNotificationPermissionStatus()
             syncTimeFromStorage()
         }
-        .onChange(of: dailyReminderEnabled) { newValue in
+        .onChange(of: dailyReminderEnabled) { _, newValue in
             handleReminderToggleChange(to: newValue)
         }
-        .onChange(of: selectedTime) { newValue in
+        .onChange(of: selectedTime) { _, newValue in
             updateReminderTime(to: newValue)
         }
     }

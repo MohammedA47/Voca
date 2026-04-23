@@ -17,7 +17,7 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Primary hue driving webPrimary / webSecondary / oxfordGold.
+    /// Primary hue driving webPrimary / webSecondary / brandGold.
     /// Saturation and lightness are kept consistent with the original
     /// design tokens so contrast and hierarchy stay balanced.
     private var hue: Double {

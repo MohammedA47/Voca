@@ -251,6 +251,8 @@ final class AuthService {
     func deleteAccount() async throws {
         // Clear all app-specific UserDefaults
         UserDefaults.standard.removeObject(forKey: Self.sessionKey)
+        UserDefaults.standard.removeObject(forKey: "Voca_BookmarkedWords")
+        UserDefaults.standard.removeObject(forKey: "Voca_LearnedWords_V2")
         UserDefaults.standard.removeObject(forKey: "Oxford_BookmarkedWords")
         UserDefaults.standard.removeObject(forKey: "Oxford_LearnedWords")
         UserDefaults.standard.removeObject(forKey: "Oxford_LearnedWords_V2")
@@ -309,6 +311,49 @@ final class AuthService {
 
         lastError = "Sign up failed. Please try again."
         throw URLError(.badServerResponse)
+    }
+
+    /// Signs in using an Apple identity token (JWT) and raw nonce.
+    ///
+    /// The caller performs the native Apple auth flow, captures the identity
+    /// token, and passes the original (unhashed) nonce here so Supabase can
+    /// verify it against the hashed nonce embedded in the token.
+    func signInWithApple(idToken: String, rawNonce: String) async throws -> Session {
+        lastError = nil
+        guard let url = URL(string: "\(Config.supabaseUrl)/auth/v1/token?grant_type=id_token") else {
+            throw URLError(.badURL)
+        }
+
+        let body: [String: String] = [
+            "provider": "apple",
+            "id_token": idToken,
+            "nonce": rawNonce
+        ]
+        let (data, response) = try await sendJSONRequest(to: url, method: "POST", body: body)
+
+        guard let httpResponse = response as? HTTPURLResponse else {
+            lastError = "Network error. Check your connection."
+            throw URLError(.badServerResponse)
+        }
+
+        if !(200...299).contains(httpResponse.statusCode) {
+            let errorBody = String(data: data, encoding: .utf8) ?? "No error body"
+            print("Apple sign-in failed with status \(httpResponse.statusCode): \(errorBody)")
+            if let errorDict = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+               let msg = (errorDict["error_description"] as? String)
+                        ?? (errorDict["msg"] as? String)
+                        ?? (errorDict["message"] as? String) {
+                lastError = msg
+                throw NSError(domain: "AuthError", code: httpResponse.statusCode, userInfo: [NSLocalizedDescriptionKey: msg])
+            }
+            lastError = "Apple sign-in failed. Please try again."
+            throw URLError(.badServerResponse)
+        }
+
+        let session = try JSONDecoder().decode(Session.self, from: data)
+        saveSession(session: session)
+        clearPendingConfirmation()
+        return session
     }
 
     /// Signs in with email + password and returns the session.

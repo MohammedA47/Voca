@@ -20,7 +20,7 @@ struct WordDetailView: View {
             .navigationTitle(word.word.capitalized)
             .navigationBarTitleDisplayMode(.inline)
             .toolbar { wordToolbar }
-            .userActivity("com.oxford.pronunciation.viewWord") { activity in
+            .userActivity("com.voca.viewWord") { activity in
                 activity.title = word.word.capitalized
                 activity.isEligibleForSearch = true
                 activity.isEligibleForPrediction = true
@@ -33,8 +33,8 @@ struct WordDetailView: View {
             VStack(alignment: .leading, spacing: Spacing.lg) {
                 // ── Word Title ──────────────────────────────
                 Text(word.word.capitalized)
-                    .font(.oxfordDisplay(size: 40))
-                    .foregroundStyle(Color.oxfordNavy)
+                    .font(.brandDisplay(size: 40))
+                    .foregroundStyle(Color.brandInk)
 
                 // ── Phonetics ───────────────────────────────
                 HStack(spacing: Spacing.md) {
@@ -84,12 +84,12 @@ struct WordDetailView: View {
                         ForEach(Array(examples.enumerated()), id: \.offset) { index, example in
                             HStack(alignment: .top, spacing: Spacing.sm + 2) {
                                 Text("\(index + 1).")
-                                    .font(.oxfordBody(size: 15))
+                                    .font(.brandBody(size: 15))
                                     .foregroundStyle(.secondary)
                                     .frame(width: 24, alignment: .trailing)
 
                                 Text("\"\(example)\"")
-                                    .font(.oxfordBody(size: 16))
+                                    .font(.brandBody(size: 16))
                                     .foregroundStyle(Color.webForeground)
                                     .lineSpacing(5)
                                     .fixedSize(horizontal: false, vertical: true)

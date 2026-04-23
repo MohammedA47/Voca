@@ -14,6 +14,7 @@
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
 		4B21D8A5B27F649810C47685 /* ProgressService.swift in Sources */ = {isa = PBXBuildFile; fileRef = C905450FAC03FAF7132FF510 /* ProgressService.swift */; };
 		4E037E90A1656ED7FF4517F0 /* VocabularyService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */; };
+		0D7A0ACC8D3147CA8DFE4F85 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = 46A074B6E9B5462088433E62 /* AppIcon.icon */; };
 		50379B232058CBB4000EE86E /* capacitor.config.json in Resources */ = {isa = PBXBuildFile; fileRef = 50379B222058CBB4000EE86E /* capacitor.config.json */; };
 		504EC3081FED79650016851F /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 504EC3071FED79650016851F /* AppDelegate.swift */; };
 		504EC30D1FED79650016851F /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 504EC30B1FED79650016851F /* Main.storyboard */; };
@@ -26,7 +27,7 @@
 		7D4197BF2265B2399230F674 /* Word.swift in Sources */ = {isa = PBXBuildFile; fileRef = 92303A00F92BED6BE63141A5 /* Word.swift */; };
 		84F77901D51B6D11E407ED82 /* oxford_vocabulary.json in Resources */ = {isa = PBXBuildFile; fileRef = 86089F073A1802AA2AD10FD2 /* oxford_vocabulary.json */; };
 		942EA20B4E32BC6B7BDC9314 /* LearnView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 0C3BEAC261493509191CBB67 /* LearnView.swift */; };
-		9777AEA2AB5BECCDDD1E036F /* OxfordPronunciationApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9DF97E6EE3616C06E7CF119 /* OxfordPronunciationApp.swift */; };
+		9777AEA2AB5BECCDDD1E036F /* VocaApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = F9DF97E6EE3616C06E7CF119 /* VocaApp.swift */; };
 		987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */ = {isa = PBXBuildFile; fileRef = BEF736059A901232C8D2297B /* Buttons.swift */; };
 		9CB5BAAA662E06D30F0B3F44 /* GlassCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 21DB232B31F794FDDFB89685 /* GlassCard.swift */; };
 		A084ECDBA7D38E1E42DFC39D /* Pods_App.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AF277DCFFFF123FFC6DF26C7 /* Pods_App.framework */; };
@@ -60,6 +61,7 @@
 		34E0EAE327C950362B3014D5 /* LoginSheetView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = LoginSheetView.swift; sourceTree = "<group>"; };
 		3CF51A9CCAACF1ADDB6A008B /* GlassCard.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = GlassCard.swift; path = Components/GlassCard.swift; sourceTree = "<group>"; };
 		3DD397E4664B1F5DA9FD1398 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
+		46A074B6E9B5462088433E62 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; path = AppIcon.icon; sourceTree = "<group>"; };
 		42DFE2C4AD7A9B944D887945 /* SearchViewModel.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; name = SearchViewModel.swift; path = Search/SearchViewModel.swift; sourceTree = "<group>"; };
 		4535146DD2BF10DB9C739F30 /* AuthService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = AuthService.swift; sourceTree = "<group>"; };
 		50379B222058CBB4000EE86E /* capacitor.config.json */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.json; path = capacitor.config.json; sourceTree = "<group>"; };
@@ -72,6 +74,7 @@
 		50B271D01FEDC1A000F3C39B /* public */ = {isa = PBXFileReference; lastKnownFileType = folder; path = public; sourceTree = "<group>"; };
 		5678DEF0GHIJ1234K5L6MNOP /* Config.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Config.swift; sourceTree = "<group>"; };
 		5A49A6E32F81FECC0087AEB4 /* SetNewPasswordView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SetNewPasswordView.swift; sourceTree = "<group>"; };
+		5A49A6E52F97E7180087AEB4 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
 		6BA001F7992CA655D7B5931B /* VocabularyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocabularyService.swift; sourceTree = "<group>"; };
 		799AFC8CE50ADE592541958B /* ContentView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ContentView.swift; sourceTree = "<group>"; };
 		7BF3A6554FF07109F8FC3517 /* VocabularyService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocabularyService.swift; sourceTree = "<group>"; };
@@ -104,7 +107,7 @@
 		E47D2B2636DAA7890742D094 /* Colors.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		EA6C92A75DE70BD325884857 /* Word.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = Word.swift; sourceTree = "<group>"; };
 		EF4531F85D1BA4DCC08F0F73 /* ProgressService.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = ProgressService.swift; sourceTree = "<group>"; };
-		F9DF97E6EE3616C06E7CF119 /* OxfordPronunciationApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = OxfordPronunciationApp.swift; sourceTree = "<group>"; };
+		F9DF97E6EE3616C06E7CF119 /* VocaApp.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = VocaApp.swift; sourceTree = "<group>"; };
 		FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-App.debug.xcconfig"; path = "Pods/Target Support Files/Pods-App/Pods-App.debug.xcconfig"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
@@ -211,6 +214,8 @@
 		504EC3061FED79650016851F /* App */ = {
 			isa = PBXGroup;
 			children = (
+				5A49A6E52F97E7180087AEB4 /* App.entitlements */,
+				46A074B6E9B5462088433E62 /* AppIcon.icon */,
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
 				C3D4E5F607182A3BCDEF0313 /* AppRoute.swift */,
@@ -225,7 +230,7 @@
 				315F345E747E41C7EDB0E2A9 /* Services */,
 				42D9239D18B49F187443213A /* Features */,
 				FD080E9A7625536A0F2B01F6 /* DesignSystem */,
-				F9DF97E6EE3616C06E7CF119 /* OxfordPronunciationApp.swift */,
+				F9DF97E6EE3616C06E7CF119 /* VocaApp.swift */,
 				799AFC8CE50ADE592541958B /* ContentView.swift */,
 				0BDC756ACB00173FD7CEA136 /* Models */,
 				37488484483579F3DAE3DC28 /* Services */,
@@ -349,6 +354,7 @@
 			files = (
 				504EC3121FED79650016851F /* LaunchScreen.storyboard in Resources */,
 				50B271D11FEDC1A000F3C39B /* public in Resources */,
+				0D7A0ACC8D3147CA8DFE4F85 /* AppIcon.icon in Resources */,
 				504EC30F1FED79650016851F /* Assets.xcassets in Resources */,
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
@@ -417,7 +423,7 @@
 				987F03C62349BC7C02C89F73 /* Buttons.swift in Sources */,
 				9CB5BAAA662E06D30F0B3F44 /* GlassCard.swift in Sources */,
 				24D2DB24214371F9E49387C8 /* Colors.swift in Sources */,
-				9777AEA2AB5BECCDDD1E036F /* OxfordPronunciationApp.swift in Sources */,
+				9777AEA2AB5BECCDDD1E036F /* VocaApp.swift in Sources */,
 				0FDA84B2250BB9EBC9C7624C /* ContentView.swift in Sources */,
 				5C8D5426F6BC9C2488375941 /* Typography.swift in Sources */,
 				CCD1F433B13596EFC101D350 /* Color+HSL.swift in Sources */,
@@ -583,6 +589,7 @@
 			baseConfigurationReference = FC68EB0AF532CFC21C3344DD /* Pods-App.debug.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;
@@ -606,6 +613,7 @@
 			baseConfigurationReference = AF51FD2D460BCFE21FA515B2 /* Pods-App.release.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = App/App.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				INFOPLIST_FILE = App/Info.plist;

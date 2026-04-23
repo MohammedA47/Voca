@@ -114,7 +114,7 @@ struct ProfileView: View {
                             Text("Your Progress")
                                 .font(.title2)
                                 .fontWeight(.bold)
-                                .foregroundStyle(Color.oxfordNavy)
+                                .foregroundStyle(Color.brandInk)
 
                             Text("Keep learning to master pronunciation")
                                 .font(.callout)
@@ -136,7 +136,7 @@ struct ProfileView: View {
                         VStack(alignment: .leading, spacing: Spacing.md) {
                             Text("Progress by Level")
                                 .font(.headline)
-                                .foregroundStyle(Color.oxfordNavy)
+                                .foregroundStyle(Color.brandInk)
                                 .padding(.horizontal, Spacing.md)
 
                             VStack(spacing: Spacing.sm) {
@@ -158,7 +158,7 @@ struct ProfileView: View {
                         VStack(alignment: .leading, spacing: Spacing.md) {
                             Text("Words by Type")
                                 .font(.headline)
-                                .foregroundStyle(Color.oxfordNavy)
+                                .foregroundStyle(Color.brandInk)
                                 .padding(.horizontal, Spacing.md)
 
                             WordsTypeChart(vocabService: vocabService)
@@ -179,7 +179,7 @@ struct ProfileView: View {
                                     Text(streak > 0 ? "\(streak) Day Streak!" : "Start your streak!")
                                         .font(.body)
                                         .fontWeight(.bold)
-                                        .foregroundStyle(Color.oxfordNavy)
+                                        .foregroundStyle(Color.brandInk)
                                     
                                     Text(streak > 0 ? "You're on fire! Keep it up." : "Learn at least one word today.")
                                         .font(.caption)
@@ -198,7 +198,7 @@ struct ProfileView: View {
                         VStack(alignment: .leading, spacing: Spacing.md) {
                             Text("About")
                                 .font(.headline)
-                                .foregroundStyle(Color.oxfordNavy)
+                                .foregroundStyle(Color.brandInk)
                                 .padding(.horizontal, Spacing.md)
 
                             HStack {
@@ -249,7 +249,7 @@ struct StatsCardsRow: View {
                 title: "Bookmarked",
                 value: "\(bookmarked)",
                 subtitle: "for review",
-                color: Color.oxfordGold
+                color: Color.brandGold
             )
 
             // Total Available Card
@@ -280,7 +280,7 @@ struct StatCard: View {
             Text(value)
                 .font(.title3)
                 .fontWeight(.bold)
-                .foregroundStyle(Color.oxfordNavy)
+                .foregroundStyle(Color.brandInk)
 
             Text(subtitle)
                 .font(.caption2)
@@ -330,7 +330,7 @@ struct CEFRLevelProgressRow: View {
             HStack {
                 Text(level)
                     .font(.headline)
-                    .foregroundStyle(Color.oxfordNavy)
+                    .foregroundStyle(Color.brandInk)
 
                 Spacer()
 
@@ -378,7 +378,7 @@ struct WordsTypeChart: View {
                     HStack {
                         Text(item.type.capitalized)
                             .font(.subheadline)
-                            .foregroundStyle(Color.oxfordNavy)
+                            .foregroundStyle(Color.brandInk)
 
                         Spacer()
 
@@ -398,7 +398,7 @@ struct WordsTypeChart: View {
                             RoundedRectangle(cornerRadius: 4)
                                 .fill(
                                     LinearGradient(
-                                        gradient: Gradient(colors: [Color.webPrimary, Color.oxfordGold]),
+                                        gradient: Gradient(colors: [Color.webPrimary, Color.brandGold]),
                                         startPoint: .leading,
                                         endPoint: .trailing
                                     )

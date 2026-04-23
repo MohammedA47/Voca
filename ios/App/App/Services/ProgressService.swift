@@ -9,9 +9,11 @@ final class ProgressService {
     var learnedWords: [String: Date] = [:]
     var bookmarkedWords: Set<String> = []
 
-    private let learnedKey = "Oxford_LearnedWords_V2" // Use new key for dictionary migration
+    private let learnedKey = "Voca_LearnedWords_V2"
+    private let legacyLearnedDictionaryKey = "Oxford_LearnedWords_V2"
     private let legacyLearnedKey = "Oxford_LearnedWords"
-    private let bookmarkedKey = "Oxford_BookmarkedWords"
+    private let bookmarkedKey = "Voca_BookmarkedWords"
+    private let legacyBookmarkedKey = "Oxford_BookmarkedWords"
     @ObservationIgnored private var saveLearnedTask: Task<Void, Never>?
     @ObservationIgnored private var saveBookmarksTask: Task<Void, Never>?
 
@@ -20,18 +22,27 @@ final class ProgressService {
     }
 
     private func loadProgress() {
+        let defaults = UserDefaults.standard
+
         // Load learned words dictionary
-        if let data = UserDefaults.standard.data(forKey: learnedKey),
+        if let data = defaults.data(forKey: learnedKey),
            let learned = try? JSONDecoder().decode([String: Date].self, from: data) {
             self.learnedWords = learned
+        } else if let legacyData = defaults.data(forKey: legacyLearnedDictionaryKey),
+                  let learned = try? JSONDecoder().decode([String: Date].self, from: legacyData) {
+            self.learnedWords = learned
+            saveLearned()
         } else if let legacy = UserDefaults.standard.array(forKey: legacyLearnedKey) as? [String] {
             // Migration: Assume legacy words were learned today
             self.learnedWords = Dictionary(uniqueKeysWithValues: legacy.map { ($0, Date()) })
             saveLearned()
         }
 
-        if let bookmarked = UserDefaults.standard.array(forKey: bookmarkedKey) as? [String] {
+        if let bookmarked = defaults.array(forKey: bookmarkedKey) as? [String] {
             self.bookmarkedWords = Set(bookmarked)
+        } else if let legacyBookmarked = defaults.array(forKey: legacyBookmarkedKey) as? [String] {
+            self.bookmarkedWords = Set(legacyBookmarked)
+            saveBookmarks()
         }
     }
 

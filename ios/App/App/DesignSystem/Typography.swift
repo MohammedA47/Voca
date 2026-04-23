@@ -30,12 +30,12 @@ struct Typography {
 
 // Extension for easier usage
 extension Font {
-    static func oxfordDisplay(size: CGFloat) -> Font {
+    static func brandDisplay(size: CGFloat) -> Font {
         // Serif system font with bold weight (matches Playfair style)
         return .system(size: size, weight: .bold, design: .serif)
     }
 
-    static func oxfordBody(size: CGFloat) -> Font {
+    static func brandBody(size: CGFloat) -> Font {
         // System default font (San Francisco - matches Inter style)
         return .system(size: size, design: .default)
     }

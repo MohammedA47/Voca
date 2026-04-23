@@ -1,24 +1,14 @@
 import SwiftUI
-
-private enum AuthStep: Equatable {
-    case methodPicker
-    case emailForm
-    case pendingConfirmation
-    case resetPassword
-}
-
-private enum AuthProvider: String, Identifiable {
-    case apple = "Apple"
-    case google = "Google"
-
-    var id: String { rawValue }
-}
+import AuthenticationServices
+import CryptoKit
 
 struct LoginSheetView: View {
     @Environment(\.dismiss) private var dismiss
     private var authService = AuthService.shared
 
-    @State private var authStep: AuthStep
+    @State private var showEmailForm: Bool
+    @State private var showPendingConfirmation: Bool
+    @State private var showResetPassword = false
     @State private var isSignUp: Bool
     @State private var email = ""
     @State private var password = ""
@@ -33,10 +23,13 @@ struct LoginSheetView: View {
     @State private var resendError: String? = nil
     @State private var verifyLoading = false
     @State private var verifyError: String? = nil
-    @State private var unavailableProvider: AuthProvider?
+    @State private var appleLoading = false
+    @State private var currentAppleNonce: String?
+    @State private var appleCoordinator: AppleSignInCoordinator?
 
     init(startInPendingConfirmation: Bool = false) {
-        _authStep = State(initialValue: startInPendingConfirmation ? .pendingConfirmation : .methodPicker)
+        _showEmailForm = State(initialValue: false)
+        _showPendingConfirmation = State(initialValue: startInPendingConfirmation)
         _isSignUp = State(initialValue: startInPendingConfirmation)
 
         if startInPendingConfirmation,
@@ -46,37 +39,19 @@ struct LoginSheetView: View {
     }
 
     var body: some View {
-        Group {
-            switch authStep {
-            case .methodPicker:
-                methodPickerView
-            case .emailForm:
-                emailAuthView
-            case .pendingConfirmation:
-                pendingConfirmationView
-            case .resetPassword:
-                resetPasswordView
-            }
-        }
+        methodPickerView
         .background(Color(UIColor.systemGroupedBackground).ignoresSafeArea())
         .navigationBarBackButtonHidden(true)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
                 SettingsBackButton {
-                    handleBack()
+                    dismiss()
                 }
             }
         }
-        .alert(item: $unavailableProvider) { provider in
-            Alert(
-                title: Text("\(provider.rawValue) Coming Soon"),
-                message: Text("\(provider.rawValue) sign-in is part of the new flow, but it is not connected yet. Use Email for now."),
-                dismissButton: .default(Text("OK"))
-            )
-        }
-        .task(id: authStep) {
-            if authStep == .pendingConfirmation,
+        .task(id: showPendingConfirmation) {
+            if showPendingConfirmation,
                await authService.checkConfirmationStatus() {
                 dismiss()
             }
@@ -85,6 +60,12 @@ struct LoginSheetView: View {
             if isAuth {
                 dismiss()
             }
+        }
+        .navigationDestination(isPresented: $showEmailForm) {
+            emailAuthView
+        }
+        .navigationDestination(isPresented: $showPendingConfirmation) {
+            pendingConfirmationView
         }
     }
 
@@ -108,7 +89,7 @@ struct LoginSheetView: View {
                             .multilineTextAlignment(.center)
 
                         Text(isSignUp
-                             ? "Choose how you want to start with Oxford Pronunciation."
+                             ? "Choose how you want to start with Voca."
                              : "Choose how you want to sign in to keep your learning in sync.")
                             .font(.subheadline)
                             .foregroundStyle(.secondary)
@@ -120,16 +101,10 @@ struct LoginSheetView: View {
                 VStack(spacing: Spacing.sm + Spacing.xs) {
                     AuthMethodButton(
                         title: isSignUp ? "Continue with Apple" : "Sign in with Apple",
-                        style: .apple
+                        style: .apple,
+                        isLoading: appleLoading
                     ) {
-                        unavailableProvider = .apple
-                    }
-
-                    AuthMethodButton(
-                        title: isSignUp ? "Continue with Google" : "Sign in with Google",
-                        style: .google
-                    ) {
-                        unavailableProvider = .google
+                        Task { await signInWithApple() }
                     }
 
                     AuthMethodButton(
@@ -137,16 +112,17 @@ struct LoginSheetView: View {
                         style: .email
                     ) {
                         errorMessage = nil
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            authStep = .emailForm
-                        }
+                        showEmailForm = true
                     }
                 }
 
-                Text("Email is available now. Apple and Google are shown in the final flow, but they are not wired up yet.")
-                    .font(.footnote)
-                    .foregroundStyle(.secondary)
-                    .multilineTextAlignment(.center)
+                if let error = errorMessage {
+                    Text(error)
+                        .font(.footnote)
+                        .foregroundStyle(.red)
+                        .multilineTextAlignment(.center)
+                }
+
 
                 Button(action: {
                     errorMessage = nil
@@ -251,9 +227,7 @@ struct LoginSheetView: View {
                             Button(action: {
                                 resetEmail = email
                                 errorMessage = nil
-                                withAnimation(.easeInOut(duration: 0.2)) {
-                                    authStep = .resetPassword
-                                }
+                                showResetPassword = true
                             }) {
                                 Text("Forgot Password?")
                                     .font(.footnote.weight(.semibold))
@@ -296,9 +270,7 @@ struct LoginSheetView: View {
                 VStack(spacing: Spacing.sm) {
                     Button(action: {
                         errorMessage = nil
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            authStep = .methodPicker
-                        }
+                        showEmailForm = false
                     }) {
                         Text("Other Sign-In Options")
                             .font(.footnote.weight(.semibold))
@@ -323,16 +295,35 @@ struct LoginSheetView: View {
             .padding(.bottom, Spacing.xl)
             .frame(maxWidth: .infinity)
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    errorMessage = nil
+                    showEmailForm = false
+                }
+            }
+        }
+        .navigationDestination(isPresented: $showResetPassword) {
+            resetPasswordView
+        }
     }
 
     private var pendingConfirmationView: some View {
         ScrollView {
             VStack(spacing: Spacing.xl) {
                 VStack(spacing: Spacing.sm) {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 64))
-                        .foregroundStyle(.green)
-                        .padding(.bottom, Spacing.xs)
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(Color.green.opacity(0.12))
+
+                        Image(systemName: "checkmark.circle.fill")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(.green)
+                    }
+                    .frame(width: 72, height: 72)
+                    .padding(.bottom, Spacing.xs)
 
                     Text("Account Created!")
                         .font(.title2.bold())
@@ -369,8 +360,14 @@ struct LoginSheetView: View {
                         }
                         .foregroundStyle(.white)
                         .padding()
-                        .background(Color.webPrimary)
-                        .clipShape(.rect(cornerRadius: 12))
+                        .background(
+                            LinearGradient(
+                                colors: [Color.webPrimary, Color.webPrimary.opacity(0.82)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
+                        )
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                     .disabled(verifyLoading)
 
@@ -384,7 +381,7 @@ struct LoginSheetView: View {
                         .foregroundStyle(Color.webPrimary)
                         .padding()
                         .background(Color(UIColor.secondarySystemBackground))
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
 
                     if let resendError {
@@ -414,11 +411,20 @@ struct LoginSheetView: View {
                         .foregroundStyle(Color.webPrimary)
                         .padding()
                         .background(Color(UIColor.secondarySystemBackground))
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     }
                     .disabled(resendLoading || resendSuccess)
                 }
                 .padding(.horizontal, Spacing.lg)
+            }
+        }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    dismiss()
+                }
             }
         }
     }
@@ -427,10 +433,16 @@ struct LoginSheetView: View {
         ScrollView {
             VStack(spacing: Spacing.xl) {
                 VStack(spacing: Spacing.sm) {
-                    Image(systemName: "envelope.badge.shield.half.fill")
-                        .font(.system(size: 64))
-                        .foregroundStyle(Color.webPrimary)
-                        .padding(.bottom, Spacing.xs)
+                    ZStack {
+                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                            .fill(Color.webPrimary.opacity(0.12))
+
+                        Image(systemName: "envelope.badge.shield.half.fill")
+                            .font(.system(size: 26, weight: .semibold))
+                            .foregroundStyle(Color.webPrimary)
+                    }
+                    .frame(width: 72, height: 72)
+                    .padding(.bottom, Spacing.xs)
 
                     Text("Reset Password")
                         .font(.title2.bold())
@@ -460,7 +472,7 @@ struct LoginSheetView: View {
                         .padding()
                         .frame(maxWidth: .infinity)
                         .background(Color(UIColor.secondarySystemBackground))
-                        .clipShape(.rect(cornerRadius: 12))
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                     } else {
                         if let error = errorMessage {
                             Text(error)
@@ -498,8 +510,14 @@ struct LoginSheetView: View {
                             }
                             .foregroundStyle(.white)
                             .padding()
-                            .background(Color.webPrimary)
-                            .clipShape(.rect(cornerRadius: 12))
+                            .background(
+                                LinearGradient(
+                                    colors: [Color.webPrimary, Color.webPrimary.opacity(0.82)],
+                                    startPoint: .leading,
+                                    endPoint: .trailing
+                                )
+                            )
+                            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
                         }
                         .disabled(resetLoading || resetEmail.isEmpty)
                         .opacity((resetLoading || resetEmail.isEmpty) ? 0.6 : 1.0)
@@ -509,9 +527,7 @@ struct LoginSheetView: View {
                         email = resetEmail.isEmpty ? email : resetEmail
                         errorMessage = nil
                         resetSuccess = false
-                        withAnimation(.easeInOut(duration: 0.2)) {
-                            authStep = .emailForm
-                        }
+                        showResetPassword = false
                     }) {
                         Text("Back to Sign In")
                             .font(.footnote)
@@ -522,6 +538,17 @@ struct LoginSheetView: View {
                 .padding(.horizontal, Spacing.lg)
             }
         }
+        .navigationBarBackButtonHidden(true)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarLeading) {
+                SettingsBackButton {
+                    errorMessage = nil
+                    resetSuccess = false
+                    showResetPassword = false
+                }
+            }
+        }
     }
 
     private var canSubmitCredentials: Bool {
@@ -529,26 +556,6 @@ struct LoginSheetView: View {
         !email.isEmpty &&
         !password.isEmpty &&
         (!isSignUp || !confirmPassword.isEmpty)
-    }
-
-    private func handleBack() {
-        switch authStep {
-        case .methodPicker:
-            dismiss()
-        case .emailForm:
-            errorMessage = nil
-            withAnimation(.easeInOut(duration: 0.2)) {
-                authStep = .methodPicker
-            }
-        case .resetPassword:
-            errorMessage = nil
-            resetSuccess = false
-            withAnimation(.easeInOut(duration: 0.2)) {
-                authStep = .emailForm
-            }
-        case .pendingConfirmation:
-            dismiss()
-        }
     }
 
     private func authenticate() async {
@@ -566,9 +573,10 @@ struct LoginSheetView: View {
             if isSignUp {
                 let session = try await authService.signUp(email: email, password: password)
                 if session == nil {
-                    withAnimation(.easeInOut(duration: 0.2)) {
-                        authStep = .pendingConfirmation
-                    }
+                    verifyError = nil
+                    resendError = nil
+                    resendSuccess = false
+                    showPendingConfirmation = true
                 }
             } else {
                 _ = try await authService.signIn(email: email, password: password)
@@ -607,6 +615,66 @@ struct LoginSheetView: View {
         }
     }
 
+    private func signInWithApple() async {
+        guard !appleLoading else { return }
+        errorMessage = nil
+        appleLoading = true
+        defer { appleLoading = false }
+
+        let rawNonce = Self.randomNonceString()
+        currentAppleNonce = rawNonce
+
+        let coordinator = AppleSignInCoordinator()
+        appleCoordinator = coordinator
+
+        let request = ASAuthorizationAppleIDProvider().createRequest()
+        request.requestedScopes = [.fullName, .email]
+        request.nonce = Self.sha256(rawNonce)
+
+        do {
+            let credential = try await coordinator.perform(request: request)
+            guard let tokenData = credential.identityToken,
+                  let idToken = String(data: tokenData, encoding: .utf8) else {
+                errorMessage = "Apple didn't return an identity token. Please try again."
+                return
+            }
+            _ = try await authService.signInWithApple(idToken: idToken, rawNonce: rawNonce)
+        } catch let error as ASAuthorizationError where error.code == .canceled {
+            // User tapped cancel — stay silent.
+        } catch {
+            errorMessage = authService.lastError ?? error.localizedDescription
+        }
+    }
+
+    private static func randomNonceString(length: Int = 32) -> String {
+        precondition(length > 0)
+        let charset: [Character] = Array("0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ-._")
+        var result = ""
+        var remaining = length
+
+        while remaining > 0 {
+            var randoms = [UInt8](repeating: 0, count: 16)
+            let status = SecRandomCopyBytes(kSecRandomDefault, randoms.count, &randoms)
+            if status != errSecSuccess {
+                // Fallback to a non-crypto source; still produces a unique string.
+                randoms = (0..<16).map { _ in UInt8.random(in: 0...255) }
+            }
+            for byte in randoms where remaining > 0 {
+                if byte < charset.count {
+                    result.append(charset[Int(byte)])
+                    remaining -= 1
+                }
+            }
+        }
+
+        return result
+    }
+
+    private static func sha256(_ input: String) -> String {
+        let hashed = SHA256.hash(data: Data(input.utf8))
+        return hashed.map { String(format: "%02x", $0) }.joined()
+    }
+
     private func sendResetLink() async {
         errorMessage = nil
         resetLoading = true
@@ -623,13 +691,13 @@ struct LoginSheetView: View {
 
 private enum AuthMethodStyle {
     case apple
-    case google
     case email
 }
 
 private struct AuthMethodButton: View {
     let title: String
     let style: AuthMethodStyle
+    var isLoading: Bool = false
     let action: () -> Void
 
     var body: some View {
@@ -650,23 +718,27 @@ private struct AuthMethodButton: View {
                 }
                 .padding(.horizontal, Spacing.md)
 
-                Text(title)
-                    .font(.headline)
-                    .foregroundStyle(textColor)
-                    .padding(.horizontal, 44)
-                    .multilineTextAlignment(.center)
+                if isLoading {
+                    ProgressView()
+                        .tint(textColor)
+                } else {
+                    Text(title)
+                        .font(.headline)
+                        .foregroundStyle(textColor)
+                        .padding(.horizontal, 44)
+                        .multilineTextAlignment(.center)
+                }
             }
             .frame(height: 58)
         }
         .buttonStyle(.plain)
+        .disabled(isLoading)
     }
 
     private var backgroundFill: AnyShapeStyle {
         switch style {
         case .apple:
             return AnyShapeStyle(Color.black)
-        case .google:
-            return AnyShapeStyle(Color(UIColor.systemBackground))
         case .email:
             return AnyShapeStyle(
                 LinearGradient(
@@ -678,32 +750,9 @@ private struct AuthMethodButton: View {
         }
     }
 
-    private var borderColor: Color {
-        switch style {
-        case .google:
-            return Color(UIColor.separator)
-        default:
-            return .clear
-        }
-    }
-
-    private var borderLineWidth: CGFloat {
-        switch style {
-        case .google:
-            return 1
-        default:
-            return 0
-        }
-    }
-
-    private var textColor: Color {
-        switch style {
-        case .google:
-            return .primary
-        default:
-            return .white
-        }
-    }
+    private var borderColor: Color { .clear }
+    private var borderLineWidth: CGFloat { 0 }
+    private var textColor: Color { .white }
 
     @ViewBuilder
     private var icon: some View {
@@ -712,26 +761,64 @@ private struct AuthMethodButton: View {
             Image(systemName: "apple.logo")
                 .font(.system(size: 18, weight: .semibold))
                 .foregroundStyle(.white)
-        case .google:
-            Text("G")
-                .font(.system(size: 18, weight: .bold, design: .rounded))
-                .foregroundStyle(
-                    LinearGradient(
-                        colors: [
-                            Color(red: 0.25, green: 0.49, blue: 0.96),
-                            Color(red: 0.92, green: 0.28, blue: 0.20),
-                            Color(red: 0.98, green: 0.74, blue: 0.18),
-                            Color(red: 0.20, green: 0.66, blue: 0.33)
-                        ],
-                        startPoint: .topLeading,
-                        endPoint: .bottomTrailing
-                    )
-                )
         case .email:
             Image(systemName: "envelope.fill")
                 .font(.system(size: 17, weight: .semibold))
                 .foregroundStyle(.white)
         }
+    }
+}
+
+// MARK: - Apple Sign-In Coordinator
+
+@MainActor
+private final class AppleSignInCoordinator: NSObject,
+    ASAuthorizationControllerDelegate,
+    ASAuthorizationControllerPresentationContextProviding {
+
+    private var continuation: CheckedContinuation<ASAuthorizationAppleIDCredential, Error>?
+
+    func perform(request: ASAuthorizationAppleIDRequest) async throws -> ASAuthorizationAppleIDCredential {
+        try await withCheckedThrowingContinuation { continuation in
+            self.continuation = continuation
+            let controller = ASAuthorizationController(authorizationRequests: [request])
+            controller.delegate = self
+            controller.presentationContextProvider = self
+            controller.performRequests()
+        }
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithAuthorization authorization: ASAuthorization
+    ) {
+        defer { continuation = nil }
+        if let credential = authorization.credential as? ASAuthorizationAppleIDCredential {
+            continuation?.resume(returning: credential)
+        } else {
+            continuation?.resume(throwing: ASAuthorizationError(.failed))
+        }
+    }
+
+    func authorizationController(
+        controller: ASAuthorizationController,
+        didCompleteWithError error: Error
+    ) {
+        continuation?.resume(throwing: error)
+        continuation = nil
+    }
+
+    func presentationAnchor(for controller: ASAuthorizationController) -> ASPresentationAnchor {
+        let scenes = UIApplication.shared.connectedScenes
+            .compactMap { $0 as? UIWindowScene }
+        guard let scene = scenes.first(where: { $0.activationState == .foregroundActive })
+            ?? scenes.first
+        else {
+            preconditionFailure("A window scene is required to present Sign in with Apple.")
+        }
+        return scene.keyWindow
+            ?? scene.windows.first
+            ?? ASPresentationAnchor(windowScene: scene)
     }
 }
 

@@ -23,7 +23,7 @@ extension Color {
 
     static var webSecondary: Color { ThemeManager.shared.accent.secondary }
 
-    static var oxfordGold: Color { ThemeManager.shared.accent.gold }
+    static var brandGold: Color { ThemeManager.shared.accent.gold }
     
     // MARK: - Adaptive Semantic Colors
     // These switch automatically between light and dark mode.
@@ -84,8 +84,8 @@ extension Color {
             : UIColor.black.withAlphaComponent(0.06)
     })
     
-    /// Primary text (titles, headings)  — oxford navy adapts
-    static let oxfordNavy = Color(UIColor { traits in
+    /// Primary text (titles, headings) adapts with the app theme.
+    static let brandInk = Color(UIColor { traits in
         traits.userInterfaceStyle == .dark
             ? UIColor(red: 0.85, green: 0.85, blue: 0.92, alpha: 1)
             : UIColor(red: 0.16, green: 0.18, blue: 0.25, alpha: 1)

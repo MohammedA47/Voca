@@ -61,7 +61,7 @@ struct SubscriptionSettingsView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "star.fill")
                         .font(.system(size: 16))
-                        .foregroundStyle(Color.oxfordGold)
+                        .foregroundStyle(Color.brandGold)
 
                     Text("Free Plan")
                         .font(.title3.weight(.semibold))
@@ -103,7 +103,7 @@ struct SubscriptionSettingsView: View {
                 HStack(spacing: Spacing.sm) {
                     Image(systemName: "crown.fill")
                         .font(.system(size: 16))
-                        .foregroundStyle(Color.oxfordGold)
+                        .foregroundStyle(Color.brandGold)
 
                     Text("Premium")
                         .font(.title3.weight(.semibold))
@@ -220,7 +220,7 @@ struct SubscriptionSettingsView: View {
                         LinearGradient(
                             gradient: Gradient(colors: [
                                 Color.webPrimary.opacity(0.15),
-                                Color.oxfordGold.opacity(0.08)
+                                Color.brandGold.opacity(0.08)
                             ]),
                             startPoint: .topLeading,
                             endPoint: .bottomTrailing

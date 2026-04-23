@@ -7,7 +7,7 @@ import Foundation
 /// Opens the app to the Learn tab so the user can study vocabulary.
 struct LearnWordIntent: AppIntent {
     static let title: LocalizedStringResource = "Learn a Word"
-    static let description: IntentDescription = "Opens Oxford Pronunciation to study vocabulary words."
+    static let description: IntentDescription = "Opens Voca to study vocabulary words."
     static let openAppWhenRun = true
 
     func perform() async throws -> some IntentResult {
@@ -21,7 +21,7 @@ struct LearnWordIntent: AppIntent {
 /// Searches for a specific word in the vocabulary.
 struct SearchWordIntent: AppIntent {
     static let title: LocalizedStringResource = "Search Word"
-    static let description: IntentDescription = "Look up a word in Oxford Pronunciation and hear its pronunciation."
+    static let description: IntentDescription = "Look up a word in Voca and hear its pronunciation."
     static let openAppWhenRun = true
 
     @Parameter(title: "Word")
@@ -36,7 +36,7 @@ struct SearchWordIntent: AppIntent {
 // MARK: - App Shortcuts Provider
 
 /// Registers shortcuts that appear in the Shortcuts app and Spotlight.
-struct PronunciationAppShortcuts: AppShortcutsProvider {
+struct VocaAppShortcuts: AppShortcutsProvider {
     static var appShortcuts: [AppShortcut] {
         AppShortcut(
             intent: LearnWordIntent(),
@@ -80,7 +80,7 @@ enum SpotlightIndexer {
 
                 return CSSearchableItem(
                     uniqueIdentifier: "word-\(word.id)",
-                    domainIdentifier: "com.oxford.pronunciation.words",
+                    domainIdentifier: "com.voca.words",
                     attributeSet: attributes
                 )
             }
@@ -90,7 +90,7 @@ enum SpotlightIndexer {
             try await Task.detached(priority: .utility) {
                 let searchableIndex = CSSearchableIndex.default()
                 try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-                    searchableIndex.deleteSearchableItems(withDomainIdentifiers: ["com.oxford.pronunciation.words"]) { error in
+                    searchableIndex.deleteSearchableItems(withDomainIdentifiers: ["com.voca.words"]) { error in
                         if let error {
                             continuation.resume(throwing: error)
                         } else {

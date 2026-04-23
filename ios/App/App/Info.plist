@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-        <string>Oxford Pronunciation</string>
+	<string>Voca</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -18,8 +18,6 @@
 	<string>APPL</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
-	<key>CFBundleVersion</key>
-	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>CFBundleURLTypes</key>
 	<array>
 		<dict>
@@ -33,11 +31,23 @@
 			</array>
 		</dict>
 	</array>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
+	<key>NSAppTransportSecurity</key>
+	<dict>
+		<key>NSAllowsArbitraryLoads</key>
+		<true/>
+	</dict>
+	<key>SUPABASE_ANON_KEY</key>
+	<string>sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT</string>
+	<key>SUPABASE_REDIRECT_URL</key>
+	<string>com.oxford.pronunciation://auth-callback</string>
+	<key>SUPABASE_URL</key>
+	<string>https://brknoeqgpejhxsqsjnan.supabase.co</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
-
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>armv7</string>
@@ -57,16 +67,5 @@
 	</array>
 	<key>UIViewControllerBasedStatusBarAppearance</key>
 	<true/>
-	<key>NSAppTransportSecurity</key>
-	<dict>
-		<key>NSAllowsArbitraryLoads</key>
-		<true/>
-	</dict>
-	<key>SUPABASE_URL</key>
-	<string>https://brknoeqgpejhxsqsjnan.supabase.co</string>
-	<key>SUPABASE_ANON_KEY</key>
-	<string>sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT</string>
-	<key>SUPABASE_REDIRECT_URL</key>
-	<string>com.oxford.pronunciation://auth-callback</string>
 </dict>
 </plist>
