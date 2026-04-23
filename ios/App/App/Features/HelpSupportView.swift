@@ -7,6 +7,7 @@ import SwiftUI
 struct HelpSupportView: View {
     @Environment(\.dismiss) private var dismiss
     @State private var faqExpanded: [Bool] = Array(repeating: false, count: 5)
+    @State private var showWhatsNew: Bool = false
 
     var body: some View {
         List {
@@ -28,6 +29,11 @@ struct HelpSupportView: View {
                 SettingsBackButton {
                     dismiss()
                 }
+            }
+        }
+        .sheet(isPresented: $showWhatsNew) {
+            WelcomeFlowView(release: WhatsNewManifest.current) { _ in
+                showWhatsNew = false
             }
         }
     }
@@ -185,17 +191,23 @@ struct HelpSupportView: View {
             }
             .padding(.vertical, Spacing.xs / 2)
 
-            HStack {
-                Text("Build")
-                    .font(.body)
-                    .foregroundStyle(.primary)
+            Button {
+                showWhatsNew = true
+            } label: {
+                HStack {
+                    Text("Build")
+                        .font(.body)
+                        .foregroundStyle(.primary)
 
-                Spacer()
+                    Spacer()
 
-                Text(appBuild)
-                    .font(.body.monospacedDigit())
-                    .foregroundStyle(.secondary)
+                    Text(appBuild)
+                        .font(.body.monospacedDigit())
+                        .foregroundStyle(.secondary)
+                }
             }
+            .buttonStyle(.plain)
+            .contentShape(Rectangle())
             .padding(.vertical, Spacing.xs / 2)
         }
     }

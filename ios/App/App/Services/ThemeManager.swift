@@ -7,6 +7,7 @@ import SwiftUI
 enum AccentTheme: String, CaseIterable, Identifiable {
     case purple
     case blue
+    case violet
 
     var id: String { rawValue }
 
@@ -14,6 +15,7 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         switch self {
         case .purple: return "Purple"
         case .blue:   return "Blue"
+        case .violet: return "Violet"
         }
     }
 
@@ -24,11 +26,18 @@ enum AccentTheme: String, CaseIterable, Identifiable {
         switch self {
         case .purple: return 330
         case .blue:   return 215
+        case .violet: return 269
         }
     }
 
     var primary: Color {
-        Color(hue: hue, saturation: 0.65, lightness: 0.50)
+        switch self {
+        case .violet:
+            // Exact brand hex #985DD7
+            return Color(red: 152.0 / 255.0, green: 93.0 / 255.0, blue: 215.0 / 255.0)
+        default:
+            return Color(hue: hue, saturation: 0.65, lightness: 0.50)
+        }
     }
 
     var secondary: Color {

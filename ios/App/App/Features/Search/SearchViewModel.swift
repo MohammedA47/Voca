@@ -37,7 +37,7 @@ final class SearchViewModel {
     private func scheduleFilter() {
         filterTask?.cancel()
         filterTask = Task {
-            try? await Task.sleep(for: .milliseconds(300))
+            try? await Task.sleep(for: .milliseconds(150))
             guard !Task.isCancelled else { return }
             filterWords()
         }
@@ -50,28 +50,29 @@ final class SearchViewModel {
         let wordsByType = vocabularyService.wordsByType
         let allWords = vocabularyService.words
 
-        filterTask = Task(priority: .userInitiated) { [weak self] in
-            var results: [Word]
+        filterTask = Task.detached(priority: .userInitiated) { [weak self] in
+            let base: [Word]
             if let type = currentType {
-                results = wordsByType[type] ?? []
+                base = wordsByType[type] ?? []
             } else {
-                results = allWords
+                base = allWords
             }
 
-            if !currentSearchText.isEmpty {
-                let normalizedSearchText = currentSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
-                results = results.filter {
-                    $0.word.localizedCaseInsensitiveContains(normalizedSearchText)
+            let results: [Word]
+            let trimmed = currentSearchText.trimmingCharacters(in: .whitespacesAndNewlines)
+            if trimmed.isEmpty {
+                results = base
+            } else {
+                results = base.filter {
+                    $0.word.range(of: trimmed, options: .caseInsensitive) != nil
                 }
             }
 
             guard !Task.isCancelled else { return }
-            let finalResults = results
             await MainActor.run {
                 guard let self = self else { return }
-                // Only update if search text hasn't changed while we were filtering
                 if self.searchText == currentSearchText && self.selectedWordType == currentType {
-                    self.filteredWords = finalResults
+                    self.filteredWords = results
                 }
             }
         }

@@ -44,6 +44,9 @@ struct SearchView: View {
                 }
             }
             .navigationTitle("Search")
+            .navigationBarTitleDisplayMode(.large)
+            .toolbar(.visible, for: .navigationBar)
+            .searchable(text: $viewModel.searchText, prompt: "Search words...")
             .withAppRoutes()
         }
     }

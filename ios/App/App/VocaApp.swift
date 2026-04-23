@@ -8,6 +8,7 @@ struct VocaApp: App {
     @State private var vocabularyService = VocabularyService.shared
     @State private var themeManager = ThemeManager.shared
     @State private var showPendingPrompt = false
+    @State private var welcomeSignIn: WelcomeSignInMethod? = nil
     private var authService = AuthService.shared
 
     var body: some Scene {
@@ -25,6 +26,9 @@ struct VocaApp: App {
                         .id(themeManager.accent)
                         .task {
                             await SpotlightIndexer.indexAllWordsIfNeeded()
+                        }
+                        .welcomeFeaturesSheet { method in
+                            welcomeSignIn = method
                         }
                 } else {
                     // Show loading state while vocabulary loads
@@ -54,6 +58,13 @@ struct VocaApp: App {
             .sheet(isPresented: $showPendingPrompt) {
                 NavigationStack {
                     LoginSheetView(startInPendingConfirmation: true)
+                }
+                .preferredColorScheme(resolvedColorScheme)
+                .id(themeManager.accent)
+            }
+            .sheet(item: $welcomeSignIn) { _ in
+                NavigationStack {
+                    LoginSheetView()
                 }
                 .preferredColorScheme(resolvedColorScheme)
                 .id(themeManager.accent)

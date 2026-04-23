@@ -22,7 +22,6 @@ struct ContentView: View {
 
             Tab(value: .search, role: .search) {
                 SearchView(viewModel: searchViewModel)
-                    .searchable(text: $searchViewModel.searchText, prompt: "Search words...")
             }
         }
         .tint(.accentPrimary)

@@ -24,10 +24,10 @@
 			<key>CFBundleTypeRole</key>
 			<string>Editor</string>
 			<key>CFBundleURLName</key>
-			<string>com.oxford.pronunciation.auth</string>
+			<string>com.voca.pronunciation.auth</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.oxford.pronunciation</string>
+				<string>com.voca.pronunciation</string>
 			</array>
 		</dict>
 	</array>
@@ -43,7 +43,7 @@
 	<key>SUPABASE_ANON_KEY</key>
 	<string>sb_publishable_SIqMFd0McVuxDH7u6V_1RA_okuvvVmT</string>
 	<key>SUPABASE_REDIRECT_URL</key>
-	<string>com.oxford.pronunciation://auth-callback</string>
+	<string>com.voca.pronunciation://auth-callback</string>
 	<key>SUPABASE_URL</key>
 	<string>https://brknoeqgpejhxsqsjnan.supabase.co</string>
 	<key>UILaunchStoryboardName</key>
