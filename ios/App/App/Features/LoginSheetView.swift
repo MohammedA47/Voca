@@ -150,7 +150,7 @@ struct LoginSheetView: View {
             VStack(spacing: Spacing.lg) {
                 VStack(spacing: Spacing.md) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        Circle()
                             .fill(Color.accentPrimary.opacity(0.12))
 
                         Image(systemName: "envelope.badge.fill")
@@ -268,15 +268,6 @@ struct LoginSheetView: View {
                 }
 
                 VStack(spacing: Spacing.sm) {
-                    Button(action: {
-                        errorMessage = nil
-                        showEmailForm = false
-                    }) {
-                        Text("Other Sign-In Options")
-                            .font(.footnote.weight(.semibold))
-                            .foregroundStyle(Color.accentPrimary)
-                    }
-
                     Button(action: {
                         errorMessage = nil
                         withAnimation(.easeInOut(duration: 0.2)) {
@@ -434,10 +425,10 @@ struct LoginSheetView: View {
             VStack(spacing: Spacing.xl) {
                 VStack(spacing: Spacing.sm) {
                     ZStack {
-                        RoundedRectangle(cornerRadius: 22, style: .continuous)
+                        Circle()
                             .fill(Color.accentPrimary.opacity(0.12))
 
-                        Image(systemName: "envelope.badge.shield.half.fill")
+                        Image(systemName: "lock.rotation")
                             .font(.system(size: 26, weight: .semibold))
                             .foregroundStyle(Color.accentPrimary)
                     }
@@ -522,18 +513,6 @@ struct LoginSheetView: View {
                         .disabled(resetLoading || resetEmail.isEmpty)
                         .opacity((resetLoading || resetEmail.isEmpty) ? 0.6 : 1.0)
                     }
-
-                    Button(action: {
-                        email = resetEmail.isEmpty ? email : resetEmail
-                        errorMessage = nil
-                        resetSuccess = false
-                        showResetPassword = false
-                    }) {
-                        Text("Back to Sign In")
-                            .font(.footnote)
-                            .foregroundStyle(Color.accentPrimary)
-                    }
-                    .padding(.top, Spacing.xs)
                 }
                 .padding(.horizontal, Spacing.lg)
             }

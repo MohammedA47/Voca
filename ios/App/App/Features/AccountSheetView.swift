@@ -250,6 +250,7 @@ struct AccountSheetView: View {
                 Slider(value: $loopGapSeconds, in: 0...10)
                     .accessibilityLabel("Loop gap")
                     .accessibilityValue("\(loopGapSeconds, specifier: "%.1f") seconds")
+                    .sensoryFeedback(.selection, trigger: Int((loopGapSeconds * 2).rounded()))
             }
             .padding(.vertical, Spacing.xs)
 
@@ -272,6 +273,7 @@ struct AccountSheetView: View {
                 Slider(value: $playbackSpeed, in: 0.5...2.0)
                     .accessibilityLabel("Playback speed")
                     .accessibilityValue("\(playbackSpeed, specifier: "%.1f") times")
+                    .sensoryFeedback(.selection, trigger: Int((playbackSpeed * 10).rounded()))
             }
             .padding(.vertical, Spacing.xs)
 

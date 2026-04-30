@@ -152,7 +152,7 @@ enum WhatsNewManifest {
             )
         ],
         signInStep: WelcomeSignInStep(
-            hero: .symbol("icloud.fill"),
+            hero: .appIcon,
             title: "Sign in to get more",
             features: [
                 WelcomeFeature(
@@ -161,14 +161,14 @@ enum WhatsNewManifest {
                     description: "Your progress, streaks, and bookmarks stay in sync across your devices."
                 ),
                 WelcomeFeature(
-                    icon: "flame.fill",
-                    title: "Never Lose a Streak",
-                    description: "Keep your daily streak even if you reinstall or switch phones."
-                ),
-                WelcomeFeature(
                     icon: "bookmark.fill",
                     title: "Keep Your Saved Words",
                     description: "Bookmarks and custom lists stay with your account, not the device."
+                ),
+                WelcomeFeature(
+                    icon: "infinity",
+                    title: "Higher Daily Limit",
+                    description: "Unlock more words per day and keep learning past the free cap."
                 )
             ]
         )
