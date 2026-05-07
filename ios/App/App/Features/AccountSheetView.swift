@@ -7,7 +7,7 @@ import SwiftUI
 struct AccountSheetView: View {
     @Environment(\.dismiss) private var dismiss
     // MARK: - Persisted Settings
-    @AppStorage("isLooping") private var isLooping: Bool = true
+    @AppStorage("isLooping") private var isLooping: Bool = false
     @AppStorage("phoneticsMode") private var phoneticsMode: String = "us"
     @AppStorage("loopGapSeconds") private var loopGapSeconds: Double = 1.0
     @AppStorage("playbackSpeed") private var playbackSpeed: Double = 1.0
