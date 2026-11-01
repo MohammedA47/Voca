@@ -1,4 +1,5 @@
 import contextlib
+import difflib
 import io
 import json
 import multiprocessing
@@ -38,9 +39,12 @@ class FakeAdapter:
         on_spawn(None, None, 'simulated-no-process')
         if role == 'writer':
             path = Path(root) / (self.extra or 'docs/task.txt')
-            path.parent.mkdir(exist_ok=True, parents=True)
-            with path.open('a') as f: f.write(f'\nchange {len(self.calls)}')
-            return Result('implemented (simulation)')
+            old = path.read_text() if path.exists() else ''
+            new = old + f'change {len(self.calls)}\n'
+            patch_text = ''.join(difflib.unified_diff(old.splitlines(True), new.splitlines(True),
+                fromfile='a/'+str(path.relative_to(root)) if path.exists() else '/dev/null',
+                tofile='b/'+str(path.relative_to(root))))
+            return Result(json.dumps({'patch': patch_text, 'summary': 'simulated change'}))
         return Result(json.dumps({'verdict': self.verdict, 'sha': git(root,'rev-parse','HEAD'),
                                   'findings': 'Checked the specification and complete diff (simulation)'}))
 
@@ -52,7 +56,7 @@ class ControllerTests(unittest.TestCase):
         self.root.mkdir(); git(self.root, 'init', '-b', 'automation/voca-example')
         git(self.root, 'config', 'user.name', 'Controller Test'); git(self.root, 'config', 'user.email', 'test@example.invalid')
         git(self.root, 'remote', 'add', 'origin', 'https://github.com/MohammedA47/Voca.git')
-        (self.root/'docs').mkdir(); (self.root/'docs/task.txt').write_text('initial')
+        (self.root/'docs').mkdir(); (self.root/'docs/task.txt').write_text('initial\n')
         git(self.root,'add','.'); git(self.root,'commit','-m','fixture')
         self.base = git(self.root,'rev-parse','HEAD'); self.remote_base = self.base
         self.projects = {'voca': {'repo_name':'MohammedA47/Voca','repo_id':1219099434,'private':False,'execution_enabled':True,'hold_reason':''},
@@ -227,7 +231,7 @@ class ControllerTests(unittest.TestCase):
             with self.assertRaises(Exception): self.c.approve_spec(s,digest(s))
         self.fake.extra='docs-other/file'
         with self.assertRaisesRegex(Exception,'Out-of-scope'): self.c.run('example','writer')
-        self.assertTrue((self.root/'docs-other/file').exists());self.assertEqual(self.row()['state'],'awaiting-human')
+        self.assertFalse((self.root/'docs-other/file').exists());self.assertEqual(self.row()['state'],'awaiting-human')
 
     def test_ignored_existing_file_blocks_launch(self):
         (self.root/'.git/info/exclude').write_text('ignored.txt\n');(self.root/'ignored.txt').write_text('keep')
@@ -320,6 +324,26 @@ class ControllerTests(unittest.TestCase):
         with self.assertRaises(Exception):
             with MachineLock(self.p/'different-state',self.lock): pass
         q.close()
+
+    def test_hidden_staged_out_of_scope_change_blocks_before_agent(self):
+        outside=self.root/'outside.txt';outside.write_text('original\n')
+        git(self.root,'add','outside.txt');git(self.root,'commit','-m','extra fixture')
+        self.base=git(self.root,'rev-parse','HEAD');self.remote_base=self.base
+        s=dict(self.s,base_sha=self.base);self.c.approve_spec(s,digest(s));self.c.approve_execution('example',digest(s))
+        outside.write_text('staged secret change\n');git(self.root,'add','outside.txt');outside.write_text('original\n')
+        before=git(self.root,'rev-parse','HEAD')
+        with self.assertRaises(Exception): self.c.run('example','writer')
+        self.assertEqual(self.fake.calls,[]);self.assertEqual(git(self.root,'rev-parse','HEAD'),before)
+        self.assertIn('outside.txt',git(self.root,'diff','--cached','--name-only'))
+
+    def test_writer_gets_scoped_source_and_returns_patch_without_tools(self):
+        self.c.run('example','writer')
+        prompt=self.fake.calls[0][2]
+        self.assertIn('initial',prompt);self.assertIn('Use NO tools',prompt)
+        profile=self.fake.calls[0][0]
+        args=command(profile,'writer',self.root,['docs'])
+        self.assertEqual(args[args.index('--sandbox')+1],'read-only')
+        self.assertIn('shell_tool',args)
 
     def test_fencing_counter_survives_lock_release(self):
         with self.c.locked(): first=self.c.token

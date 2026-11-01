@@ -6,10 +6,10 @@ from pathlib import Path
 from .errors import RepoVerificationError
 
 
-def git(root, *args):
+def git(root, *args, input=None):
     r = subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false',
                         '-c', 'core.fsmonitor=false', *args], cwd=root, capture_output=True,
-                       timeout=30, env=None)
+                       timeout=30, env=None, input=input.encode() if input is not None else None)
     if r.returncode:
         raise RepoVerificationError(f'git {args[0]} failed: {r.stderr.decode(errors="replace")[:500]}')
     return r.stdout.decode('utf-8', errors='strict').strip('\n')
@@ -29,6 +29,7 @@ def changed(root, base=None):
     if base:
         paths.update(git(root, 'diff', '--no-ext-diff', '--no-renames', '--name-only', '-z', base, 'HEAD').split('\0'))
     paths.update(git(root, 'diff', '--no-ext-diff', '--no-renames', '--name-only', '-z', 'HEAD').split('\0'))
+    paths.update(git(root, 'diff', '--no-ext-diff', '--no-renames', '--cached', '--name-only', '-z').split('\0'))
     # Include ignored files: a new ignored script must not evade scope checks.
     paths.update(git(root, 'ls-files', '--others', '-z').split('\0'))
     return sorted(paths - {''})
@@ -89,3 +90,32 @@ def ci_observation(project, spec, sha, run_id, get=public_get):
         raise RepoVerificationError('Required CI job is missing or unsuccessful')
     return {'run_id': run_id, 'sha': sha, 'source': 'github-api-observed',
             'url': f"https://github.com/{project['repo_name']}/actions/runs/{run_id}"}
+
+
+def apply_proposal(root, patch, scope):
+    from .paths import is_within_scope, assert_no_symlink_escape
+    if not isinstance(patch, str) or not patch.strip() or len(patch.encode()) > 180000:
+        raise RepoVerificationError('Missing or oversized patch proposal')
+    if any(marker in patch for marker in ('GIT binary patch', 'Binary files ', 'rename from ', 'rename to ', 'copy from ', 'copy to ', '120000', '160000')):
+        raise RepoVerificationError('Binary, rename, copy or symlink proposals need manual handling')
+    stats = git(root, 'apply', '--numstat', '-z', '-', input=patch)
+    files = []
+    for item in stats.split('\0'):
+        if not item: continue
+        fields = item.split('\t', 2)
+        if len(fields) != 3 or fields[0] == '-' or fields[1] == '-':
+            raise RepoVerificationError('Unsupported patch statistics')
+        path = fields[2]
+        if not is_within_scope(path, scope):
+            raise RepoVerificationError('Out-of-scope patch: ' + path)
+        assert_no_symlink_escape(path, Path(root))
+        target = Path(root) / path
+        if target.is_symlink() or any(p.is_symlink() for p in target.parents if p != Path(root).parent):
+            raise RepoVerificationError('Symlink patch path rejected')
+        files.append(path)
+    if not files:
+        raise RepoVerificationError('Patch contains no reviewable changes')
+    clean(root)
+    git(root, 'apply', '--check', '--index', '-', input=patch)
+    git(root, 'apply', '--index', '-', input=patch)
+    return files

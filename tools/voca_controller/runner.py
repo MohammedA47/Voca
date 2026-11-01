@@ -4,13 +4,16 @@ import json
 import os
 import signal
 import subprocess
+import sys
 import time
 from dataclasses import dataclass
 from pathlib import Path
 from .errors import AdapterError, AuthFailureError, UncertainOpBlocksError
 
 LIMIT = 1_000_000
-CODEX = '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex'
+# The bundled bin/codex is a shell wrapper invoking dirname; use its existing
+# native exec target so the wrapper does not need a fork under confinement.
+CODEX = '/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex'
 CLAUDE = '/opt/homebrew/bin/claude'
 
 
@@ -44,23 +47,18 @@ def assert_subscription_environment():
 def command(profile, role, root, scope):
     if profile.provider == 'codex':
         args = [CODEX, '--no-daemon', '-a', 'never', 'exec', '--ignore-user-config', '--ephemeral', '--json',
-                '--sandbox', 'workspace-write' if role == 'writer' else 'read-only',
+                '--sandbox', 'read-only',
                 '--model', profile.model, '-c', f'model_reasoning_effort="{profile.effort}"',
                 '-C', str(root)]
         for feature in ('apps', 'plugins', 'hooks', 'computer_use', 'browser_use', 'multi_agent'):
             args += ['--disable', feature]
-        if role != 'writer':
-            args += ['--disable', 'shell_tool']
+        args += ['--disable', 'shell_tool']
         return args + ['-']
     args = [CLAUDE, '-p', '--model', profile.model, '--effort', profile.effort,
             '--setting-sources', '', '--settings', '{"disableAllHooks":true,"autoMemoryEnabled":false}',
             '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}', '--no-session-persistence',
             '--permission-mode', 'dontAsk', '--output-format', 'json']
-    if role == 'writer':
-        args += ['--tools', 'Read,Glob,Grep,Write,Edit', '--allowedTools',
-                 ','.join(['Read', 'Glob', 'Grep'] + [f'{tool}(./{path}/**)' for path in scope for tool in ('Write', 'Edit')])]
-    else:
-        args += ['--tools', '']
+    args += ['--tools', '']
     return args
 
 
@@ -93,7 +91,7 @@ def parse_output(provider, raw, requested, role):
             if e.get('type') == 'turn.completed':
                 completed = True
             item = e.get('item', {})
-            if role != 'writer' and item.get('type') in ('command_execution', 'file_change', 'mcp_tool_call', 'web_search'):
+            if item.get('type') in ('command_execution', 'file_change', 'mcp_tool_call', 'web_search'):
                 raise AdapterError('Read-only response attempted a tool action')
             if e.get('type') == 'item.completed' and item.get('type') == 'agent_message':
                 texts.append(item['text'])
@@ -107,8 +105,8 @@ def parse_output(provider, raw, requested, role):
 class LocalAdapter:
     def auth_check(self, provider):
         assert_subscription_environment()
-        cmd = [CODEX, 'login', 'status'] if provider == 'codex' else [CLAUDE, 'auth', 'status']
-        r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        cmd = [CODEX, '--no-daemon', 'login', 'status'] if provider == 'codex' else [CLAUDE, 'auth', 'status']
+        r = subprocess.run(confined_command(cmd), capture_output=True, text=True, timeout=10)
         if provider == 'codex':
             valid = r.returncode == 0 and 'Logged in using ChatGPT' in (r.stdout + r.stderr)
         else:
@@ -128,6 +126,20 @@ class LocalAdapter:
 
 def run_process(args, prompt, root, logdir, on_spawn, timeout, profile, role):
     """Launch after durable intent; caller marks completion only when this returns."""
+    args = confined_command(args)
+    return _supervise_confined(args, prompt, root, logdir, on_spawn, timeout, profile, role)
+
+
+def confined_command(args):
+    # Real providers are supported only where the no-descendant guarantee exists.
+    # This is a process-local seatbelt profile, not a system settings change.
+    if sys.platform != 'darwin' or not Path('/usr/bin/sandbox-exec').is_file():
+        raise AdapterError('Real agent execution is unavailable: macOS fork-denial sandbox required')
+    return ['/usr/bin/sandbox-exec', '-p', '(version 1)(allow default)(deny process-fork)', *args]
+
+
+def _supervise_confined(args, prompt, root, logdir, on_spawn, timeout, profile, role):
+    # Internal process monitor; production callers must use run_process.
     logdir.mkdir(parents=True, exist_ok=False)
     inp, out, err = [logdir / x for x in ('prompt.txt', 'stdout.txt', 'stderr.txt')]
     inp.write_text(prompt)

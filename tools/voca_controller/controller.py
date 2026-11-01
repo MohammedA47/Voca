@@ -9,7 +9,7 @@ from pathlib import Path
 from . import approval
 from .db import SQLiteStore
 from .errors import VocaControllerError as Error, UncertainOpBlocksError, AdapterError, AuthFailureError
-from .git_verify import git, clean, changed, remote_matches, verify_remote, ci_observation, public_get
+from .git_verify import git, clean, changed, remote_matches, verify_remote, ci_observation, public_get, apply_proposal
 from .lease import MachineLock, WriteLease, alive
 from .paths import resolve_state_dir, validate_path_isolation, is_within_scope, assert_no_symlink_escape
 from .routing import select_route, resolve_profile, RouteSelection, escalate_profile, CATALOG_VERSION
@@ -238,7 +238,18 @@ class Controller:
                 if 'GIT binary patch' in diff:
                     raise Error('Binary changes require manual review; no truncated automatic review')
             else:
-                diff = ''
+                # Writer proposes a patch from bounded scoped source; no agent shell or edits.
+                snapshots = []
+                for path in git(root, 'ls-files', '-z', '--', *s['scope_prefixes']).split('\0'):
+                    if not path or not is_within_scope(path, s['scope_prefixes']): continue
+                    target = root / path
+                    assert_no_symlink_escape(path, root)
+                    if target.is_symlink():
+                        raise Error('Symlink source requires manual handling')
+                    if target.stat().st_size > 180000:
+                        raise Error('Scoped source exceeds bounded patch-proposal input')
+                    snapshots.append({'path': path, 'content': target.read_text()})
+                diff = canonical(snapshots)
             prompt = self.prompt(s, role, sha, diff, row['review_findings'] or '')
             if len(prompt.encode()) > 180000:
                 raise Error('Review/specification exceeds the bounded complete-context limit')
@@ -281,6 +292,12 @@ class Controller:
                 if role == 'writer':
                     if git(root, 'rev-parse', 'HEAD') != (row['candidate_sha'] or s['base_sha']):
                         raise Error('Writer changed git HEAD; manual reconciliation required')
+                    # A stale or dirty checkout must be detected before applying any proposal.
+                    self.preflight(row, data)
+                    proposal = json.loads(result.text)
+                    if set(proposal) != {'patch', 'summary'} or not isinstance(proposal['summary'], str):
+                        raise Error('Writer must return a structured patch proposal')
+                    apply_proposal(root, proposal['patch'], s['scope_prefixes'])
                     files = changed(root, s['base_sha'])
                     for path in files:
                         if not is_within_scope(path, s['scope_prefixes']):
@@ -325,7 +342,8 @@ class Controller:
                        'the approved acceptance criteria. Return ONLY JSON with verdict pass/reject, sha and findings.\n')
             body += '\nCandidate SHA: ' + sha + '\nComplete diff:\n' + diff
         else:
-            header += 'Modify only the approved scope. Do not edit the controller state or git metadata.\n'
+            header += 'Use NO tools and make NO filesystem changes. Return ONLY JSON with patch (unified diff with a/ and b/ paths) and summary. The controller will validate and apply it. No commands, renames, binaries or symlinks.\n'
+            body += '\nScoped source snapshot:\n' + diff
         return header + body
 
     def observe_ci(self, task_id, run_id):
