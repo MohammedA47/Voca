@@ -1,0 +1,138 @@
+name: iOS CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [automation/voca-ci-foundation]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    # Guard: only run on the canonical public repo; skip forks and private copies.
+    if: github.repository == 'MohammedA47/Voca' && github.event.repository.private == false
+    runs-on: macos-26
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_26.5.app/Contents/Developer
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4
+        with:
+          persist-credentials: false
+
+      - name: Log toolchain and available simulators
+        run: |
+          xcodebuild -version
+          xcrun simctl list devices available | grep -E "iPhone 17" || echo "No iPhone 17 listed — check destination"
+
+      - name: Build App (unsigned, simulator, Debug)
+        run: |
+          set -euo pipefail
+          xcodebuild build \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' \
+            -derivedDataPath .build \
+            CODE_SIGNING_ALLOWED=NO \
+            2>&1 | tee build.log
+
+      - name: Verify oxford_vocabulary.json in app bundle
+        run: |
+          APP=".build/Build/Products/Debug-iphonesimulator/App.app"
+          if [[ ! -f "$APP/oxford_vocabulary.json" ]]; then
+            echo "::error::oxford_vocabulary.json not found in $APP"
+            exit 1
+          fi
+          # Confirm the bundled resource is byte-for-byte identical to source.
+          cmp "$APP/oxford_vocabulary.json" ios/App/App/Services/oxford_vocabulary.json || {
+            echo "::error::oxford_vocabulary.json in app bundle differs from source — stale resource?"
+            exit 1
+          }
+          echo "Resource verified: $(wc -c < "$APP/oxford_vocabulary.json" | tr -d ' ') bytes"
+
+      - name: Run tests (non-hosted, no app launch)
+        run: |
+          set -euo pipefail
+          xcodebuild test \
+            -workspace ios/App/App.xcworkspace \
+            -scheme App \
+            -configuration Debug \
+            -sdk iphonesimulator \
+            -destination 'platform=iOS Simulator,name=iPhone 17,OS=26.5' \
+            -derivedDataPath .build \
+            -only-testing:AppTests \
+            -parallel-testing-enabled NO \
+            CODE_SIGNING_ALLOWED=NO \
+            -resultBundlePath TestResults.xcresult \
+            2>&1 | tee test.log
+
+      - name: Report test results via xcresulttool
+        if: always()
+        run: |
+          set -euo pipefail
+
+          # Fail immediately if the result bundle is absent.
+          if [[ ! -d TestResults.xcresult ]]; then
+            echo "::error::TestResults.xcresult not found — test step may have been skipped or crashed"
+            exit 1
+          fi
+
+          # Use modern xcresulttool subcommand (Xcode 26 / xcresulttool 26).
+          SUMMARY_JSON=$(xcrun xcresulttool get test-results summary \
+            --path TestResults.xcresult --compact) || {
+            echo "::error::xcresulttool failed to read TestResults.xcresult"
+            exit 1
+          }
+
+          echo "xcresulttool summary: $SUMMARY_JSON"
+
+          TOTAL=$(echo "$SUMMARY_JSON" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('totalTestCount',0))")
+          PASSED=$(echo "$SUMMARY_JSON" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('passedTests',0))")
+          FAILED=$(echo "$SUMMARY_JSON" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('failedTests',0))")
+          SKIPPED=$(echo "$SUMMARY_JSON" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('skippedTests',0))")
+          RESULT=$(echo "$SUMMARY_JSON" | python3 -c \
+            "import sys,json; d=json.load(sys.stdin); print(d.get('result',''))")
+
+          echo "Total=$TOTAL Passed=$PASSED Failed=$FAILED Skipped=$SKIPPED Result=$RESULT"
+
+          FAIL=0
+          # Gate: totalTestCount must be nonzero.
+          [[ "$TOTAL"   -le 0 ]] && { echo "::error::totalTestCount=$TOTAL (expected > 0)"; FAIL=1; }
+          # Gate: every test must have passed (passedTests == totalTestCount).
+          [[ "$PASSED"  -le 0 ]] && { echo "::error::passedTests=$PASSED (expected > 0)";   FAIL=1; }
+          [[ "$PASSED" -ne "$TOTAL" ]] && { echo "::error::passedTests=$PASSED != totalTestCount=$TOTAL (all tests must pass)"; FAIL=1; }
+          # Gate: no failures.
+          [[ "$FAILED"  -gt 0 ]] && { echo "::error::failedTests=$FAILED (expected 0)";     FAIL=1; }
+          # Gate: no skipped tests — this suite has no expected skips or conditional XCTSkip calls.
+          [[ "$SKIPPED" -gt 0 ]] && { echo "::error::skippedTests=$SKIPPED (expected 0 — no skips are permitted in this suite)"; FAIL=1; }
+          # Gate: overall result string must be Passed.
+          [[ "$RESULT" != "Passed" ]] && { echo "::error::result='$RESULT' (expected Passed)"; FAIL=1; }
+
+          # Write job summary before exiting so it is visible even when the gate fails.
+          {
+            echo "## Test Results"
+            echo ""
+            echo "| Metric | Value |"
+            echo "| --- | --- |"
+            echo "| Total | $TOTAL |"
+            echo "| Passed | $PASSED |"
+            echo "| Failed | $FAILED |"
+            echo "| Skipped | $SKIPPED |"
+            echo "| Result | $RESULT |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$FAIL"
