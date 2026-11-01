@@ -110,12 +110,19 @@ jobs:
           echo "Total=$TOTAL Passed=$PASSED Failed=$FAILED Skipped=$SKIPPED Result=$RESULT"
 
           FAIL=0
-          [[ "$TOTAL"  -le 0 ]] && { echo "::error::totalTestCount=$TOTAL (expected > 0)"; FAIL=1; }
-          [[ "$PASSED" -le 0 ]] && { echo "::error::passedTests=$PASSED (expected > 0)";   FAIL=1; }
-          [[ "$FAILED" -gt 0 ]] && { echo "::error::failedTests=$FAILED (expected 0)";     FAIL=1; }
+          # Gate: totalTestCount must be nonzero.
+          [[ "$TOTAL"   -le 0 ]] && { echo "::error::totalTestCount=$TOTAL (expected > 0)"; FAIL=1; }
+          # Gate: every test must have passed (passedTests == totalTestCount).
+          [[ "$PASSED"  -le 0 ]] && { echo "::error::passedTests=$PASSED (expected > 0)";   FAIL=1; }
+          [[ "$PASSED" -ne "$TOTAL" ]] && { echo "::error::passedTests=$PASSED != totalTestCount=$TOTAL (all tests must pass)"; FAIL=1; }
+          # Gate: no failures.
+          [[ "$FAILED"  -gt 0 ]] && { echo "::error::failedTests=$FAILED (expected 0)";     FAIL=1; }
+          # Gate: no skipped tests — this suite has no expected skips or conditional XCTSkip calls.
+          [[ "$SKIPPED" -gt 0 ]] && { echo "::error::skippedTests=$SKIPPED (expected 0 — no skips are permitted in this suite)"; FAIL=1; }
+          # Gate: overall result string must be Passed.
           [[ "$RESULT" != "Passed" ]] && { echo "::error::result='$RESULT' (expected Passed)"; FAIL=1; }
-          [[ "$FAIL" -eq 1 ]] && exit 1
 
+          # Write job summary before exiting so it is visible even when the gate fails.
           {
             echo "## Test Results"
             echo ""
@@ -127,3 +134,5 @@ jobs:
             echo "| Skipped | $SKIPPED |"
             echo "| Result | $RESULT |"
           } >> "$GITHUB_STEP_SUMMARY"
+
+          exit "$FAIL"

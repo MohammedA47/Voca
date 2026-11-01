@@ -119,6 +119,15 @@ final class WordDecodingTests: XCTestCase {
             try decode(#"{"id":"t-012","word":"x","type":"noun","level":"A1"}"#)
         )
     }
+
+    // MARK: Malformed — Wrong Required Field Types
+
+    // 'id' must be a String; an integer value must throw a DecodingError.
+    func testIdAsIntegerThrows() {
+        XCTAssertThrowsError(
+            try decode(#"{"id":42,"word":"x","type":"noun","level":"A1","phonetics":{}}"#)
+        )
+    }
 }
 
 // MARK: - Bundled JSON Dataset Tests
@@ -141,8 +150,12 @@ final class WordBundledJSONTests: XCTestCase {
         let data = try Data(contentsOf: url)
         allWords = try JSONDecoder().decode([Word].self, from: data)
         // Fail immediately if decode somehow produced an empty array; avoids vacuous passes below.
+        // XCTFail records a test failure; the subsequent throw (non-XCTSkip) marks setup as an
+        // error so dependent test methods are not run. This cannot silently pass or skip.
         guard !allWords.isEmpty else {
-            throw XCTSkip("oxford_vocabulary.json decoded to an empty array")
+            XCTFail("oxford_vocabulary.json decoded to an empty array — dataset must not be empty")
+            throw NSError(domain: "WordBundledJSONTests", code: 1,
+                          userInfo: [NSLocalizedDescriptionKey: "Dataset is empty"])
         }
     }
 
@@ -155,7 +168,7 @@ final class WordBundledJSONTests: XCTestCase {
     func testAllIdsUniqueNonEmptyTrimmed() {
         var seen = Set<String>()
         for w in allWords {
-            let trimmed = w.id.trimmingCharacters(in: .whitespaces)
+            let trimmed = w.id.trimmingCharacters(in: .whitespacesAndNewlines)
             XCTAssertFalse(trimmed.isEmpty, "Empty id found in dataset")
             XCTAssertEqual(w.id, trimmed, "Untrimmed whitespace in id: '\(w.id)'")
             XCTAssertTrue(seen.insert(trimmed).inserted, "Duplicate id: '\(w.id)'")
@@ -165,7 +178,7 @@ final class WordBundledJSONTests: XCTestCase {
     // Every word string is nonempty and has no leading/trailing whitespace.
     func testAllWordStringsNonEmptyTrimmed() {
         for w in allWords {
-            let trimmed = w.word.trimmingCharacters(in: .whitespaces)
+            let trimmed = w.word.trimmingCharacters(in: .whitespacesAndNewlines)
             XCTAssertFalse(trimmed.isEmpty, "Empty word for id=\(w.id)")
             XCTAssertEqual(w.word, trimmed, "Untrimmed whitespace in word '\(w.word)' for id=\(w.id)")
         }
@@ -174,7 +187,7 @@ final class WordBundledJSONTests: XCTestCase {
     // Every type string is nonempty and trimmed.
     func testAllTypesNonEmptyTrimmed() {
         for w in allWords {
-            let trimmed = w.type.trimmingCharacters(in: .whitespaces)
+            let trimmed = w.type.trimmingCharacters(in: .whitespacesAndNewlines)
             XCTAssertFalse(trimmed.isEmpty, "Empty type for id=\(w.id)")
             XCTAssertEqual(w.type, trimmed, "Untrimmed whitespace in type '\(w.type)' for id=\(w.id)")
         }
