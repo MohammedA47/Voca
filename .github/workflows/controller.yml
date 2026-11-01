@@ -1,0 +1,33 @@
+name: Controller checks
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [automation/voca-local-controller]
+permissions:
+  contents: read
+concurrency:
+  group: controller-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+jobs:
+  controller-tests:
+    if: github.repository == 'MohammedA47/Voca' && github.event.repository.private == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        with:
+          persist-credentials: false
+      - name: Test controller without models or network
+        env:
+          PYTHONPATH: tools
+          PYTHONDONTWRITEBYTECODE: '1'
+        run: |
+          python3 - <<'PY'
+          import sys, unittest
+          suite = unittest.defaultTestLoader.discover('tests/controller')
+          if suite.countTestCases() < 20:
+              sys.exit('Expected substantive controller coverage; refusing empty/reduced suite')
+          result = unittest.TextTestRunner(verbosity=2).run(suite)
+          sys.exit(0 if result.wasSuccessful() and not result.skipped else 1)
+          PY
