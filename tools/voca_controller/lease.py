@@ -1,131 +1,81 @@
-"""WriteLease -- global single-writer lease via SQLite fencing counter.
-
-Rules:
-- Only one row ever exists in the leases table (id=1).
-- Fencing token is monotonically incremented each acquisition; it never resets.
-- A new process may only take over a dead holder's lease when there are no
-  uncertain ops in the ledger.
-- PID+PGID liveness cross-check for anti-reuse guard.
-- Absent lease row does NOT make uncertain ops safe.
-"""
-from __future__ import annotations
-
-import datetime
+"""Host-local exclusive gate plus durable SQLite fencing. No timeout takeover."""
+import fcntl
 import os
 import socket
-import sys
-import time
-
-from .db import SQLiteStore
+import stat
+import tempfile
+from pathlib import Path
 from .errors import LeaseHeldError, LeaseTokenMismatchError, UncertainOpBlocksError
 
 
-def _current_identity() -> str:
-    """Best-effort start identity for the current process."""
-    return f"pid={os.getpid()}:pgid={os.getpgrp()}:t={time.monotonic_ns()}"
+class MachineLock:
+    def __init__(self, state, path=None):
+        self.state = str(Path(state).resolve())
+        self.path = Path(path) if path else Path(tempfile.gettempdir()) / f'voca-controller-{os.getuid()}.lock'
+        self.fd = None
+
+    def __enter__(self):
+        fd = os.open(self.path, os.O_RDWR | os.O_CREAT | os.O_NOFOLLOW, 0o600)
+        try:
+            st = os.fstat(fd)
+            if not stat.S_ISREG(st.st_mode) or st.st_uid != os.getuid():
+                raise LeaseHeldError('Invalid controller machine-lock owner/type')
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            registered = os.read(fd, 16384).decode()
+            if registered and registered != self.state:
+                raise LeaseHeldError('This Mac is bound to a different controller state root; use that root')
+            if not registered:
+                os.write(fd, self.state.encode()); os.fsync(fd)
+            self.fd = fd
+            return self
+        except BaseException:
+            os.close(fd)
+            raise
+
+    def __exit__(self, *args):
+        if self.fd is not None:
+            fcntl.flock(self.fd, fcntl.LOCK_UN)
+            os.close(self.fd); self.fd = None
 
 
-def _pid_alive(pid: int) -> bool:
-    if pid <= 0:
-        return False
+def alive(pid):
     try:
         os.kill(pid, 0)
         return True
     except ProcessLookupError:
         return False
     except PermissionError:
-        return True  # alive but we can't signal
-
-
-def _pgid_matches(pid: int, expected_pgid: int) -> bool:
-    try:
-        return os.getpgid(pid) == expected_pgid
-    except (ProcessLookupError, PermissionError):
-        return False
-
-
-def _has_uncertain_ops(store: SQLiteStore) -> bool:
-    row = store.fetchone(
-        "SELECT COUNT(*) AS c FROM op_ledger WHERE outcome='uncertain'"
-    )
-    return (row["c"] if row else 0) > 0
-
-
-def _iso_now() -> str:
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()
+        return True
 
 
 class WriteLease:
-    def __init__(self, store: SQLiteStore) -> None:
-        self._store = store
+    def __init__(self, store):
+        self.store = store
 
-    def acquire(
-        self,
-        pid: int | None = None,
-        pgid: int | None = None,
-        host: str | None = None,
-        cmdline: str | None = None,
-        start_identity: str | None = None,
-    ) -> int:
-        """Acquire the global write lease.  Returns fencing token.
+    def acquire(self):
+        from .runner import process_identity
+        with self.store.transaction():
+            if self.store.fetchone("SELECT 1 FROM op_ledger WHERE outcome='uncertain'"):
+                raise UncertainOpBlocksError('Uncertain agent launch requires reconciliation')
+            old = self.current()
+            if old and (old['holder_host'] != socket.gethostname() or alive(old['holder_pid'])):
+                raise LeaseHeldError('Existing lease holder is live or on an unknown host')
+            token = self.store.next_fencing_token()
+            self.store.execute('DELETE FROM leases')
+            self.store.execute("INSERT INTO leases VALUES(1,?,?,?,?,?,?,?)", (
+                os.getpid(), os.getpgrp(), socket.gethostname(), 'voca-controller',
+                process_identity(os.getpid()), 'local', token))
+            return token
 
-        Raises LeaseHeldError if a live process holds the lease.
-        Raises UncertainOpBlocksError if uncertain ops exist (even without
-        a lease row -- absent lease does not make uncertain ops safe).
-        """
-        if pid is None:
-            pid = os.getpid()
-        if pgid is None:
-            pgid = os.getpgrp()
-        if host is None:
-            host = socket.gethostname()
-        if cmdline is None:
-            cmdline = " ".join(sys.argv)
-        if start_identity is None:
-            start_identity = _current_identity()
+    def assert_token(self, token):
+        row = self.current()
+        if not row or row['fencing_token'] != token:
+            raise LeaseTokenMismatchError('Stale controller lease')
 
-        now = _iso_now()
+    def current(self):
+        return self.store.fetchone('SELECT * FROM leases WHERE id=1')
 
-        with self._store.transaction():
-            # Check uncertain ops FIRST -- even if no lease row exists
-            if _has_uncertain_ops(self._store):
-                raise UncertainOpBlocksError(
-                    "Cannot acquire lease: uncertain ops exist; run 'reconcile' first"
-                )
-
-            existing = self._store.fetchone("SELECT * FROM leases WHERE id=1")
-            if existing is not None:
-                holder_pid = existing["holder_pid"]
-                holder_pgid = existing["holder_pgid"]
-                if _pid_alive(holder_pid) and _pgid_matches(holder_pid, holder_pgid):
-                    raise LeaseHeldError(
-                        f"Lease held by live pid={holder_pid} pgid={holder_pgid}"
-                    )
-                # Holder is dead -- safe to take over (uncertain ops already checked)
-                self._store.execute("DELETE FROM leases WHERE id=1")
-
-            token = self._store.next_fencing_token()
-            self._store.execute(
-                """INSERT INTO leases(id, holder_pid, holder_pgid, holder_host,
-                    holder_cmdline, start_identity, acquired_at, fencing_token)
-                   VALUES(1,?,?,?,?,?,?,?)""",
-                (pid, pgid, host, cmdline, start_identity, now, token),
-            )
-        return token
-
-    def release(self, fencing_token: int) -> None:
-        """Release the lease, verified by fencing token."""
-        with self._store.transaction():
-            existing = self._store.fetchone(
-                "SELECT fencing_token FROM leases WHERE id=1"
-            )
-            if existing is None:
-                return
-            if existing["fencing_token"] != fencing_token:
-                raise LeaseTokenMismatchError(
-                    f"Token {fencing_token} != stored {existing['fencing_token']}"
-                )
-            self._store.execute("DELETE FROM leases WHERE id=1")
-
-    def current(self) -> dict | None:
-        return self._store.fetchone("SELECT * FROM leases WHERE id=1")
+    def release(self, token):
+        with self.store.transaction():
+            self.assert_token(token)
+            self.store.execute('DELETE FROM leases WHERE id=1')

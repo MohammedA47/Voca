@@ -1,114 +1,91 @@
-"""Git local origin verification and GitHub public API confirmation.
-
-The controller verifies two things before real work:
-  1. Local git remote 'origin' matches a known Voca URL form.
-  2. GitHub public API confirms repo full_name and numeric ID.
-
-The transport function is injectable for testing (no network in tests).
-"""
-from __future__ import annotations
-
+"""Fixed-argv local git and credential-free public GitHub observations."""
 import json
 import subprocess
 import urllib.request
-from typing import Callable
-
+from pathlib import Path
 from .errors import RepoVerificationError
 
-VOCA_REPO_NAME = "MohammedA47/Voca"
-VOCA_REPO_ID = "1219099434"
 
-_VOCA_REMOTE_URLS = frozenset(
-    {
-        "https://github.com/MohammedA47/Voca",
-        "https://github.com/MohammedA47/Voca.git",
-        "git@github.com:MohammedA47/Voca.git",
-        "git@github.com:MohammedA47/Voca",
-        "ssh://git@github.com/MohammedA47/Voca.git",
-    }
-)
-
-_GITHUB_API_URL = "https://api.github.com/repos/MohammedA47/Voca"
+def git(root, *args):
+    r = subprocess.run(['git', '-c', 'core.hooksPath=/dev/null', '-c', 'commit.gpgsign=false',
+                        '-c', 'core.fsmonitor=false', *args], cwd=root, capture_output=True,
+                       timeout=30, env=None)
+    if r.returncode:
+        raise RepoVerificationError(f'git {args[0]} failed: {r.stderr.decode(errors="replace")[:500]}')
+    return r.stdout.decode('utf-8', errors='strict').strip('\n')
 
 
-def _default_transport(url: str) -> dict:
-    req = urllib.request.Request(
-        url,
-        headers={"Accept": "application/vnd.github+json", "User-Agent": "voca-controller/1"},
-    )
-    with urllib.request.urlopen(req, timeout=10) as resp:  # noqa: S310
-        return json.loads(resp.read().decode())
+def remote_matches(root, name):
+    actual = git(root, 'remote', 'get-url', 'origin')
+    if actual not in {f'https://github.com/{name}', f'https://github.com/{name}.git',
+                      f'git@github.com:{name}.git', f'ssh://git@github.com/{name}.git'}:
+        raise RepoVerificationError('Checkout origin does not match its approved project')
+    if Path(git(root, 'rev-parse', '--show-toplevel')).resolve() != Path(root).resolve():
+        raise RepoVerificationError('Checkout must be the exact repository root')
 
 
-def verify_git_remote(checkout_root: str) -> str:
-    """Return origin URL if it matches a known Voca remote; raise otherwise."""
-    result = subprocess.run(
-        ["git", "remote", "get-url", "origin"],
-        cwd=checkout_root,
-        capture_output=True,
-        text=True,
-        shell=False,
-    )
-    if result.returncode != 0:
-        raise RepoVerificationError(
-            f"git remote get-url origin failed: {result.stderr.strip()}"
-        )
-    url = result.stdout.strip()
-    if url not in _VOCA_REMOTE_URLS:
-        raise RepoVerificationError(
-            f"Remote origin {url!r} is not a recognised Voca URL"
-        )
-    return url
+def changed(root, base=None):
+    paths = set()
+    if base:
+        paths.update(git(root, 'diff', '--no-ext-diff', '--no-renames', '--name-only', '-z', base, 'HEAD').split('\0'))
+    paths.update(git(root, 'diff', '--no-ext-diff', '--no-renames', '--name-only', '-z', 'HEAD').split('\0'))
+    # Include ignored files: a new ignored script must not evade scope checks.
+    paths.update(git(root, 'ls-files', '--others', '-z').split('\0'))
+    return sorted(paths - {''})
 
 
-def verify_working_tree_clean(checkout_root: str) -> None:
-    """Raise RepoVerificationError if working tree is not clean."""
-    result = subprocess.run(
-        ["git", "status", "--porcelain"],
-        cwd=checkout_root,
-        capture_output=True,
-        text=True,
-        shell=False,
-    )
-    if result.returncode != 0:
-        raise RepoVerificationError(
-            f"git status failed: {result.stderr.strip()}"
-        )
-    if result.stdout.strip():
-        raise RepoVerificationError(
-            "Working tree is not clean before dispatch:\n" + result.stdout
-        )
+def clean(root):
+    if changed(root):
+        raise RepoVerificationError('Checkout is dirty, including ignored/untracked files')
 
 
-def verify_github_public(
-    transport: Callable[[str], dict] | None = None,
-) -> dict:
-    """Verify Voca repo via GitHub public API. Returns parsed response.
+class NoRedirect(urllib.request.HTTPRedirectHandler):
+    def redirect_request(self, *args, **kwargs):
+        raise RepoVerificationError('GitHub redirect refused; repository identity must be rechecked')
 
-    transport is injectable for tests — signature: (url: str) -> dict.
-    No credentials are passed; this is a public unauthenticated call.
-    """
-    if transport is None:
-        transport = _default_transport
+
+def public_get(repo, suffix=''):
+    url = f'https://api.github.com/repos/{repo}{suffix}'
+    req = urllib.request.Request(url, headers={'Accept': 'application/vnd.github+json',
+                                               'User-Agent': 'voca-controller'})
     try:
-        data = transport(_GITHUB_API_URL)
+        with urllib.request.build_opener(NoRedirect).open(req, timeout=15) as response:
+            raw = response.read(2_000_001)
+            if len(raw) > 2_000_000:
+                raise RepoVerificationError('GitHub response exceeds limit')
+            return json.loads(raw)
     except Exception as exc:
-        raise RepoVerificationError(f"GitHub API call failed: {exc}") from exc
+        raise RepoVerificationError(f'Public GitHub observation failed: {type(exc).__name__}') from exc
 
-    if not isinstance(data, dict):
-        raise RepoVerificationError("GitHub API returned non-dict response")
 
-    got_name = data.get("full_name", "")
-    got_id = str(data.get("id", ""))
+def verify_remote(project, spec, get=public_get):
+    if project['private'] or not project['execution_enabled']:
+        raise RepoVerificationError('Project execution is held: ' + project['hold_reason'])
+    repo = get(project['repo_name'])
+    if (repo.get('full_name'), repo.get('id'), repo.get('private')) != (
+            project['repo_name'], project['repo_id'], False):
+        raise RepoVerificationError('GitHub repository identity changed')
+    base = get(project['repo_name'], '/branches/main')['commit']['sha']
+    if base != spec['base_sha']:
+        raise RepoVerificationError('Remote main changed; specification and evidence require renewed review')
 
-    if got_name != VOCA_REPO_NAME:
-        raise RepoVerificationError(
-            f"GitHub full_name mismatch: expected {VOCA_REPO_NAME!r}, got {got_name!r}"
-        )
-    if got_id != VOCA_REPO_ID:
-        raise RepoVerificationError(
-            f"GitHub repo ID mismatch: expected {VOCA_REPO_ID!r}, got {got_id!r}"
-        )
-    if data.get("private", True):
-        raise RepoVerificationError("Repo is private; expected public")
-    return data
+
+def ci_observation(project, spec, sha, run_id, get=public_get):
+    if type(run_id) is not int or run_id <= 0:
+        raise RepoVerificationError('Invalid run ID')
+    run = get(project['repo_name'], f'/actions/runs/{run_id}')
+    if not (run.get('repository', {}).get('id') == project['repo_id']
+            and run.get('head_repository', {}).get('id') == project['repo_id']
+            and run.get('head_sha') == sha and run.get('head_branch') == spec['branch']
+            and run.get('status') == 'completed' and run.get('conclusion') == 'success'
+            and run.get('event') in ('push', 'pull_request')
+            and run.get('path', '').split('@')[0] == spec['ci_workflow']):
+        raise RepoVerificationError('CI run does not validate this project, branch, SHA and workflow')
+    jobs = get(project['repo_name'], f'/actions/runs/{run_id}/jobs?filter=latest&per_page=100')
+    if jobs.get('total_count', 0) > 100:
+        raise RepoVerificationError('CI job result requires pagination; no partial validation accepted')
+    selected = [j for j in jobs.get('jobs', []) if j.get('name') == spec['ci_job']]
+    if len(selected) != 1 or selected[0].get('conclusion') != 'success':
+        raise RepoVerificationError('Required CI job is missing or unsuccessful')
+    return {'run_id': run_id, 'sha': sha, 'source': 'github-api-observed',
+            'url': f"https://github.com/{project['repo_name']}/actions/runs/{run_id}"}

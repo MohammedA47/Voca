@@ -1,348 +1,174 @@
-"""AdapterBase, FakeAdapter, ClaudeAdapter, CodexAdapter.
-
-Key safety rules:
-- Prompts are delivered via stdin (piped from file), NEVER in the shell command string.
-- Process group: os.setsid() on child; kill via os.killpg(pgid, SIGKILL) on timeout.
-- Only the exact recorded PGID is killed — never an unknown reused PID.
-- Auth failure detection pauses task; no retry.
-- JSON envelope from --output-format json is parsed; raw text is extracted.
-- Writer: file-only tools (Read, Write, Edit, Glob, Grep), no Bash/network/MCP.
-- Reviewer/probe: --tools '' (no tools).
-"""
+"""Bounded local CLI adapters; no credential extraction, publishing or fallback."""
 from __future__ import annotations
-
-import abc
 import json
 import os
 import signal
 import subprocess
-import tempfile
 import time
-from dataclasses import dataclass, field
+from dataclasses import dataclass
 from pathlib import Path
-from typing import IO, Any
+from .errors import AdapterError, AuthFailureError, UncertainOpBlocksError
 
-from .errors import AdapterError, AuthFailureError
+LIMIT = 1_000_000
+CODEX = '/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex'
+CLAUDE = '/opt/homebrew/bin/claude'
 
-# Canonical Claude CLI flags (reviewer / probe — no tools)
-_CLAUDE_COMMON_FLAGS = [
-    "--setting-sources", "",
-    "--settings", '{"disableAllHooks":true}',
-    "--strict-mcp-config",
-    "--mcp-config", '{"mcpServers":{}}',
-    "--no-session-persistence",
-    "--permission-mode", "dontAsk",
-    "--output-format", "json",
-    "-p",
-]
 
-_CLAUDE_REVIEWER_TOOLS_FLAGS = ["--tools", ""]
-_CLAUDE_WRITER_TOOLS_FLAGS = ["--allowedTools", "Read,Write,Edit,Glob,Grep"]
+def process_identity(pid):
+    r = subprocess.run(['ps', '-p', str(pid), '-o', 'lstart='], capture_output=True, text=True, timeout=5)
+    if r.returncode or not r.stdout.strip():
+        raise UncertainOpBlocksError('Cannot establish process start identity')
+    return r.stdout.strip()
 
-# Codex CLI flags
-_CODEX_COMMON_FLAGS = ["--ignore-user-config", "--ephemeral", "--json"]
 
-_AUTH_STDERR_PATTERNS = (
-    "authentication",
-    "unauthorized",
-    "unauthenticated",
-    "login required",
-    "api key",
-    "not logged in",
-    "auth",
-)
+def group_live(pgid):
+    # Zombies cannot write files; unknown process-list access fails closed.
+    r = subprocess.run(['ps', '-axo', 'pgid=,stat='], capture_output=True, text=True, timeout=5)
+    if r.returncode:
+        raise UncertainOpBlocksError('Cannot inspect process group')
+    for line in r.stdout.splitlines():
+        fields = line.split()
+        if len(fields) == 2 and fields[0] == str(pgid) and not fields[1].startswith('Z'):
+            return True
+    return False
+
+
+def assert_subscription_environment():
+    keys = ('OPENAI_API_KEY', 'OPENAI_BASE_URL', 'ANTHROPIC_API_KEY', 'ANTHROPIC_AUTH_TOKEN',
+            'ANTHROPIC_BASE_URL', 'CLAUDE_CODE_OAUTH_TOKEN', 'CLAUDE_CODE_USE_BEDROCK',
+            'CLAUDE_CODE_USE_VERTEX', 'CLAUDE_CODE_USE_FOUNDRY')
+    if any(os.environ.get(k) for k in keys):
+        raise AuthFailureError('API/provider override present; subscription-only controller stopped')
+
+
+def command(profile, role, root, scope):
+    if profile.provider == 'codex':
+        args = [CODEX, '--no-daemon', '-a', 'never', 'exec', '--ignore-user-config', '--ephemeral', '--json',
+                '--sandbox', 'workspace-write' if role == 'writer' else 'read-only',
+                '--model', profile.model, '-c', f'model_reasoning_effort="{profile.effort}"',
+                '-C', str(root)]
+        for feature in ('apps', 'plugins', 'hooks', 'computer_use', 'browser_use', 'multi_agent'):
+            args += ['--disable', feature]
+        if role != 'writer':
+            args += ['--disable', 'shell_tool']
+        return args + ['-']
+    args = [CLAUDE, '-p', '--model', profile.model, '--effort', profile.effort,
+            '--setting-sources', '', '--settings', '{"disableAllHooks":true,"autoMemoryEnabled":false}',
+            '--strict-mcp-config', '--mcp-config', '{"mcpServers":{}}', '--no-session-persistence',
+            '--permission-mode', 'dontAsk', '--output-format', 'json']
+    if role == 'writer':
+        args += ['--tools', 'Read,Glob,Grep,Write,Edit', '--allowedTools',
+                 ','.join(['Read', 'Glob', 'Grep'] + [f'{tool}(./{path}/**)' for path in scope for tool in ('Write', 'Edit')])]
+    else:
+        args += ['--tools', '']
+    return args
 
 
 @dataclass
-class RunHandle:
-    op_id: str
-    adapter_name: str
-    proc: subprocess.Popen | None  # None for FakeAdapter
-    pgid: int
-    pid: int
-    stdout_path: Path
-    stderr_path: Path
-    timeout_secs: int
-    _fake_result: "RunResult | None" = field(default=None, repr=False)
+class Result:
+    text: str
+    reported_model: str | None = None
 
 
-@dataclass
-class RunResult:
-    op_id: str
-    exit_code: int
-    stdout: str
-    stderr: str
-    timed_out: bool = False
-    is_auth_failure: bool = False
-
-
-def _detect_auth_failure(exit_code: int, stderr: str) -> bool:
-    if exit_code == 0:
-        return False
-    low = stderr.lower()
-    return any(p in low for p in _AUTH_STDERR_PATTERNS)
-
-
-def _extract_claude_text(raw_stdout: str) -> str:
-    """Parse Claude --output-format json envelope; return text content."""
+def parse_output(provider, raw, requested, role):
     try:
-        data = json.loads(raw_stdout)
-        if isinstance(data, dict):
-            # envelope: {"result": "...", ...} or {"type":"result","result":"..."}
-            if "result" in data:
-                return str(data["result"])
-            # list of message parts
-            if "content" in data:
-                parts = data["content"]
-                if isinstance(parts, list):
-                    return "".join(
-                        p.get("text", "") for p in parts if isinstance(p, dict)
-                    )
-    except (json.JSONDecodeError, TypeError):
-        pass
-    return raw_stdout
+        if provider == 'claude':
+            d = json.loads(raw)
+            if d.get('is_error') and any(w in str(d.get('result', '')).lower() for w in ('auth', 'login', 'quota', 'usage limit', 'permission')):
+                raise AuthFailureError('Claude requires human authentication/quota/permission attention')
+            if d.get('is_error') or d.get('subtype') != 'success' or not isinstance(d.get('result'), str):
+                raise AdapterError('Claude returned an error or invalid envelope')
+            models = set(d.get('modelUsage', {}))
+            if models and models != {requested}:
+                raise AdapterError('Claude reported an unexpected model; no substitution allowed')
+            return Result(d['result'], requested if models else None)
+        events = [json.loads(line) for line in raw.splitlines() if line.strip()]
+        texts = []
+        completed = False
+        for e in events:
+            if e.get('type') in ('error', 'turn.failed'):
+                if any(w in json.dumps(e).lower() for w in ('unauthorized', 'authentication', 'login', 'quota', 'usage limit', 'permission')):
+                    raise AuthFailureError('Codex requires human authentication/quota/permission attention')
+                raise AdapterError('Codex reported a failed turn')
+            if e.get('type') == 'turn.completed':
+                completed = True
+            item = e.get('item', {})
+            if role != 'writer' and item.get('type') in ('command_execution', 'file_change', 'mcp_tool_call', 'web_search'):
+                raise AdapterError('Read-only response attempted a tool action')
+            if e.get('type') == 'item.completed' and item.get('type') == 'agent_message':
+                texts.append(item['text'])
+        if not completed or not texts:
+            raise AdapterError('Codex response is incomplete')
+        return Result(texts[-1])  # JSONL does not attest the resolved model identity.
+    except (ValueError, KeyError, TypeError) as exc:
+        raise AdapterError('Malformed agent output') from exc
 
 
-class AdapterBase(abc.ABC):
-    name: str
-
-    @abc.abstractmethod
-    def launch(
-        self,
-        *,
-        op_id: str,
-        role: str,
-        prompt_file: Path,
-        working_dir: Path,
-        timeout_secs: int,
-    ) -> RunHandle:
-        """Spawn the adapter. Returns a RunHandle immediately."""
-
-    @abc.abstractmethod
-    def wait(self, handle: RunHandle) -> RunResult:
-        """Wait for the process and return result."""
-
-    def kill_group(self, handle: RunHandle) -> None:
-        """SIGKILL the exact recorded process group. Fail closed if unsure."""
-        if handle.proc is None:
-            return
-        try:
-            current_pgid = os.getpgid(handle.pid)
-            if current_pgid != handle.pgid:
-                # PID reused — do not kill unknown group
-                return
-            os.killpg(handle.pgid, signal.SIGKILL)
-        except (ProcessLookupError, PermissionError):
-            pass
-
-
-class FakeAdapter(AdapterBase):
-    """Deterministic adapter for tests. No subprocess spawned."""
-
-    name = "fake"
-
-    def __init__(
-        self,
-        exit_code: int = 0,
-        stdout: str = '{"result":"LGTM"}',
-        stderr: str = "",
-        delay_secs: float = 0.0,
-        auth_fail: bool = False,
-    ) -> None:
-        self._exit_code = exit_code
-        self._stdout = stdout
-        self._stderr = stderr
-        self._delay = delay_secs
-        self._auth_fail = auth_fail
-
-    def launch(self, *, op_id, role, prompt_file, working_dir, timeout_secs) -> RunHandle:
-        if self._delay > 0:
-            time.sleep(min(self._delay, 0.01))  # capped for test speed
-        tmp = tempfile.mkdtemp()
-        out_p = Path(tmp) / "stdout.txt"
-        err_p = Path(tmp) / "stderr.txt"
-        out_p.write_text(self._stdout)
-        err_p.write_text(self._stderr)
-        result = RunResult(
-            op_id=op_id,
-            exit_code=self._exit_code,
-            stdout=self._stdout,
-            stderr=self._stderr,
-            is_auth_failure=self._auth_fail,
-        )
-        return RunHandle(
-            op_id=op_id,
-            adapter_name=self.name,
-            proc=None,
-            pgid=os.getpgrp(),
-            pid=os.getpid(),
-            stdout_path=out_p,
-            stderr_path=err_p,
-            timeout_secs=timeout_secs,
-            _fake_result=result,
-        )
-
-    def wait(self, handle: RunHandle) -> RunResult:
-        assert handle._fake_result is not None
-        return handle._fake_result
-
-
-class ClaudeAdapter(AdapterBase):
-    """Real Claude CLI adapter.
-
-    Binary path: /opt/homebrew/bin/claude (checked at load time on real runs).
-    Prompts delivered via stdin pipe — never in the command line.
-    """
-
-    name = "claude"
-    _BINARY = "/opt/homebrew/bin/claude"
-
-    def launch(self, *, op_id, role, prompt_file, working_dir, timeout_secs) -> RunHandle:
-        if not os.path.exists(self._BINARY):
-            raise AdapterError(f"Claude binary not found at {self._BINARY}")
-
-        if role == "reviewer" or role == "probe":
-            tool_flags = _CLAUDE_REVIEWER_TOOLS_FLAGS
+class LocalAdapter:
+    def auth_check(self, provider):
+        assert_subscription_environment()
+        cmd = [CODEX, 'login', 'status'] if provider == 'codex' else [CLAUDE, 'auth', 'status']
+        r = subprocess.run(cmd, capture_output=True, text=True, timeout=10)
+        if provider == 'codex':
+            valid = r.returncode == 0 and 'Logged in using ChatGPT' in (r.stdout + r.stderr)
         else:
-            tool_flags = _CLAUDE_WRITER_TOOLS_FLAGS
+            try:
+                d = json.loads(r.stdout)
+                valid = r.returncode == 0 and d.get('loggedIn') and d.get('authMethod') == 'claude.ai'
+            except ValueError:
+                valid = False
+        if not valid:
+            raise AuthFailureError('Existing subscription login not verified; manual login required')
 
-        args = [self._BINARY] + tool_flags + _CLAUDE_COMMON_FLAGS
-
-        tmp = tempfile.mkdtemp()
-        out_p = Path(tmp) / "stdout.txt"
-        err_p = Path(tmp) / "stderr.txt"
-
-        with open(str(prompt_file), "rb") as stdin_f, \
-             open(str(out_p), "wb") as out_f, \
-             open(str(err_p), "wb") as err_f:
-            proc = subprocess.Popen(
-                args,
-                stdin=stdin_f,
-                stdout=out_f,
-                stderr=err_f,
-                cwd=str(working_dir),
-                shell=False,
-                start_new_session=True,
-            )
-        pgid = proc.pid  # setsid makes child its own pg leader
-
-        return RunHandle(
-            op_id=op_id,
-            adapter_name=self.name,
-            proc=proc,
-            pgid=pgid,
-            pid=proc.pid,
-            stdout_path=out_p,
-            stderr_path=err_p,
-            timeout_secs=timeout_secs,
-        )
-
-    def wait(self, handle: RunHandle) -> RunResult:
-        assert handle.proc is not None
-        timed_out = False
-        try:
-            handle.proc.wait(timeout=handle.timeout_secs)
-        except subprocess.TimeoutExpired:
-            self.kill_group(handle)
-            timed_out = True
-
-        exit_code = handle.proc.returncode or (1 if timed_out else 0)
-        stdout = handle.stdout_path.read_text(errors="replace")
-        stderr = handle.stderr_path.read_text(errors="replace")
-        text = _extract_claude_text(stdout)
-        auth_fail = _detect_auth_failure(exit_code, stderr)
-
-        return RunResult(
-            op_id=handle.op_id,
-            exit_code=exit_code,
-            stdout=text,
-            stderr=stderr,
-            timed_out=timed_out,
-            is_auth_failure=auth_fail,
-        )
+    def run(self, profile, role, prompt, root, scope, logdir, on_spawn, timeout=180):
+        self.auth_check(profile.provider)
+        return run_process(command(profile, role, root, scope), prompt, root, logdir,
+                           on_spawn, timeout, profile, role)
 
 
-class CodexAdapter(AdapterBase):
-    """Real Codex CLI adapter.
-
-    Binary path: /Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex
-    Uses: exec --sandbox read-only|workspace-write --ignore-user-config --ephemeral --json
-    Prompts delivered via stdin.
-    """
-
-    name = "codex"
-    _BINARY = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/bin/codex"
-
-    def launch(self, *, op_id, role, prompt_file, working_dir, timeout_secs) -> RunHandle:
-        if not os.path.exists(self._BINARY):
-            raise AdapterError(f"Codex binary not found at {self._BINARY}")
-
-        sandbox = "read-only" if role in ("reviewer", "probe") else "workspace-write"
-        args = (
-            [self._BINARY, "exec", "--sandbox", sandbox]
-            + _CODEX_COMMON_FLAGS
-            + ["-C", str(working_dir)]
-        )
-
-        tmp = tempfile.mkdtemp()
-        out_p = Path(tmp) / "stdout.txt"
-        err_p = Path(tmp) / "stderr.txt"
-
-        with open(str(prompt_file), "rb") as stdin_f, \
-             open(str(out_p), "wb") as out_f, \
-             open(str(err_p), "wb") as err_f:
-            proc = subprocess.Popen(
-                args,
-                stdin=stdin_f,
-                stdout=out_f,
-                stderr=err_f,
-                cwd=str(working_dir),
-                shell=False,
-                start_new_session=True,
-            )
-        pgid = proc.pid
-
-        return RunHandle(
-            op_id=op_id,
-            adapter_name=self.name,
-            proc=proc,
-            pgid=pgid,
-            pid=proc.pid,
-            stdout_path=out_p,
-            stderr_path=err_p,
-            timeout_secs=timeout_secs,
-        )
-
-    def wait(self, handle: RunHandle) -> RunResult:
-        assert handle.proc is not None
-        timed_out = False
-        try:
-            handle.proc.wait(timeout=handle.timeout_secs)
-        except subprocess.TimeoutExpired:
-            self.kill_group(handle)
-            timed_out = True
-
-        exit_code = handle.proc.returncode or (1 if timed_out else 0)
-        stdout = handle.stdout_path.read_text(errors="replace")
-        stderr = handle.stderr_path.read_text(errors="replace")
-        auth_fail = _detect_auth_failure(exit_code, stderr)
-
-        return RunResult(
-            op_id=handle.op_id,
-            exit_code=exit_code,
-            stdout=stdout,
-            stderr=stderr,
-            timed_out=timed_out,
-            is_auth_failure=auth_fail,
-        )
-
-
-def get_adapter(name: str) -> AdapterBase:
-    registry: dict[str, type[AdapterBase]] = {
-        "claude": ClaudeAdapter,
-        "codex": CodexAdapter,
-        "fake": FakeAdapter,
-    }
-    if name not in registry:
-        raise ValueError(f"Unknown adapter {name!r}; choose from {sorted(registry)}")
-    return registry[name]()
+def run_process(args, prompt, root, logdir, on_spawn, timeout, profile, role):
+    """Launch after durable intent; caller marks completion only when this returns."""
+    logdir.mkdir(parents=True, exist_ok=False)
+    inp, out, err = [logdir / x for x in ('prompt.txt', 'stdout.txt', 'stderr.txt')]
+    inp.write_text(prompt)
+    with inp.open('rb') as f, out.open('wb') as o, err.open('wb') as e:
+        proc = subprocess.Popen(args, stdin=f, stdout=o, stderr=e, cwd=root,
+                                start_new_session=True, shell=False)
+    try:
+        # The durable pending-spawn record remains blocking if this fails.
+        identity = process_identity(proc.pid) if proc.poll() is None else 'exited-before-observation'
+        on_spawn(proc.pid, proc.pid, identity)
+        deadline = time.monotonic() + timeout
+        stopped = False
+        while proc.poll() is None:
+            if time.monotonic() >= deadline or out.stat().st_size > LIMIT or err.stat().st_size > LIMIT:
+                stopped = True
+                if process_identity(proc.pid) != identity or os.getpgid(proc.pid) != proc.pid:
+                    raise UncertainOpBlocksError('Process identity changed; will not signal an unknown process')
+                os.killpg(proc.pid, signal.SIGTERM)
+                try:
+                    proc.wait(timeout=3)
+                except subprocess.TimeoutExpired:
+                    if process_identity(proc.pid) != identity:
+                        raise UncertainOpBlocksError('Process identity changed before cleanup')
+                    os.killpg(proc.pid, signal.SIGKILL)
+                    proc.wait(timeout=3)
+                break
+            time.sleep(0.05)
+        proc.wait(timeout=3)
+        # A dead parent with a live child must not release the task for another writer.
+        if group_live(proc.pid):
+            raise UncertainOpBlocksError('Agent descendants remain alive; operation remains uncertain')
+        if stopped or out.stat().st_size > LIMIT or err.stat().st_size > LIMIT:
+            raise AdapterError('Agent exceeded time/output budget; process group ended')
+        raw, diagnostic = out.read_text(errors='replace'), err.read_text(errors='replace')
+        if proc.returncode:
+            low = (raw + diagnostic).lower()
+            if any(x in low for x in ('unauthorized', 'authentication', 'login', 'quota', 'rate limit', 'usage limit', 'permission')):
+                raise AuthFailureError('Agent requires authentication, quota or permission attention; no retry')
+            raise AdapterError(f'Agent exited {proc.returncode}; no output accepted')
+        return parse_output(profile.provider, raw, profile.model, role)
+    except BaseException:
+        # Unknown children/launch windows are deliberately left uncertain in SQLite.
+        # No broad kill or automatic restart is performed by recovery.
+        raise

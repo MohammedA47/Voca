@@ -8,11 +8,13 @@ Transaction nesting is explicitly prevented via ``_in_txn`` tracking.
 from __future__ import annotations
 
 import sqlite3
+import threading
 from contextlib import contextmanager
 from pathlib import Path
 from typing import Any, Generator
 
 _SCHEMA_STMTS = [
+    "CREATE TABLE IF NOT EXISTS projects (key TEXT PRIMARY KEY, content TEXT NOT NULL)",
     """CREATE TABLE IF NOT EXISTS meta (
         key   TEXT PRIMARY KEY,
         value TEXT NOT NULL
@@ -49,6 +51,7 @@ _SCHEMA_STMTS = [
         reviewer_adapter TEXT,
         review_findings  TEXT,
         complexity       TEXT NOT NULL DEFAULT 'routine',
+        controller_data  TEXT NOT NULL DEFAULT '{}',
         created_at       TEXT NOT NULL,
         updated_at       TEXT NOT NULL
     )""",
@@ -127,6 +130,7 @@ class SQLiteStore:
         self._conn: sqlite3.Connection | None = None
         self._in_txn: bool = False
         self._readonly: bool = False
+        self._mutex = threading.RLock()
 
     # ------------------------------------------------------------------ #
     # Open / close                                                         #
@@ -140,20 +144,26 @@ class SQLiteStore:
             check_same_thread=False,
         )
         self._conn.row_factory = sqlite3.Row
-        self._conn.execute("PRAGMA journal_mode=WAL")
+        version = self._conn.execute("PRAGMA user_version").fetchone()[0]
+        exists = self._conn.execute("SELECT 1 FROM sqlite_master WHERE name='tasks'").fetchone()
+        if exists and version != 2:
+            self.close()
+            raise RuntimeError("Unvalidated legacy database: manual migration required; history was not reset")
+        self._conn.execute("PRAGMA journal_mode=DELETE")
         self._conn.execute("PRAGMA foreign_keys=ON")
         for stmt in _SCHEMA_STMTS:
             self._conn.execute(stmt)
         self._conn.execute(
             "INSERT OR IGNORE INTO fencing_sequence(id, next_token) VALUES(1, 1)"
         )
+        self._conn.execute("PRAGMA user_version=2")
         self._readonly = False
 
     def open_readonly(self) -> None:
         """Open in read-only mode via SQLite URI.  No schema writes."""
         if not self.db_path.exists():
             raise FileNotFoundError(f"DB not found: {self.db_path}")
-        uri = f"file:{self.db_path}?mode=ro"
+        uri = self.db_path.resolve().as_uri() + "?mode=ro"
         self._conn = sqlite3.connect(
             uri,
             uri=True,
@@ -180,6 +190,12 @@ class SQLiteStore:
     @contextmanager
     def transaction(self) -> Generator[sqlite3.Connection, None, None]:
         """Context manager for BEGIN IMMEDIATE.  Nesting is rejected."""
+        with self._mutex:
+            with self._transaction_unlocked() as conn:
+                yield conn
+
+    @contextmanager
+    def _transaction_unlocked(self):
         assert self._conn is not None, "Store not open"
         if self._readonly:
             raise RuntimeError("Cannot start transaction on read-only store")

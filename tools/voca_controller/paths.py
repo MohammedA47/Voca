@@ -17,10 +17,14 @@ def resolve_state_dir(raw: str) -> Path:
     Must not reside inside any git checkout (no .git ancestor) and must not
     be a symlink that escapes to a checkout root.
     """
-    p = Path(raw).resolve()
+    p = Path(raw).absolute()
     if p.is_symlink():
         raise StatePathError(f"state-dir {raw} is a symlink; use a real path")
+    p = p.resolve()
     _assert_outside_checkout(p, "state-dir")
+    for name in ("controller.db", "controller.db-journal", "controller.db-wal", "controller.db-shm"):
+        if (p / name).is_symlink():
+            raise StatePathError("State database sidecars must not be symlinks")
     return p
 
 
@@ -79,17 +83,19 @@ def _assert_outside_checkout(path: Path, label: str) -> None:
 
 def validate_scope_prefix(prefix: str) -> str:
     """Validate and return a canonical relative scope prefix."""
-    if not prefix or not prefix.strip():
+    if not isinstance(prefix, str) or not prefix or not prefix.strip():
         raise StatePathError("Scope prefix must not be empty")
     if os.path.isabs(prefix):
         raise StatePathError(f"Scope prefix must be relative, got: {prefix!r}")
+    if "\\" in prefix or "\x00" in prefix or prefix in (".", "./") or prefix.startswith("-"):
+        raise StatePathError("Noncanonical scope prefix")
     parts = Path(prefix).parts
     if ".." in parts:
         raise StatePathError(f"Scope prefix must not traverse up: {prefix!r}")
-    if parts and parts[0] == ".git":
+    if any(part.lower() in (".git", ".codex", ".claude") or part.lower().startswith(".env") for part in parts):
         raise StatePathError(f"Scope prefix must not start with .git: {prefix!r}")
     for part in parts:
-        if part.lower() in _SENSITIVE_PARTS:
+        if part.lower() in _SENSITIVE_PARTS or part.lower().startswith(".env") or part.lower() in (".git", ".codex", ".claude"):
             raise StatePathError(
                 f"Scope prefix references credential path {part!r}: {prefix!r}"
             )
@@ -109,7 +115,7 @@ def is_within_scope(path: str, scope_prefixes: list[str]) -> bool:
     if os.path.isabs(path):
         return False
     for part in parts:
-        if part.lower() in _SENSITIVE_PARTS:
+        if part.lower() in _SENSITIVE_PARTS or part.lower().startswith(".env") or part.lower() in (".git", ".codex", ".claude"):
             return False
     for pfx in scope_prefixes:
         pfx = pfx.rstrip("/")
