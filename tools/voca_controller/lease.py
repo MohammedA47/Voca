@@ -1,15 +1,16 @@
-"""WriteLease — global single-writer lease via SQLite fencing counter.
+"""WriteLease -- global single-writer lease via SQLite fencing counter.
 
 Rules:
 - Only one row ever exists in the leases table (id=1).
-- Fencing token is monotonically incremented each acquisition; it never resets
-  even when the row is deleted.
+- Fencing token is monotonically incremented each acquisition; it never resets.
 - A new process may only take over a dead holder's lease when there are no
-  uncertain ops in the ledger (checked before acquire, inside the transaction).
-- PID liveness: os.kill(pid, 0); PGID cross-check for anti-reuse guard.
+  uncertain ops in the ledger.
+- PID+PGID liveness cross-check for anti-reuse guard.
+- Absent lease row does NOT make uncertain ops safe.
 """
 from __future__ import annotations
 
+import datetime
 import os
 import socket
 import sys
@@ -20,22 +21,23 @@ from .errors import LeaseHeldError, LeaseTokenMismatchError, UncertainOpBlocksEr
 
 
 def _current_identity() -> str:
-    """Return a best-effort start identity string for the current process."""
+    """Best-effort start identity for the current process."""
     return f"pid={os.getpid()}:pgid={os.getpgrp()}:t={time.monotonic_ns()}"
 
 
 def _pid_alive(pid: int) -> bool:
+    if pid <= 0:
+        return False
     try:
         os.kill(pid, 0)
         return True
     except ProcessLookupError:
         return False
     except PermissionError:
-        return True  # exists but we can't signal — still alive
+        return True  # alive but we can't signal
 
 
 def _pgid_matches(pid: int, expected_pgid: int) -> bool:
-    """Return True if pid's current pgid matches expected_pgid."""
     try:
         return os.getpgid(pid) == expected_pgid
     except (ProcessLookupError, PermissionError):
@@ -47,6 +49,10 @@ def _has_uncertain_ops(store: SQLiteStore) -> bool:
         "SELECT COUNT(*) AS c FROM op_ledger WHERE outcome='uncertain'"
     )
     return (row["c"] if row else 0) > 0
+
+
+def _iso_now() -> str:
+    return datetime.datetime.now(datetime.timezone.utc).isoformat()
 
 
 class WriteLease:
@@ -61,11 +67,11 @@ class WriteLease:
         cmdline: str | None = None,
         start_identity: str | None = None,
     ) -> int:
-        """Acquire the global write lease. Returns the fencing token.
+        """Acquire the global write lease.  Returns fencing token.
 
-        Raises:
-            LeaseHeldError: if a live process holds the lease.
-            UncertainOpBlocksError: if uncertain ops prevent takeover.
+        Raises LeaseHeldError if a live process holds the lease.
+        Raises UncertainOpBlocksError if uncertain ops exist (even without
+        a lease row -- absent lease does not make uncertain ops safe).
         """
         if pid is None:
             pid = os.getpid()
@@ -81,6 +87,12 @@ class WriteLease:
         now = _iso_now()
 
         with self._store.transaction():
+            # Check uncertain ops FIRST -- even if no lease row exists
+            if _has_uncertain_ops(self._store):
+                raise UncertainOpBlocksError(
+                    "Cannot acquire lease: uncertain ops exist; run 'reconcile' first"
+                )
+
             existing = self._store.fetchone("SELECT * FROM leases WHERE id=1")
             if existing is not None:
                 holder_pid = existing["holder_pid"]
@@ -89,23 +101,14 @@ class WriteLease:
                     raise LeaseHeldError(
                         f"Lease held by live pid={holder_pid} pgid={holder_pgid}"
                     )
-                # Holder is dead — check uncertain ops before takeover
-                if _has_uncertain_ops(self._store):
-                    raise UncertainOpBlocksError(
-                        "Cannot take over lease: uncertain supervised ops exist; "
-                        "run 'reconcile' first"
-                    )
-                token = self._store.next_fencing_token()
+                # Holder is dead -- safe to take over (uncertain ops already checked)
                 self._store.execute("DELETE FROM leases WHERE id=1")
-            else:
-                token = self._store.next_fencing_token()
 
+            token = self._store.next_fencing_token()
             self._store.execute(
-                """
-                INSERT INTO leases(id, holder_pid, holder_pgid, holder_host,
+                """INSERT INTO leases(id, holder_pid, holder_pgid, holder_host,
                     holder_cmdline, start_identity, acquired_at, fencing_token)
-                VALUES(1,?,?,?,?,?,?,?)
-                """,
+                   VALUES(1,?,?,?,?,?,?,?)""",
                 (pid, pgid, host, cmdline, start_identity, now, token),
             )
         return token
@@ -113,9 +116,11 @@ class WriteLease:
     def release(self, fencing_token: int) -> None:
         """Release the lease, verified by fencing token."""
         with self._store.transaction():
-            existing = self._store.fetchone("SELECT fencing_token FROM leases WHERE id=1")
+            existing = self._store.fetchone(
+                "SELECT fencing_token FROM leases WHERE id=1"
+            )
             if existing is None:
-                return  # already released
+                return
             if existing["fencing_token"] != fencing_token:
                 raise LeaseTokenMismatchError(
                     f"Token {fencing_token} != stored {existing['fencing_token']}"
@@ -123,10 +128,4 @@ class WriteLease:
             self._store.execute("DELETE FROM leases WHERE id=1")
 
     def current(self) -> dict | None:
-        """Return current lease row or None."""
         return self._store.fetchone("SELECT * FROM leases WHERE id=1")
-
-
-def _iso_now() -> str:
-    import datetime
-    return datetime.datetime.now(datetime.timezone.utc).isoformat()

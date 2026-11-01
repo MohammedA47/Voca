@@ -63,3 +63,15 @@ class AdapterError(VocaControllerError):
 
 class AuthFailureError(AdapterError):
     """Authentication failure detected; no retry allowed."""
+
+
+class RoutingError(VocaControllerError):
+    """Model/effort routing configuration error."""
+
+
+class ProcessParseError(VocaControllerError):
+    """Failed to parse adapter process output."""
+
+
+class CIObservationError(VocaControllerError):
+    """CI observation failed or returned unexpected state."""

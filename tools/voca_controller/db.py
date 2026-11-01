@@ -1,7 +1,9 @@
-"""SQLiteStore — all schema and low-level DB access.
+"""SQLiteStore -- all schema and low-level DB access.
 
-All writes use BEGIN IMMEDIATE for serialisation. isolation_level=None means
+All writes use BEGIN IMMEDIATE for serialisation.  isolation_level=None means
 Python's sqlite3 does NOT issue implicit BEGIN; we manage transactions manually.
+
+Transaction nesting is explicitly prevented via ``_in_txn`` tracking.
 """
 from __future__ import annotations
 
@@ -11,22 +13,15 @@ from pathlib import Path
 from typing import Any, Generator
 
 _SCHEMA_STMTS = [
-    """
-    CREATE TABLE IF NOT EXISTS meta (
+    """CREATE TABLE IF NOT EXISTS meta (
         key   TEXT PRIMARY KEY,
         value TEXT NOT NULL
-    )
-    """,
-    # Monotonically increasing fencing counter — never resets even if leases row
-    # is deleted.
-    """
-    CREATE TABLE IF NOT EXISTS fencing_sequence (
+    )""",
+    """CREATE TABLE IF NOT EXISTS fencing_sequence (
         id         INTEGER PRIMARY KEY CHECK (id = 1),
         next_token INTEGER NOT NULL DEFAULT 1
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS leases (
+    )""",
+    """CREATE TABLE IF NOT EXISTS leases (
         id               INTEGER PRIMARY KEY CHECK (id = 1),
         holder_pid       INTEGER NOT NULL,
         holder_pgid      INTEGER NOT NULL,
@@ -35,10 +30,8 @@ _SCHEMA_STMTS = [
         start_identity   TEXT NOT NULL,
         acquired_at      TEXT NOT NULL,
         fencing_token    INTEGER NOT NULL
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS tasks (
+    )""",
+    """CREATE TABLE IF NOT EXISTS tasks (
         id               TEXT PRIMARY KEY,
         repo_name        TEXT NOT NULL,
         repo_id          TEXT NOT NULL,
@@ -55,64 +48,95 @@ _SCHEMA_STMTS = [
         writer_adapter   TEXT,
         reviewer_adapter TEXT,
         review_findings  TEXT,
+        complexity       TEXT NOT NULL DEFAULT 'routine',
         created_at       TEXT NOT NULL,
         updated_at       TEXT NOT NULL
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS approvals (
-        task_id      TEXT NOT NULL,
-        step         TEXT NOT NULL,
-        granted_at   TEXT NOT NULL,
-        granted_by   TEXT NOT NULL,
-        spec_digest  TEXT NOT NULL,
+    )""",
+    """CREATE TABLE IF NOT EXISTS approvals (
+        task_id       TEXT NOT NULL,
+        step          TEXT NOT NULL,
+        granted_at    TEXT NOT NULL,
+        granted_by    TEXT NOT NULL,
+        spec_digest   TEXT NOT NULL,
         accept_digest TEXT NOT NULL,
+        spec_content  TEXT,
         PRIMARY KEY (task_id, step)
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS op_ledger (
-        op_id          TEXT PRIMARY KEY,
+    )""",
+    """CREATE TABLE IF NOT EXISTS op_ledger (
+        op_id           TEXT PRIMARY KEY,
+        task_id         TEXT NOT NULL,
+        kind            TEXT NOT NULL,
+        adapter         TEXT NOT NULL,
+        pid             INTEGER,
+        pgid            INTEGER,
+        start_identity  TEXT,
+        fencing_token   INTEGER,
+        started_at      TEXT NOT NULL,
+        ended_at        TEXT,
+        outcome         TEXT NOT NULL DEFAULT 'uncertain',
+        notes           TEXT,
+        model_requested TEXT,
+        model_reported  TEXT
+    )""",
+    """CREATE TABLE IF NOT EXISTS infra_budget (
+        task_id  TEXT NOT NULL,
+        phase    TEXT NOT NULL,
+        attempts INTEGER NOT NULL DEFAULT 0,
+        PRIMARY KEY (task_id, phase)
+    )""",
+    """CREATE TABLE IF NOT EXISTS routing_selections (
+        id              INTEGER PRIMARY KEY AUTOINCREMENT,
+        task_id         TEXT NOT NULL,
+        role            TEXT NOT NULL,
+        run_ordinal     INTEGER NOT NULL,
+        profile_name    TEXT NOT NULL,
+        provider        TEXT NOT NULL,
+        model           TEXT NOT NULL,
+        effort          TEXT NOT NULL,
+        catalog_version INTEGER NOT NULL,
+        rationale       TEXT NOT NULL,
+        escalated_from  TEXT,
+        created_at      TEXT NOT NULL
+    )""",
+    """CREATE TABLE IF NOT EXISTS external_ops (
+        op_key         TEXT PRIMARY KEY,
         task_id        TEXT NOT NULL,
         kind           TEXT NOT NULL,
-        adapter        TEXT NOT NULL,
-        pid            INTEGER,
-        pgid           INTEGER,
-        start_identity TEXT,
-        started_at     TEXT NOT NULL,
-        ended_at       TEXT,
-        outcome        TEXT NOT NULL DEFAULT 'uncertain',
-        notes          TEXT
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS infra_retries (
-        op_id TEXT PRIMARY KEY,
-        count INTEGER NOT NULL DEFAULT 0
-    )
-    """,
-    """
-    CREATE TABLE IF NOT EXISTS audit_log (
+        payload_digest TEXT NOT NULL,
+        outcome        TEXT NOT NULL DEFAULT 'planned',
+        attestation    TEXT,
+        created_at     TEXT NOT NULL,
+        observed_at    TEXT
+    )""",
+    """CREATE TABLE IF NOT EXISTS audit_log (
         id         INTEGER PRIMARY KEY AUTOINCREMENT,
         ts         TEXT NOT NULL,
         task_id    TEXT,
         action     TEXT NOT NULL,
         actor      TEXT NOT NULL,
         detail     TEXT
-    )
-    """,
+    )""",
 ]
 
 
 class SQLiteStore:
+    """Thin wrapper around sqlite3 with explicit transaction management."""
+
     def __init__(self, db_path: Path) -> None:
         self.db_path = db_path
         self._conn: sqlite3.Connection | None = None
+        self._in_txn: bool = False
+        self._readonly: bool = False
+
+    # ------------------------------------------------------------------ #
+    # Open / close                                                         #
+    # ------------------------------------------------------------------ #
 
     def open(self) -> None:
+        """Open (or create) the database in read-write mode and apply schema."""
         self._conn = sqlite3.connect(
             str(self.db_path),
-            isolation_level=None,  # manual transaction control
+            isolation_level=None,
             check_same_thread=False,
         )
         self._conn.row_factory = sqlite3.Row
@@ -120,21 +144,51 @@ class SQLiteStore:
         self._conn.execute("PRAGMA foreign_keys=ON")
         for stmt in _SCHEMA_STMTS:
             self._conn.execute(stmt)
-        # Seed fencing counter if missing
         self._conn.execute(
             "INSERT OR IGNORE INTO fencing_sequence(id, next_token) VALUES(1, 1)"
         )
+        self._readonly = False
+
+    def open_readonly(self) -> None:
+        """Open in read-only mode via SQLite URI.  No schema writes."""
+        if not self.db_path.exists():
+            raise FileNotFoundError(f"DB not found: {self.db_path}")
+        uri = f"file:{self.db_path}?mode=ro"
+        self._conn = sqlite3.connect(
+            uri,
+            uri=True,
+            isolation_level=None,
+            check_same_thread=False,
+        )
+        self._conn.row_factory = sqlite3.Row
+        self._readonly = True
 
     def close(self) -> None:
         if self._conn is not None:
             self._conn.close()
             self._conn = None
+            self._in_txn = False
+
+    @property
+    def readonly(self) -> bool:
+        return self._readonly
+
+    # ------------------------------------------------------------------ #
+    # Transactions                                                         #
+    # ------------------------------------------------------------------ #
 
     @contextmanager
     def transaction(self) -> Generator[sqlite3.Connection, None, None]:
-        """Context manager that runs statements inside BEGIN IMMEDIATE."""
+        """Context manager for BEGIN IMMEDIATE.  Nesting is rejected."""
         assert self._conn is not None, "Store not open"
+        if self._readonly:
+            raise RuntimeError("Cannot start transaction on read-only store")
+        if self._in_txn:
+            raise RuntimeError(
+                "Cannot nest transactions; already inside BEGIN IMMEDIATE"
+            )
         self._conn.execute("BEGIN IMMEDIATE")
+        self._in_txn = True
         try:
             yield self._conn
             self._conn.execute("COMMIT")
@@ -144,14 +198,18 @@ class SQLiteStore:
             except Exception:
                 pass
             raise
+        finally:
+            self._in_txn = False
 
     # ------------------------------------------------------------------ #
     # Fencing sequence                                                     #
     # ------------------------------------------------------------------ #
 
     def next_fencing_token(self) -> int:
-        """Consume and return next fencing token. Must be called inside transaction."""
+        """Consume and return the next fencing token.  Must be inside transaction."""
         assert self._conn is not None
+        if not self._in_txn:
+            raise RuntimeError("next_fencing_token requires an active transaction")
         row = self._conn.execute(
             "SELECT next_token FROM fencing_sequence WHERE id=1"
         ).fetchone()

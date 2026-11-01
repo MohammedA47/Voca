@@ -1,4 +1,4 @@
-"""Path validation for state directory and scope prefixes."""
+"""Path validation for state directory, scope prefixes, and path isolation."""
 from __future__ import annotations
 
 import os
@@ -6,7 +6,6 @@ from pathlib import Path
 
 from .errors import StatePathError
 
-# Credential-adjacent names that must never appear in scope prefixes
 _SENSITIVE_PARTS = frozenset(
     {"secrets", ".env", "credentials", ".ssh", ".gnupg", ".aws", ".netrc"}
 )
@@ -15,13 +14,54 @@ _SENSITIVE_PARTS = frozenset(
 def resolve_state_dir(raw: str) -> Path:
     """Resolve and validate a state directory path.
 
-    The resolved path must not reside inside any git checkout (no .git ancestor),
-    must not be a symlink that escapes to a checkout root, and must exist or be
-    creatable (parent must exist).
+    Must not reside inside any git checkout (no .git ancestor) and must not
+    be a symlink that escapes to a checkout root.
     """
-    p = Path(raw).resolve()  # follows symlinks
+    p = Path(raw).resolve()
+    if p.is_symlink():
+        raise StatePathError(f"state-dir {raw} is a symlink; use a real path")
     _assert_outside_checkout(p, "state-dir")
     return p
+
+
+def validate_state_dir_exists(raw: str) -> Path:
+    """Resolve state-dir; raise if it does not exist or is inside a checkout."""
+    p = resolve_state_dir(raw)
+    if not p.is_dir():
+        raise StatePathError(f"state-dir does not exist: {p}")
+    return p
+
+
+def validate_path_isolation(
+    state_dir: Path, writer_dir: Path, review_dir: Path | None = None
+) -> None:
+    """Ensure state, writer checkout, and review checkout are isolated.
+
+    No directory may be a parent/child of any other.
+    """
+    dirs: list[tuple[str, Path]] = [
+        ("state", state_dir.resolve()),
+        ("writer", writer_dir.resolve()),
+    ]
+    if review_dir is not None:
+        dirs.append(("review", review_dir.resolve()))
+
+    for i, (name_a, path_a) in enumerate(dirs):
+        for name_b, path_b in dirs[i + 1:]:
+            try:
+                path_a.relative_to(path_b)
+                raise StatePathError(
+                    f"{name_a} ({path_a}) is inside {name_b} ({path_b})"
+                )
+            except ValueError:
+                pass
+            try:
+                path_b.relative_to(path_a)
+                raise StatePathError(
+                    f"{name_b} ({path_b}) is inside {name_a} ({path_a})"
+                )
+            except ValueError:
+                pass
 
 
 def _assert_outside_checkout(path: Path, label: str) -> None:
@@ -38,11 +78,7 @@ def _assert_outside_checkout(path: Path, label: str) -> None:
 
 
 def validate_scope_prefix(prefix: str) -> str:
-    """Validate and return a canonical relative scope prefix.
-
-    Rejects: absolute paths, '..' traversal, '.git' prefix, credential-
-    adjacent names, and empty strings.
-    """
+    """Validate and return a canonical relative scope prefix."""
     if not prefix or not prefix.strip():
         raise StatePathError("Scope prefix must not be empty")
     if os.path.isabs(prefix):
@@ -57,15 +93,11 @@ def validate_scope_prefix(prefix: str) -> str:
             raise StatePathError(
                 f"Scope prefix references credential path {part!r}: {prefix!r}"
             )
-    # Canonical: forward slashes, no trailing slash
     return "/".join(parts)
 
 
 def is_within_scope(path: str, scope_prefixes: list[str]) -> bool:
-    """Return True if *path* is within any of the scope prefixes.
-
-    Also rejects paths with traversal, absolute paths, or credential parts.
-    """
+    """Return True if *path* is within any of the scope prefixes."""
     if not path:
         return False
     normed = path.replace("\\", "/").strip("/")
@@ -79,9 +111,9 @@ def is_within_scope(path: str, scope_prefixes: list[str]) -> bool:
     for part in parts:
         if part.lower() in _SENSITIVE_PARTS:
             return False
-    for prefix in scope_prefixes:
-        prefix = prefix.rstrip("/")
-        if normed == prefix or normed.startswith(prefix + "/"):
+    for pfx in scope_prefixes:
+        pfx = pfx.rstrip("/")
+        if normed == pfx or normed.startswith(pfx + "/"):
             return True
     return False
 
